@@ -1,0 +1,1558 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>함수 블랙잭 : 일차함수 Risk & Bet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Noto+Sans+KR:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .font-jua { font-family: 'Jua', sans-serif; }
+        .font-gowun { font-family: 'Gowun Dodum', sans-serif; }
+        
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+        
+        @keyframes pulse-gold {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(234,179,8,0.5)); }
+            50% { transform: scale(1.03); filter: drop-shadow(0 0 10px rgba(234,179,8,0.8)); }
+        }
+        .gold-pulse { animation: pulse-gold 2s infinite; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 h-screen max-h-screen flex flex-col justify-between overflow-hidden">
+
+    <!-- 상단 헤더 / 스코어바 -->
+    <header class="bg-slate-800/90 border-b border-slate-700 backdrop-blur px-3 py-2 z-30 shrink-0">
+        <div class="w-full flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="bg-gradient-to-tr from-amber-500 to-yellow-300 text-slate-950 p-1.5 rounded-lg shadow">
+                    <i class="fa-solid fa-chart-line text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="font-jua text-lg md:text-xl text-yellow-400 tracking-wide leading-none">일차함수 블랙잭</h1>
+                    <p class="text-[11px] text-slate-400 leading-tight">중2 일차함수 복습 베팅 게임</p>
+                </div>
+            </div>
+
+            <!-- 상태 및 보유 칩 & 컨트롤 버튼 -->
+            <div class="flex items-center space-x-2 md:space-x-3">
+                <div id="player-name-tag" class="hidden bg-indigo-950/80 border border-indigo-500/40 px-2.5 py-1 rounded-full text-xs font-bold text-indigo-300 flex items-center space-x-1">
+                    <i class="fa-solid fa-user-astronaut text-indigo-400"></i>
+                    <span id="display-player-name">학생</span>
+                </div>
+                <div class="bg-slate-950/80 border border-slate-700 px-3 py-1 rounded-full flex items-center space-x-2">
+                    <i class="fa-solid fa-coins text-amber-400 text-base"></i>
+                    <span id="player-chips" class="font-jua text-base md:text-lg text-amber-300">1000</span>
+                    <span class="text-[10px] text-slate-400">CHIPS</span>
+                </div>
+                <!-- 인게임 첫 화면 복귀 버튼 (클릭 및 터치 영역 확장) -->
+                <button id="btn-exit-main" onclick="exitToMainMenu()" class="hidden bg-slate-700 hover:bg-rose-900/80 active:bg-rose-800 border border-slate-600 hover:border-rose-600 text-slate-200 hover:text-rose-200 px-3.5 py-1.5 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-bold shadow-md transition-all transform active:scale-95 flex items-center space-x-1.5 cursor-pointer shrink-0" title="첫 화면으로 돌아가기">
+                    <i class="fa-solid fa-house text-rose-400 text-sm"></i>
+                    <span class="whitespace-nowrap">처음으로</span>
+                </button>
+                <button id="btn-sound" onclick="toggleSound()" class="bg-slate-700 hover:bg-slate-600 w-8 h-8 rounded-full flex items-center justify-center text-slate-300 transition text-sm">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+                <button onclick="openLeaderboardModal()" class="bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-1 rounded-lg text-xs font-bold shadow transition flex items-center space-x-1">
+                    <i class="fa-solid fa-trophy text-amber-300"></i>
+                    <span>순위표</span>
+                </button>
+                <button onclick="openRulesModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1 rounded-lg text-xs font-bold shadow transition flex items-center space-x-1">
+                    <i class="fa-solid fa-circle-question"></i>
+                    <span>규칙</span>
+                </button>
+                <button onclick="openAdminAuthModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 border border-slate-600 px-2.5 py-1 rounded-lg text-xs font-bold shadow transition flex items-center space-x-1" title="교사용 관리자">
+                    <i class="fa-solid fa-key text-amber-400"></i>
+                    <span>교사용</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 인게임 토스트 메시지 알림바 -->
+    <div id="game-toast" class="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-slate-800 border border-amber-400 text-amber-300 px-4 py-2 rounded-xl shadow-2xl text-xs font-bold transition-all duration-300 transform -translate-y-10 opacity-0 pointer-events-none flex items-center space-x-2">
+        <i id="toast-icon" class="fa-solid fa-circle-info text-amber-400"></i>
+        <span id="toast-msg">메시지 내용</span>
+    </div>
+
+    <main class="w-full flex-grow px-2 py-1.5 overflow-hidden flex flex-col justify-center">
+
+        <!-- [모드 선택 / 이름 입력 시작 화면] -->
+        <div id="screen-mode-select" class="space-y-4 my-auto py-2 max-w-xl mx-auto w-full text-center">
+            <div class="space-y-1.5">
+                <span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-0.5 rounded-full text-xs font-semibold">태블릿 전용 수학 액티비티</span>
+                <h2 class="font-jua text-3xl md:text-4xl text-white">리스크를 감수하고 정답을 맞혀라!</h2>
+                <p class="text-slate-400 text-xs md:text-sm">높은 배당률을 노려 일차함수 랭킹 1위에 도전해보세요!</p>
+            </div>
+
+            <!-- 이름 입력 카드 및 연습모드 선택 -->
+            <div class="bg-slate-800/90 border border-slate-700 p-5 rounded-2xl shadow-xl space-y-4 text-left">
+                <div>
+                    <label class="block text-xs text-slate-300 font-bold mb-1.5">
+                        <i class="fa-solid fa-id-card text-indigo-400 mr-1"></i>플레이어 이름 <span class="text-amber-300 font-normal">(학번이름으로 적을것)</span>
+                    </label>
+                    <input type="text" id="input-player-name" maxlength="12" placeholder="예: 2701김효경" class="w-full bg-slate-900 border border-slate-600 rounded-xl px-3.5 py-2.5 text-white font-bold text-sm focus:outline-none focus:border-indigo-500 transition">
+                </div>
+
+                <div class="bg-slate-950/60 p-3 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-1">
+                    <p class="text-yellow-400 font-bold"><i class="fa-solid fa-star mr-1"></i>게임 도전 안내</p>
+                    <p>• 총 <span id="info-total-rounds">5</span>라운드 동안 최고 칩 득점에 도전합니다.</p>
+                    <p>• 문제당 1회 칩 100을 사용해 <b class="text-indigo-300">[문제 다시 받기]</b>를 할 수 있습니다.</p>
+                    <p>• 동점자 발생 시 <b class="text-emerald-300">총 제출 소요시간(초)</b>이 짧은 순으로 랭킹이 결정됩니다.</p>
+                    <p>• <b class="text-emerald-400">연습모드</b>는 이름 입력 없이 자유롭게 플레이 가능합니다 (랭킹 미기록).</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button onclick="initPracticeGame()" class="w-full bg-slate-700 hover:bg-slate-600 border border-slate-600 text-emerald-300 font-jua text-base py-3 rounded-xl transition transform active:scale-95 flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-graduation-cap text-lg"></i>
+                        <span>연습모드 시작</span>
+                    </button>
+                    <button onclick="initStartGame()" class="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white font-jua text-base py-3 rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-gamepad text-lg"></i>
+                        <span>도전 시작하기!</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- [게임 플레이 화면: 한 화면 3열 레이아웃] -->
+        <div id="screen-game" class="hidden h-full grid grid-cols-12 gap-2.5 items-stretch">
+
+            <!-- 열 1: 힌트 카드 목록 (5/12 너비) -->
+            <div class="col-span-5 flex flex-col justify-between space-y-1.5 h-full">
+                <!-- 라운드 & 배당 상태 & 문제 리셋 & 타이머 -->
+                <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-2 flex items-center justify-between shadow shrink-0">
+                    <div>
+                        <div class="text-[10px] text-slate-400 font-semibold uppercase">Current Status</div>
+                        <div id="round-indicator" class="font-jua text-base text-yellow-400">Round 1 / 5</div>
+                    </div>
+                    <div class="text-center bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-700">
+                        <div class="text-[9px] text-slate-400">누적 소요시간</div>
+                        <div id="timer-display" class="font-mono text-xs font-bold text-cyan-300"><i class="fa-regular fa-clock mr-1"></i>0초</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-[10px] text-slate-400 font-semibold uppercase">현재 힌트 배당</div>
+                        <div id="current-multiplier" class="font-jua text-xl text-emerald-400 gold-pulse">5.0x</div>
+                    </div>
+                </div>
+
+                <!-- 힌트 카드 목록 (5단계) -->
+                <div class="flex-1 flex flex-col justify-between space-y-1 overflow-y-auto">
+                    <!-- 족집게 특수 힌트 배너 (아이템 구매 시 출현) -->
+                    <div id="scope-hint-card" class="hidden bg-gradient-to-r from-emerald-950 to-slate-900 border-2 border-emerald-400 p-2 rounded-xl transition-all shadow-md animate-pulse">
+                        <div class="flex items-center justify-between text-[11px] font-bold mb-0.5 text-emerald-300">
+                            <span><i class="fa-solid fa-magnifying-glass mr-1"></i> 🔍 족집게 특수 힌트</span>
+                            <span class="text-[9px] bg-emerald-500/20 px-1.5 py-0.5 rounded border border-emerald-400/40">SPECIAL</span>
+                        </div>
+                        <div id="scope-hint-text" class="text-xs font-bold text-emerald-200 leading-snug">
+                            <!-- 족집게 힌트 내용 dynamic -->
+                        </div>
+                    </div>
+
+                    <div id="clue-1" class="bg-slate-800 border-2 border-amber-500/80 p-2 rounded-xl transition-all shadow-sm">
+                        <div class="flex items-center justify-between text-[11px] font-bold mb-0.5">
+                            <span class="text-amber-400"><i class="fa-solid fa-key mr-1"></i> HINT 1 (5.0x)</span>
+                            <span class="text-amber-400 font-bold text-[10px]">공개됨</span>
+                        </div>
+                        <div class="clue-text text-xs font-semibold text-slate-100 leading-snug">힌트 생성 중...</div>
+                    </div>
+
+                    <div id="clue-2" class="bg-slate-800/50 border border-slate-700 p-2 rounded-xl opacity-60 transition-all">
+                        <div class="flex items-center justify-between text-[11px] font-bold mb-0.5">
+                            <span class="text-slate-400"><i class="fa-solid fa-lock mr-1"></i> HINT 2 (3.0x)</span>
+                            <span class="text-slate-500 text-[10px]">잠김</span>
+                        </div>
+                        <div class="clue-text text-xs text-slate-400 leading-snug">다음 힌트 열기 버튼을 누르세요.</div>
+                    </div>
+
+                    <div id="clue-3" class="bg-slate-800/50 border border-slate-700 p-2 rounded-xl opacity-60 transition-all">
+                        <div class="flex items-center justify-between text-[11px] font-bold mb-0.5">
+                            <span class="text-slate-400"><i class="fa-solid fa-lock mr-1"></i> HINT 3 (2.0x)</span>
+                            <span class="text-slate-500 text-[10px]">잠김</span>
+                        </div>
+                        <div class="clue-text text-xs text-slate-400 leading-snug">다음 힌트 열기 버튼을 누르세요.</div>
+                    </div>
+
+                    <div id="clue-4" class="bg-slate-800/50 border border-slate-700 p-2 rounded-xl opacity-60 transition-all">
+                        <div class="flex items-center justify-between text-[11px] font-bold mb-0.5">
+                            <span class="text-slate-400"><i class="fa-solid fa-lock mr-1"></i> HINT 4 (1.5x)</span>
+                            <span class="text-slate-500 text-[10px]">잠김</span>
+                        </div>
+                        <div class="clue-text text-xs text-slate-400 leading-snug">다음 힌트 열기 버튼을 누르세요.</div>
+                    </div>
+
+                    <div id="clue-5" class="bg-slate-800/50 border border-slate-700 p-2 rounded-xl opacity-60 transition-all">
+                        <div class="flex items-center justify-between text-[11px] font-bold mb-0.5">
+                            <span class="text-slate-400"><i class="fa-solid fa-lock mr-1"></i> HINT 5 (1.2x)</span>
+                            <span class="text-slate-500 text-[10px]">잠김</span>
+                        </div>
+                        <div class="clue-text text-xs text-slate-400 leading-snug">다음 힌트 열기 버튼을 누르세요.</div>
+                    </div>
+                </div>
+
+                <!-- 제어 버튼 (다음 힌트 & 문제 리셋) -->
+                <div class="grid grid-cols-12 gap-1.5 shrink-0">
+                    <button id="btn-next-hint" onclick="revealNextClue()" class="col-span-8 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-yellow-400 font-bold py-2 rounded-xl text-xs transition flex items-center justify-center space-x-1">
+                        <i class="fa-solid fa-eye text-xs"></i>
+                        <span>다음 힌트 열기</span>
+                    </button>
+
+                    <button id="btn-reset-problem" onclick="resetCurrentProblem()" class="col-span-4 bg-rose-950/80 hover:bg-rose-900 border border-rose-700/80 text-rose-300 font-bold py-2 rounded-xl text-[11px] transition flex items-center justify-center space-x-1" title="100 칩 소모">
+                        <i class="fa-solid fa-rotate-right text-xs"></i>
+                        <span>리셋 (-100)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 열 2: 답안 입력 & 베팅 설정 (4/12 너비) -->
+            <div class="col-span-4 bg-slate-800/90 border border-slate-700 rounded-2xl p-2.5 shadow-xl flex flex-col justify-between h-full">
+                <h3 class="font-jua text-sm text-slate-200 border-b border-slate-700/80 pb-1 flex items-center justify-between shrink-0">
+                    <span><i class="fa-solid fa-pen-to-square text-indigo-400 mr-1"></i>일차함수식 입력</span>
+                    <span class="text-[10px] font-normal text-slate-400">형식: <span class="italic">y = ax + b</span></span>
+                </h3>
+
+                <!-- a와 b 값 입력 -->
+                <div class="space-y-1.5 my-auto">
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-[11px] text-slate-400 font-semibold mb-0.5">기울기 (<span class="italic">a</span>)</label>
+                            <input type="text" id="input-a" placeholder="예: 2 또는 -1/2" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-white font-mono text-xs focus:outline-none focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] text-slate-400 font-semibold mb-0.5"><span class="italic">y</span>절편 (<span class="italic">b</span>)</label>
+                            <input type="text" id="input-b" placeholder="예: 3 또는 -5" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-white font-mono text-xs focus:outline-none focus:border-indigo-500">
+                        </div>
+                    </div>
+
+                    <!-- 실시간 완성식 미리보기 -->
+                    <div class="bg-slate-950/80 p-1.5 rounded-xl text-center border border-slate-800">
+                        <span class="text-[9px] text-slate-500 block">입력된 일차함수식</span>
+                        <span id="equation-preview" class="font-jua text-base text-indigo-300"><span class="italic">y = ax + b</span></span>
+                    </div>
+
+                    <!-- 찬스 아이템 구매 섹션 -->
+                    <div class="bg-slate-900/90 border border-slate-700/80 p-1.5 rounded-xl space-y-1">
+                        <div class="text-[10px] font-bold text-amber-400 flex items-center justify-between">
+                            <span><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>전략 아이템 (라운드당 1회)</span>
+                            <span id="active-item-badge" class="text-[9px] text-slate-400 font-normal">미사용</span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-1">
+                            <button id="item-shield" onclick="useItem('shield')" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 p-1 rounded-lg text-center transition">
+                                <div class="text-[10px] text-slate-200 font-bold"><i class="fa-solid fa-shield-halved text-cyan-400 mr-0.5"></i>쉴드</div>
+                                <div class="text-[8px] text-slate-400">-50칩 (손실50%방지)</div>
+                            </button>
+                            <button id="item-boost" onclick="useItem('boost')" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 p-1 rounded-lg text-center transition">
+                                <div class="text-[10px] text-slate-200 font-bold"><i class="fa-solid fa-bolt text-yellow-400 mr-0.5"></i>부스터</div>
+                                <div class="text-[8px] text-slate-400">-100칩 (배당 +1.0x)</div>
+                            </button>
+                            <button id="item-scope" onclick="useItem('scope')" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 p-1 rounded-lg text-center transition">
+                                <div class="text-[10px] text-slate-200 font-bold"><i class="fa-solid fa-magnifying-glass text-emerald-400 mr-0.5"></i>족집게</div>
+                                <div class="text-[8px] text-slate-400">-80칩 (a범위 힌트)</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 베팅 금액 설정 -->
+                <div class="pt-1.5 border-t border-slate-700/60 space-y-1 shrink-0">
+                    <div class="flex justify-between items-center text-xs">
+                        <span class="text-slate-300 font-semibold text-[11px]">베팅 칩 설정</span>
+                        <span class="text-amber-400 font-mono font-bold text-xs" id="bet-amount-display">100 CHIPS</span>
+                    </div>
+
+                    <input type="range" id="bet-slider" min="50" max="1000" step="50" value="100" oninput="updateBetDisplay()" class="w-full accent-amber-400 cursor-pointer h-1.5">
+
+                    <!-- 빠른 베팅 버튼 -->
+                    <div class="grid grid-cols-4 gap-1 pt-0.5">
+                        <button onclick="setBetPercent(0.25)" class="bg-slate-700 hover:bg-slate-600 text-[10px] py-0.5 rounded text-slate-200 font-medium">25%</button>
+                        <button onclick="setBetPercent(0.5)" class="bg-slate-700 hover:bg-slate-600 text-[10px] py-0.5 rounded text-slate-200 font-medium">50%</button>
+                        <button onclick="setBetPercent(0.75)" class="bg-slate-700 hover:bg-slate-600 text-[10px] py-0.5 rounded text-slate-200 font-medium">75%</button>
+                        <button onclick="setBetPercent(1.0)" class="bg-amber-600/80 hover:bg-amber-500 text-[10px] py-0.5 rounded text-white font-bold">ALL IN</button>
+                    </div>
+                </div>
+
+                <!-- 최종 정답 베팅 제출 버튼 -->
+                <button onclick="submitAnswer()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-slate-950 font-jua text-base py-2 rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center space-x-1.5 mt-1.5 shrink-0">
+                    <i class="fa-solid fa-dice text-lg"></i>
+                    <span>정답에 칩 베팅하기!</span>
+                </button>
+            </div>
+
+            <!-- 열 3: 제일 오른쪽 시각화 좌표평면 레이더 (3/12 너비) -->
+            <div class="col-span-3 bg-slate-800/90 border border-slate-700 rounded-2xl p-2.5 shadow-xl flex flex-col justify-between items-center h-full">
+                <div class="w-full flex items-center justify-between text-[11px] text-slate-400 shrink-0 mb-1">
+                    <span><i class="fa-solid fa-circle-nodes text-emerald-400 mr-1"></i>그래프 레이더</span>
+                    <span id="canvas-status" class="text-[10px] text-amber-300">대기 중</span>
+                </div>
+                
+                <div class="relative w-full flex-1 flex items-center justify-center min-h-0 my-auto">
+                    <div class="aspect-square w-full max-h-full bg-slate-950 rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center">
+                        <canvas id="graph-canvas" class="w-full h-full block"></canvas>
+                    </div>
+                </div>
+
+                <div class="text-[10px] text-slate-400 text-center shrink-0 mt-1">
+                    기울기와 y절편을 입력하면 실시간 미리보기가 나타납니다.
+                </div>
+            </div>
+
+        </div>
+
+        <!-- [라운드 결과 모달] -->
+        <div id="modal-result" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-800 border-2 border-slate-700 w-full max-w-sm rounded-2xl p-5 text-center space-y-4 shadow-2xl relative">
+                
+                <div id="result-icon-bg" class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center text-3xl mx-auto border border-emerald-500/30">
+                    <i id="result-icon" class="fa-solid fa-trophy"></i>
+                </div>
+
+                <div class="space-y-0.5">
+                    <h3 id="result-title" class="font-jua text-2xl text-white">정답입니다!</h3>
+                    <p id="result-subtitle" class="text-xs text-slate-300">정확하게 일차함수식을 맞혔습니다.</p>
+                </div>
+
+                <div class="bg-slate-900 p-3 rounded-xl space-y-1.5 border border-slate-800 text-xs">
+                    <div class="flex justify-between text-slate-400">
+                        <span>정답 함수식:</span>
+                        <span id="res-correct-eq" class="font-mono text-yellow-400 font-bold"><span class="italic">y</span> = 2<span class="italic">x</span> + 3</span>
+                    </div>
+                    <div class="flex justify-between text-slate-400">
+                        <span>적용 배당률:</span>
+                        <span id="res-multiplier" class="font-bold text-emerald-400">5.0x</span>
+                    </div>
+                    <div class="flex justify-between text-slate-400">
+                        <span>획득 / 손실 칩:</span>
+                        <span id="res-chip-change" class="font-mono font-bold text-emerald-400">+500 CHIPS</span>
+                    </div>
+                </div>
+
+                <button id="btn-next-round" onclick="closeResultModal()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-jua text-base py-2.5 rounded-xl transition shadow-lg">
+                    다음 라운드 진행하기
+                </button>
+            </div>
+        </div>
+
+        <!-- [최종 게임 종료 성적표] -->
+        <div id="screen-game-over" class="hidden max-w-md mx-auto w-full bg-slate-800 border-2 border-amber-500/50 rounded-2xl p-5 text-center space-y-4 shadow-2xl my-auto">
+            <div class="w-14 h-14 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-3xl mx-auto border border-amber-500/40 gold-pulse">
+                <i class="fa-solid fa-crown"></i>
+            </div>
+
+            <div class="space-y-0.5">
+                <h2 class="font-jua text-2xl text-yellow-400"><span id="final-player-name">학생</span>의 도전 결과!</h2>
+                <p id="final-mode-subtitle" class="text-xs text-slate-300">일차함수 베팅 복습이 모두 완료되었습니다.</p>
+            </div>
+
+            <div class="bg-slate-900 p-3.5 rounded-xl space-y-2 border border-slate-800 text-left text-xs">
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400">최종 보유 칩:</span>
+                    <span id="final-chips" class="font-jua text-xl text-amber-300">3,400 CHIPS</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400">총 소요 시간:</span>
+                    <span id="final-time" class="font-mono font-bold text-cyan-300">42초</span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400">획득 칭호:</span>
+                    <span id="final-badge" class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs px-2.5 py-0.5 rounded-full font-bold">일차함수 마스터</span>
+                </div>
+            </div>
+
+            <div class="flex space-x-2">
+                <button onclick="openLeaderboardModal()" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-jua py-2.5 text-sm rounded-xl transition shadow">
+                    <i class="fa-solid fa-trophy mr-1"></i>순위표 보기
+                </button>
+                <button onclick="exitToMainMenu()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-jua py-2.5 text-sm rounded-xl transition shadow-lg">
+                    첫 화면으로
+                </button>
+            </div>
+        </div>
+
+        <!-- [순위표 모달] -->
+        <div id="modal-leaderboard" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl p-5 space-y-3.5 shadow-2xl relative text-slate-200">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-2">
+                    <h3 class="font-jua text-xl text-amber-400 flex items-center space-x-2">
+                        <i class="fa-solid fa-trophy"></i>
+                        <span>명예의 전당 (TOP 10)</span>
+                    </h3>
+                    <button onclick="closeLeaderboardModal()" class="text-slate-400 hover:text-white text-lg px-2">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="max-h-60 overflow-y-auto space-y-1.5 pr-1">
+                    <table class="w-full text-left text-xs">
+                        <thead class="text-[10px] text-slate-400 border-b border-slate-700 uppercase">
+                            <tr>
+                                <th class="py-1 px-2">순위</th>
+                                <th class="py-1 px-2">이름</th>
+                                <th class="py-1 px-2 text-right">최종 칩</th>
+                                <th class="py-1 px-2 text-right">소요시간</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body" class="divide-y divide-slate-700/50">
+                            <!-- JS로 동적 할당 -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <button onclick="closeLeaderboardModal()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-jua py-2 rounded-xl transition text-sm">
+                    닫기
+                </button>
+            </div>
+        </div>
+
+        <!-- [교사용 관리자 인증 모달] -->
+        <div id="modal-admin-auth" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-800 border border-slate-700 w-full max-w-xs rounded-2xl p-4 space-y-3 text-center shadow-2xl">
+                <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-2xl mx-auto border border-amber-500/30">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <div>
+                    <h3 class="font-jua text-lg text-white">교사용 관리자 인증</h3>
+                    <p class="text-slate-400 text-xs">비밀번호를 입력하세요</p>
+                </div>
+                <input type="password" id="input-admin-pin" placeholder="비밀번호 입력" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-center text-white font-mono text-sm focus:outline-none focus:border-amber-500">
+                <p id="admin-auth-error" class="hidden text-rose-400 text-[11px] font-bold">비밀번호가 올바르지 않습니다.</p>
+                <div class="flex space-x-2">
+                    <button onclick="closeAdminAuthModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 font-jua py-2 rounded-xl text-xs">취소</button>
+                    <button onclick="authenticateAdmin()" class="flex-1 bg-amber-600 hover:bg-amber-500 text-white font-jua py-2 rounded-xl text-xs">확인</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- [교사용 대시보드 모달 (라운드 수 직접 입력 지원)] -->
+        <div id="modal-admin-panel" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
+            <div class="bg-slate-800 border border-slate-700 w-full max-w-lg rounded-2xl p-5 space-y-4 shadow-2xl text-slate-200 my-auto">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-2">
+                    <h3 class="font-jua text-xl text-amber-400 flex items-center space-x-2">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>교사용 관리자 패널</span>
+                    </h3>
+                    <button onclick="closeAdminPanelModal()" class="text-slate-400 hover:text-white text-lg px-2">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- 관리자 전용 실시간 순위표 -->
+                <div class="bg-slate-900/90 border border-amber-500/30 p-3 rounded-xl space-y-2">
+                    <div class="text-xs text-amber-400 font-bold flex items-center justify-between">
+                        <span><i class="fa-solid fa-trophy mr-1"></i>학생 순위표 (TOP 10)</span>
+                        <button onclick="renderAdminLeaderboard()" class="text-[10px] text-slate-400 hover:text-amber-300 underline">
+                            <i class="fa-solid fa-arrows-rotate mr-0.5"></i>새로고침
+                        </button>
+                    </div>
+                    <div class="max-h-40 overflow-y-auto pr-1">
+                        <table class="w-full text-left text-xs">
+                            <thead class="text-[10px] text-slate-400 border-b border-slate-700 uppercase">
+                                <tr>
+                                    <th class="py-1 px-1">순위</th>
+                                    <th class="py-1 px-1">학번이름</th>
+                                    <th class="py-1 px-1 text-right">최종 칩</th>
+                                    <th class="py-1 px-1 text-right">시간</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-leaderboard-body" class="divide-y divide-slate-700/50">
+                                <!-- JS로 동적 할당 -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 게임 규칙 및 난이도 환경 설정 (라운드 수 직접 입력) -->
+                <div class="bg-slate-900/60 border border-slate-700 p-3 rounded-xl space-y-2 text-xs">
+                    <div class="font-bold text-slate-300"><i class="fa-solid fa-gear mr-1"></i>게임 난이도 & 환경 설정</div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-slate-400 mb-1">총 라운드 수 (직접 입력)</label>
+                            <input type="number" id="admin-set-rounds" min="1" max="30" value="5" onchange="updateAdminSettings()" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-2.5 py-1 text-white font-mono text-xs focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="block text-slate-400 mb-1">초기 지급 칩</label>
+                            <select id="admin-set-chips" onchange="updateAdminSettings()" class="w-full bg-slate-800 border border-slate-600 rounded-lg px-2 py-1 text-white font-mono">
+                                <option value="500">500 CHIPS</option>
+                                <option value="1000" selected>1000 CHIPS (기본)</option>
+                                <option value="2000">2000 CHIPS</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 학생 성적 데이터 내보내기 & 관리자 PIN 변경 -->
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="bg-slate-900/60 border border-slate-700 p-2.5 rounded-xl space-y-1.5 flex flex-col justify-between">
+                        <div>
+                            <div class="font-bold text-emerald-300"><i class="fa-solid fa-file-csv mr-1"></i>성적 기록 내보내기</div>
+                            <div class="text-[10px] text-slate-400">순위표 데이터를 클립보드로 복사합니다.</div>
+                        </div>
+                        <button onclick="exportLeaderboardData()" class="w-full bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-1.5 rounded-lg transition text-[11px]">
+                            기록 복사하기
+                        </button>
+                    </div>
+
+                    <div class="bg-slate-900/60 border border-slate-700 p-2.5 rounded-xl space-y-1.5 flex flex-col justify-between">
+                        <div>
+                            <div class="font-bold text-cyan-300"><i class="fa-solid fa-key mr-1"></i>관리자 PIN 변경</div>
+                            <input type="password" id="input-new-admin-pin" placeholder="새 비밀번호 입력" class="w-full bg-slate-800 border border-slate-600 rounded px-2 py-1 text-white font-mono text-[11px] mt-1">
+                        </div>
+                        <button onclick="changeAdminPin()" class="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-1.5 rounded-lg transition text-[11px]">
+                            비밀번호 변경
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 명예의 전당 리셋 -->
+                <div class="bg-rose-950/30 border border-rose-800/50 p-3 rounded-xl flex items-center justify-between text-xs">
+                    <div>
+                        <div class="font-bold text-rose-300"><i class="fa-solid fa-trash-can mr-1"></i>순위표 초기화</div>
+                        <div class="text-slate-400 text-[10px]">저장된 학생들의 모든 랭킹 기록을 삭제합니다.</div>
+                    </div>
+                    <button onclick="resetLeaderboardData()" class="bg-rose-700 hover:bg-rose-600 text-white font-bold px-3 py-1.5 rounded-lg transition shrink-0">
+                        전체 초기화
+                    </button>
+                </div>
+
+                <button onclick="closeAdminPanelModal()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-jua py-2 rounded-xl transition text-sm">
+                    닫기
+                </button>
+            </div>
+        </div>
+
+        <!-- [순위표 전체 초기화 재확인 커스텀 모달] -->
+        <div id="modal-reset-confirm" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-800 border border-rose-500/80 w-full max-w-xs rounded-2xl p-4 space-y-3 text-center shadow-2xl relative">
+                <div class="w-12 h-12 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center text-2xl mx-auto border border-rose-500/30">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div class="space-y-1">
+                    <h3 class="font-jua text-lg text-rose-300">순위표 전체 초기화</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        저장된 모든 학생들의 랭킹 기록이 삭제됩니다.<br>
+                        <span class="text-rose-400 font-bold">(삭제된 데이터는 복구할 수 없습니다)</span>
+                    </p>
+                </div>
+                <div class="flex space-x-2 pt-1">
+                    <button onclick="closeResetConfirmModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 font-jua py-2 rounded-xl text-xs transition">
+                        취소
+                    </button>
+                    <button onclick="confirmResetLeaderboard()" class="flex-1 bg-rose-700 hover:bg-rose-600 text-white font-jua py-2 rounded-xl text-xs transition shadow-lg">
+                        초기화 실행
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- [게임 설명 규칙 모달] -->
+        <div id="modal-rules" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-800 border border-slate-700 w-full max-w-md rounded-2xl p-5 space-y-3.5 shadow-2xl relative text-slate-200">
+                <h3 class="font-jua text-xl text-yellow-400 flex items-center space-x-2">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>게임 규칙 & 전략</span>
+                </h3>
+                <ul class="text-xs space-y-2 text-slate-300 list-disc pl-4 leading-relaxed">
+                    <li><b>배당률 규칙:</b> 힌트 1단계에서 맞히면 <b>5배</b>, 2단계 <b>3배</b>, 3단계 <b>2배</b>, 4단계 <b>1.5배</b>, 5단계 <b>1.2배</b>의 칩을 획득합니다.</li>
+                    <li><b>찍기 완전 방지:</b> 정답은 기울기 <span class="italic font-serif text-amber-300">a</span>와 <span class="italic font-serif text-amber-300">y</span>절편 <span class="italic font-serif text-amber-300">b</span>를 직접 숫자로 입력해야 합니다. (예: 기울기 <span class="font-mono text-emerald-300">1/2</span> 또는 <span class="font-mono text-emerald-300">-2</span> 입력 가능)</li>
+                    <li><b>랜덤 다채로운 힌트:</b> 매 라운드마다 평행조건, 사분면, 지나가는 점, 변화량 등 다양한 종류의 힌트가 무작위로 제시됩니다.</li>
+                    <li><b>오답 페널티:</b> 정답에 실패하면 베팅한 칩을 전량 잃게 됩니다.</li>
+                    <li><b>상위권 & 하위권 밸런스:</b> 빠르게 간파하여 5배 보너스를 노리거나, 힌트를 신중히 모아 안전하게 승리해 보세요!</li>
+                </ul>
+                <button onclick="closeRulesModal()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-jua py-2 rounded-xl transition text-sm">
+                    닫기
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 하단 라이선스/저작권 푸터 -->
+    <footer class="bg-slate-950 border-t border-slate-800 py-1 px-4 text-center text-[11px] text-slate-500 font-gowun shrink-0">
+        © 2026 김효경│수학 수업용 인터랙티브 콘텐츠
+    </footer>
+
+    <script>
+        // 웹 오디오 API를 이용한 효과음 발생기
+        let audioCtx = null;
+        let soundEnabled = true;
+        let adminPin = localStorage.getItem('func_blackjack_admin_pin') || '1234';
+
+        // 연습 모드 여부 플래그
+        let isPracticeMode = false;
+
+        // 웹 안내 토스트 메시지
+        function showToast(msg, isWarning = false) {
+            const toast = document.getElementById('game-toast');
+            const toastMsg = document.getElementById('toast-msg');
+            const toastIcon = document.getElementById('toast-icon');
+
+            if (!toast || !toastMsg) return;
+
+            toastMsg.textContent = msg;
+            if (isWarning) {
+                toast.className = "fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-rose-900 border border-rose-500 text-rose-200 px-4 py-2 rounded-xl shadow-2xl text-xs font-bold transition-all duration-300 transform translate-y-0 opacity-100 flex items-center space-x-2";
+                toastIcon.className = "fa-solid fa-circle-exclamation text-rose-400";
+            } else {
+                toast.className = "fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-slate-800 border border-amber-400 text-amber-300 px-4 py-2 rounded-xl shadow-2xl text-xs font-bold transition-all duration-300 transform translate-y-0 opacity-100 flex items-center space-x-2";
+                toastIcon.className = "fa-solid fa-circle-info text-amber-400";
+            }
+
+            setTimeout(() => {
+                toast.classList.add('-translate-y-10', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, 2500);
+        }
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            initAudio();
+            if (!audioCtx) return;
+
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'chip') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(800, now);
+                osc.frequency.exponentialRampToValueAtTime(1200, now + 0.08);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (type === 'correct') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.setValueAtTime(659.25, now + 0.1);
+                osc.frequency.setValueAtTime(783.99, now + 0.2);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.4);
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } else if (type === 'wrong') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.linearRampToValueAtTime(110, now + 0.25);
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('btn-sound');
+            btn.innerHTML = soundEnabled ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark text-rose-400"></i>';
+        }
+
+        // 게임 상태 제어 변수들
+        let playerName = '학생';
+        let currentRound = 1;
+        let totalRounds = 5;
+        let initialChips = 1000;
+        let currentHintStep = 1;
+        let playerChips = 1000;
+        let resetUsedThisRound = false;
+        let activeItemThisRound = null; // 'shield', 'boost', 'scope'
+        let boostMultiplierBonus = 0.0;
+
+        // 시간 측정
+        let startTime = 0;
+        let totalElapsedSeconds = 0;
+        let timerInterval = null;
+
+        let currentProblem = null;
+        const hintMultipliers = [5.0, 3.0, 2.0, 1.5, 1.2];
+
+        function gcd(x, y) {
+            x = Math.abs(x); y = Math.abs(y);
+            while (y) { let t = y; y = x % y; x = t; }
+            return x;
+        }
+
+        function formatFraction(num, den) {
+            if (den === 1) return `${num}`;
+            if (den === -1) return `-${num}`;
+            if (den < 0) { num = -num; den = -den; }
+            const g = gcd(num, den);
+            return `${num / g}/${den / g}`;
+        }
+
+        // 확장된 다채롭고 정교한 일차함수 힌트 생성기
+        function generateProblem() {
+            let possibleA = [
+                { val: 1, str: "1" }, { val: -1, str: "-1" },
+                { val: 2, str: "2" }, { val: -2, str: "-2" },
+                { val: 3, str: "3" }, { val: -3, str: "-3" },
+                { val: 0.5, str: "1/2" }, { val: -0.5, str: "-1/2" },
+                { val: 1.5, str: "3/2" }, { val: -1.5, str: "-3/2" }
+            ];
+
+            const aObj = possibleA[Math.floor(Math.random() * possibleA.length)];
+            
+            let b = 0;
+            while (b === 0) {
+                b = Math.floor(Math.random() * 11) - 5; // -5 ~ 5 (0 제외)
+            }
+
+            const a = aObj.val;
+            const aStr = aObj.str;
+
+            // 좌표점들 계산
+            const x1 = Math.floor(Math.random() * 3) + 1; // 1~3
+            const y1 = a * x1 + b;
+
+            const x2 = -(Math.floor(Math.random() * 3) + 1); // -3 ~ -1
+            const y2 = a * x2 + b;
+
+            const x3 = 4;
+            const y3 = a * x3 + b;
+
+            // 함숫값 f(k) 계산
+            const f1Val = a * 2 + b;
+            const fNeg1Val = a * (-2) + b;
+
+            // 지나지 않는 사분면
+            let unpassedQuad = 0;
+            if (a > 0 && b > 0) unpassedQuad = 4;
+            else if (a > 0 && b < 0) unpassedQuad = 2;
+            else if (a < 0 && b > 0) unpassedQuad = 3;
+            else if (a < 0 && b < 0) unpassedQuad = 1;
+
+            // 축과 이루는 삼각형 넓이
+            const triAreaStr = formatFraction(b * b, 2 * Math.abs(a));
+
+            // 카테고리 1: 사분면, 방향, 평행/대칭 관계
+            const cat1Pool = [
+                `이 그래프는 <b class="text-yellow-300">제 ${unpassedQuad}사분면을 지나지 않습니다.</b>`,
+                `그래프 모양은 오른쪽 <b class="text-yellow-300">${a > 0 ? '위' : '아래'}</b>를 향하고, <i class="font-serif">y</i>축과 <b class="text-yellow-300">${b > 0 ? '양의 부분' : '음의 부분'}</b>에서 만납니다.`,
+                `일차함수 <b class="text-indigo-300"><i class="font-serif">y</i> = ${aStr}<i class="font-serif">x</i> ${b > 0 ? '+ 8' : '- 8'}</b>의 그래프와 평행합니다.`
+            ];
+
+            // 카테고리 2: 함숫값 및 변화량 특성
+            const cat2Pool = [
+                `<i class="font-serif">x</i> = 2일 때 <i class="font-serif">y</i>의 값(함숫값)은 <b class="text-cyan-300">${f1Val}</b> 입니다.`,
+                `<i class="font-serif">x</i>의 값이 2만큼 증가할 때, <i class="font-serif">y</i>의 값은 <b class="text-yellow-300">${2 * a > 0 ? (2 * a) + '만큼 증가' : Math.abs(2 * a) + '만큼 감소'}</b>합니다.`,
+                `<i class="font-serif">x</i> = -2일 때 함숫값은 <b class="text-cyan-300">${fNeg1Val}</b> 입니다.`
+            ];
+
+            // 카테고리 3: 절편 및 지나가는 점 1
+            const cat3Pool = [
+                `이 일차함수의 그래프는 점 <b class="text-emerald-300">(${x1}, ${y1})</b>을 지납니다.`,
+                `<i class="font-serif">y</i>절편은 <b class="text-amber-300">${b}</b> (점 <i class="font-mono">(0, ${b})</i>) 입니다.`,
+                `이 그래프는 점 <b class="text-emerald-300">(${x2}, ${y2})</b>를 지납니다.`
+            ];
+
+            // 카테고리 4: 도형의 넓이 및 x절편
+            const cat4Pool = [
+                `<i class="font-serif">x</i>절편은 <b class="text-amber-300">${formatFraction(-b, a)}</b> 입니다.`,
+                `이 일차함수의 그래프와 <i class="font-serif">x</i>축, <i class="font-serif">y</i>축으로 둘러싸인 삼각형의 넓이는 <b class="text-yellow-300">${triAreaStr}</b> 입니다.`,
+                `점 <b class="text-emerald-300">(${x3}, ${y3})</b>을 지나는 직선입니다.`
+            ];
+
+            // 카테고리 5: 결정적 힌트
+            const cat5Pool = [
+                `기울기 <i class="font-serif">a</i>는 <b class="text-yellow-300">${aStr}</b> 이고, 점 <b class="text-amber-300">(0, ${b})</b>를 지납니다.`,
+                `<i class="font-serif">x</i>의 증가량에 대한 <i class="font-serif">y</i>의 증가량의 비율(기울기)이 <b class="text-yellow-300">${aStr}</b> 입니다.`,
+                `기울기 <i class="font-serif">a</i> = <b class="text-yellow-300">${aStr}</b>, <i class="font-serif">y</i>절편 <i class="font-serif">b</i> = <b class="text-yellow-300">${b}</b> 입니다.`
+            ];
+
+            const shuffle = arr => arr.sort(() => Math.random() - 0.5);
+
+            const clues = [
+                shuffle(cat1Pool)[0],
+                shuffle(cat2Pool)[0],
+                shuffle(cat3Pool)[0],
+                shuffle(cat4Pool)[0],
+                shuffle(cat5Pool)[0]
+            ];
+
+            return { a, aStr, b, clues };
+        }
+
+        function loadRound() {
+            currentHintStep = 1;
+            resetUsedThisRound = false;
+            activeItemThisRound = null;
+            boostMultiplierBonus = 0.0;
+
+            currentProblem = generateProblem();
+
+            // 족집게 힌트 카드는 기본 숨김 처리
+            const scopeCard = document.getElementById('scope-hint-card');
+            if (scopeCard) scopeCard.classList.add('hidden');
+
+            // 아이템 상태 UI 초기화
+            resetItemUI();
+
+            // 입력창 초기화
+            document.getElementById('input-a').value = '';
+            document.getElementById('input-b').value = '';
+            document.getElementById('equation-preview').innerHTML = '<span class="italic">y = ax + b</span>';
+
+            // 헤더 정보 업데이트
+            document.getElementById('player-chips').textContent = playerChips.toLocaleString();
+            document.getElementById('round-indicator').textContent = `Round ${currentRound} / ${totalRounds}`;
+            document.getElementById('canvas-status').textContent = '대기 중';
+
+            // 베팅 슬라이더 설정
+            const slider = document.getElementById('bet-slider');
+            slider.max = playerChips;
+            slider.value = Math.min(100, playerChips);
+            updateBetDisplay();
+
+            // 리셋 버튼 상태
+            const resetBtn = document.getElementById('btn-reset-problem');
+            resetBtn.disabled = false;
+            resetBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+
+            // 힌트 렌더링
+            renderClues();
+            drawEmptyCanvas();
+        }
+
+        // 아이템 사용 로직
+        function useItem(itemType) {
+            if (activeItemThisRound) {
+                showToast('이번 라운드에는 이미 전략 아이템을 사용했습니다!', true);
+                return;
+            }
+
+            if (itemType === 'shield') {
+                if (playerChips < 50) { showToast('칩이 부족합니다! (-50 CHIPS 필요)', true); return; }
+                playerChips -= 50;
+                activeItemThisRound = 'shield';
+                document.getElementById('active-item-badge').textContent = '🛡️ 손실 쉴드 발동';
+                document.getElementById('active-item-badge').className = 'text-[9px] text-cyan-400 font-bold';
+                showToast('🛡️ 손실 쉴드가 발동되었습니다! (오답 시 손실 50% 방어)');
+            } else if (itemType === 'boost') {
+                if (playerChips < 100) { showToast('칩이 부족합니다! (-100 CHIPS 필요)', true); return; }
+                playerChips -= 100;
+                activeItemThisRound = 'boost';
+                boostMultiplierBonus = 1.0;
+                document.getElementById('active-item-badge').textContent = '🚀 배당 +1.0x 발동';
+                document.getElementById('active-item-badge').className = 'text-[9px] text-yellow-400 font-bold';
+                showToast('🚀 배당 부스터가 적용되었습니다! (배당률 +1.0x 추가)');
+            } else if (itemType === 'scope') {
+                if (playerChips < 80) { showToast('칩이 부족합니다! (-80 CHIPS 필요)', true); return; }
+                playerChips -= 80;
+                activeItemThisRound = 'scope';
+                document.getElementById('active-item-badge').textContent = '🔍 족집게 발동';
+                document.getElementById('active-item-badge').className = 'text-[9px] text-emerald-400 font-bold';
+                
+                const absA = Math.abs(currentProblem.a);
+                let scopeHint = "";
+                if (absA >= 2) {
+                    scopeHint = `기울기의 절댓값 |a|는 2 이상입니다. (가파른 그래프)`;
+                } else if (absA === 1) {
+                    scopeHint = `기울기의 절댓값 |a|는 정확히 1입니다. (기울기 a = 1 또는 -1)`;
+                } else {
+                    scopeHint = `기울기 a는 분수 형태(|a| < 1)입니다. (예: 1/2, -1/2 등)`;
+                }
+
+                const scopeCard = document.getElementById('scope-hint-card');
+                const scopeText = document.getElementById('scope-hint-text');
+                if (scopeCard && scopeText) {
+                    scopeText.textContent = scopeHint;
+                    scopeCard.classList.remove('hidden');
+                }
+
+                showToast('🔍 족집게 특수 힌트가 힌트 목록 맨 위에 공개되었습니다!');
+            }
+
+            playSound('chip');
+            document.getElementById('player-chips').textContent = playerChips.toLocaleString();
+            renderClues();
+            disableItemButtons();
+        }
+
+        function resetItemUI() {
+            document.getElementById('active-item-badge').textContent = '미사용';
+            document.getElementById('active-item-badge').className = 'text-[9px] text-slate-400 font-normal';
+            
+            const btnShield = document.getElementById('item-shield');
+            const btnBoost = document.getElementById('item-boost');
+            const btnScope = document.getElementById('item-scope');
+
+            [btnShield, btnBoost, btnScope].forEach(btn => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-40', 'cursor-not-allowed');
+                }
+            });
+        }
+
+        function disableItemButtons() {
+            const btnShield = document.getElementById('item-shield');
+            const btnBoost = document.getElementById('item-boost');
+            const btnScope = document.getElementById('item-scope');
+
+            [btnShield, btnBoost, btnScope].forEach(btn => {
+                if (btn) {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-40', 'cursor-not-allowed');
+                }
+            });
+        }
+
+        function resetCurrentProblem() {
+            if (resetUsedThisRound) {
+                showToast('이번 라운드에서는 이미 문제를 리셋했습니다!', true);
+                return;
+            }
+            if (playerChips < 100) {
+                showToast('리셋하려면 최소 100 칩이 필요합니다!', true);
+                return;
+            }
+
+            playerChips -= 100;
+            resetUsedThisRound = true;
+            playSound('chip');
+
+            document.getElementById('player-chips').textContent = playerChips.toLocaleString();
+
+            const resetBtn = document.getElementById('btn-reset-problem');
+            resetBtn.disabled = true;
+            resetBtn.classList.add('opacity-40', 'cursor-not-allowed');
+
+            showToast('새로운 문제가 생성되었습니다! (-100 CHIPS)');
+            loadRound();
+        }
+
+        function renderClues() {
+            const totalMult = hintMultipliers[currentHintStep - 1] + boostMultiplierBonus;
+            document.getElementById('current-multiplier').textContent = `${totalMult.toFixed(1)}x`;
+
+            for (let i = 1; i <= 5; i++) {
+                const clueEl = document.getElementById(`clue-${i}`);
+                const clueText = clueEl.querySelector('.clue-text');
+                const badge = clueEl.querySelector('span:last-child');
+
+                if (i <= currentHintStep) {
+                    clueEl.className = "bg-slate-800 border-2 border-amber-500/80 p-2 rounded-xl transition-all shadow-sm";
+                    clueText.innerHTML = currentProblem.clues[i - 1];
+                    badge.textContent = "공개됨";
+                    badge.className = "text-amber-400 font-bold text-[10px]";
+                } else {
+                    clueEl.className = "bg-slate-800/50 border border-slate-700 p-2 rounded-xl opacity-50 transition-all";
+                    clueText.textContent = "다음 힌트 열기 버튼을 누르세요.";
+                    badge.textContent = "잠김";
+                    badge.className = "text-slate-500 text-[10px]";
+                }
+            }
+
+            const btnNext = document.getElementById('btn-next-hint');
+            if (currentHintStep >= 5) {
+                btnNext.disabled = true;
+                btnNext.classList.add('opacity-40', 'cursor-not-allowed');
+            } else {
+                btnNext.disabled = false;
+                btnNext.classList.remove('opacity-40', 'cursor-not-allowed');
+            }
+        }
+
+        function revealNextClue() {
+            if (currentHintStep < 5) {
+                currentHintStep++;
+                playSound('chip');
+                renderClues();
+            }
+        }
+
+        document.getElementById('input-a').addEventListener('input', updateEquationPreview);
+        document.getElementById('input-b').addEventListener('input', updateEquationPreview);
+
+        function parseFraction(str) {
+            if (!str) return NaN;
+            str = str.trim();
+            if (str.includes('/')) {
+                const parts = str.split('/');
+                if (parts.length === 2) {
+                    const num = parseFloat(parts[0]);
+                    const den = parseFloat(parts[1]);
+                    if (!isNaN(num) && !isNaN(den) && den !== 0) {
+                        return num / den;
+                    }
+                }
+            }
+            return parseFloat(str);
+        }
+
+        function updateEquationPreview() {
+            const rawA = document.getElementById('input-a').value.trim();
+            const rawB = document.getElementById('input-b').value.trim();
+
+            const valA = parseFraction(rawA);
+            const valB = parseFraction(rawB);
+
+            if (isNaN(valA) && isNaN(valB)) {
+                document.getElementById('equation-preview').innerHTML = '<span class="italic">y = ax + b</span>';
+                drawEmptyCanvas();
+                return;
+            }
+
+            let aText = isNaN(valA) ? 'a' : (valA === 1 ? '' : (valA === -1 ? '-' : rawA));
+            let bText = '';
+            if (!isNaN(valB)) {
+                if (valB > 0) bText = ` + ${rawB}`;
+                else if (valB < 0) bText = ` - ${Math.abs(valB)}`;
+                else bText = '';
+            } else {
+                bText = ' + b';
+            }
+
+            document.getElementById('equation-preview').innerHTML = `<span class="italic">y</span> = ${aText}<span class="italic">x</span>${bText}`;
+
+            if (!isNaN(valA) && !isNaN(valB)) {
+                drawPreviewGraph(valA, valB, aText, bText);
+            } else {
+                drawEmptyCanvas();
+            }
+        }
+
+        function updateBetDisplay() {
+            const val = document.getElementById('bet-slider').value;
+            document.getElementById('bet-amount-display').textContent = `${parseInt(val).toLocaleString()} CHIPS`;
+        }
+
+        function setBetPercent(percent) {
+            const betVal = Math.max(50, Math.floor(playerChips * percent));
+            document.getElementById('bet-slider').value = betVal;
+            updateBetDisplay();
+            playSound('chip');
+        }
+
+        function submitAnswer() {
+            const rawA = document.getElementById('input-a').value.trim();
+            const rawB = document.getElementById('input-b').value.trim();
+
+            const userA = parseFraction(rawA);
+            const userB = parseFraction(rawB);
+
+            if (isNaN(userA) || isNaN(userB)) {
+                showToast('기울기 a와 y절편 b에 올바른 숫자를 입력해주세요!', true);
+                return;
+            }
+
+            const betChips = parseInt(document.getElementById('bet-slider').value);
+
+            const isCorrectA = Math.abs(userA - currentProblem.a) < 0.001;
+            const isCorrectB = Math.abs(userB - currentProblem.b) < 0.001;
+            const isCorrect = isCorrectA && isCorrectB;
+
+            const multiplier = hintMultipliers[currentHintStep - 1] + boostMultiplierBonus;
+
+            drawGraph(currentProblem.a, currentProblem.b, isCorrect, userA, userB);
+
+            let chipChange = 0;
+            if (isCorrect) {
+                chipChange = Math.floor(betChips * multiplier);
+                playerChips += chipChange;
+                playSound('correct');
+            } else {
+                if (activeItemThisRound === 'shield') {
+                    chipChange = -Math.floor(betChips * 0.5);
+                    playerChips = Math.max(0, playerChips - Math.floor(betChips * 0.5));
+                } else {
+                    chipChange = -betChips;
+                    playerChips = Math.max(0, playerChips - betChips);
+                }
+                playSound('wrong');
+            }
+
+            showResultModal(isCorrect, chipChange, multiplier);
+        }
+
+        function showResultModal(isCorrect, chipChange, multiplier) {
+            const modal = document.getElementById('modal-result');
+            const iconBg = document.getElementById('result-icon-bg');
+            const icon = document.getElementById('result-icon');
+            const title = document.getElementById('result-title');
+            const subtitle = document.getElementById('result-subtitle');
+            const eqText = document.getElementById('res-correct-eq');
+            const multText = document.getElementById('res-multiplier');
+            const changeText = document.getElementById('res-chip-change');
+
+            if (isCorrect) {
+                iconBg.className = "w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center text-3xl mx-auto border border-emerald-500/30";
+                icon.className = "fa-solid fa-circle-check";
+                title.textContent = "정답입니다!";
+                subtitle.textContent = "리스크 판단 성공! 칩을 획득하였습니다.";
+                changeText.className = "font-mono font-bold text-emerald-400";
+                changeText.textContent = `+${chipChange.toLocaleString()} CHIPS`;
+            } else {
+                iconBg.className = "w-16 h-16 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center text-3xl mx-auto border border-rose-500/30";
+                icon.className = "fa-solid fa-circle-xmark";
+                title.textContent = "아쉽게 틀렸습니다!";
+                subtitle.textContent = activeItemThisRound === 'shield' ? "🛡️ 쉴드 덕분에 베팅 손실을 50% 방어했습니다!" : "베팅한 칩을 잃었습니다. 힌트를 조금 더 확인해 보세요!";
+                changeText.className = "font-mono font-bold text-rose-400";
+                changeText.textContent = `${chipChange.toLocaleString()} CHIPS`;
+            }
+
+            eqText.innerHTML = `<span class="italic">y</span> = ${currentProblem.aStr}<span class="italic">x</span> ${currentProblem.b >= 0 ? '+ ' + currentProblem.b : '- ' + Math.abs(currentProblem.b)}`;
+            multText.textContent = `${multiplier.toFixed(1)}x`;
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeResultModal() {
+            document.getElementById('modal-result').classList.add('hidden');
+            currentRound++;
+
+            if (currentRound > totalRounds || playerChips <= 0) {
+                endGame();
+            } else {
+                loadRound();
+            }
+        }
+
+        // 처음에 이름 입력 없이 연습모드로 시작
+        function initPracticeGame() {
+            isPracticeMode = true;
+            playerName = "연습생";
+            document.getElementById('display-player-name').textContent = "연습생 (연습모드)";
+            document.getElementById('player-name-tag').classList.remove('hidden');
+            showToast("🎮 연습모드로 게임을 시작합니다. (순위표 미기록)");
+            startGame();
+        }
+
+        function initStartGame() {
+            const inputName = document.getElementById('input-player-name').value.trim();
+            if (!inputName) {
+                showToast('플레이어 이름을 입력해 주세요!', true);
+                return;
+            }
+            isPracticeMode = false;
+            playerName = inputName;
+            document.getElementById('display-player-name').textContent = playerName;
+            document.getElementById('player-name-tag').classList.remove('hidden');
+            startGame();
+        }
+
+        // 게임 중간에 언제든 첫 화면으로 돌아가기
+        function exitToMainMenu() {
+            if (timerInterval) clearInterval(timerInterval);
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-game-over').classList.add('hidden');
+            document.getElementById('btn-exit-main').classList.add('hidden');
+            document.getElementById('player-name-tag').classList.add('hidden');
+            document.getElementById('screen-mode-select').classList.remove('hidden');
+            showToast("첫 화면으로 돌아왔습니다.");
+        }
+
+        function startGame() {
+            currentRound = 1;
+            playerChips = initialChips;
+            totalElapsedSeconds = 0;
+            
+            if (timerInterval) clearInterval(timerInterval);
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                totalElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+                const timerEl = document.getElementById('timer-display');
+                if (timerEl) {
+                    timerEl.innerHTML = `<i class="fa-regular fa-clock mr-1"></i>${totalElapsedSeconds}초`;
+                }
+            }, 1000);
+
+            document.getElementById('screen-mode-select').classList.add('hidden');
+            document.getElementById('screen-game-over').classList.add('hidden');
+            document.getElementById('btn-exit-main').classList.remove('hidden');
+            document.getElementById('screen-game').classList.remove('hidden');
+
+            loadRound();
+        }
+
+        function endGame() {
+            if (timerInterval) clearInterval(timerInterval);
+
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-game-over').classList.remove('hidden');
+
+            document.getElementById('final-player-name').textContent = playerName;
+            const finalChipsEl = document.getElementById('final-chips');
+            const finalTimeEl = document.getElementById('final-time');
+            const finalBadgeEl = document.getElementById('final-badge');
+            const modeSubtitle = document.getElementById('final-mode-subtitle');
+
+            finalChipsEl.textContent = `${playerChips.toLocaleString()} CHIPS`;
+            finalTimeEl.textContent = `${totalElapsedSeconds}초`;
+
+            let badgeTitle = "";
+            if (playerChips >= 3000) {
+                badgeTitle = "🏆 함수 매버릭 (하이리스크 대마왕)";
+            } else if (playerChips >= 1800) {
+                badgeTitle = "⭐ 신중한 수학 전략가";
+            } else if (playerChips >= 1000) {
+                badgeTitle = "👍 일차함수 탐험가";
+            } else {
+                badgeTitle = "🌱 재도전이 필요한 루키";
+            }
+            finalBadgeEl.textContent = badgeTitle;
+
+            if (isPracticeMode) {
+                modeSubtitle.textContent = "연습모드 플레이가 완료되었습니다. (순위표에는 기록되지 않습니다)";
+            } else {
+                modeSubtitle.textContent = "일차함수 베팅 복습이 모두 완료되었습니다.";
+                saveScoreToLeaderboard(playerName, playerChips, totalElapsedSeconds, badgeTitle);
+            }
+        }
+
+        function saveScoreToLeaderboard(name, chips, timeSec, badge) {
+            let leaderboard = JSON.parse(localStorage.getItem('func_blackjack_leaderboard') || '[]');
+            leaderboard.push({ name, chips, timeSec, badge, date: new Date().toLocaleDateString('ko-KR') });
+            
+            leaderboard.sort((a, b) => {
+                if (b.chips !== a.chips) return b.chips - a.chips;
+                return (a.timeSec || 999) - (b.timeSec || 999);
+            });
+
+            leaderboard = leaderboard.slice(0, 10);
+            localStorage.setItem('func_blackjack_leaderboard', JSON.stringify(leaderboard));
+        }
+
+        function openLeaderboardModal() {
+            const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = '';
+
+            let leaderboard = JSON.parse(localStorage.getItem('func_blackjack_leaderboard') || '[]');
+            
+            if (leaderboard.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-slate-500">아직 등록된 기록이 없습니다!</td></tr>`;
+            } else {
+                leaderboard.forEach((item, index) => {
+                    let rankBadge = `${index + 1}위`;
+                    if (index === 0) rankBadge = '🥇 1위';
+                    else if (index === 1) rankBadge = '🥈 2위';
+                    else if (index === 2) rankBadge = '🥉 3위';
+
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-slate-700/30";
+                    row.innerHTML = `
+                        <td class="py-2 px-2 font-bold ${index === 0 ? 'text-amber-300' : 'text-slate-300'}">${rankBadge}</td>
+                        <td class="py-2 px-2 font-bold text-slate-100">${item.name}</td>
+                        <td class="py-2 px-2 font-mono font-bold text-amber-400 text-right">${item.chips.toLocaleString()}</td>
+                        <td class="py-2 px-2 font-mono text-cyan-300 text-right">${item.timeSec || '-'}초</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            document.getElementById('modal-leaderboard').classList.remove('hidden');
+        }
+
+        function closeLeaderboardModal() {
+            document.getElementById('modal-leaderboard').classList.add('hidden');
+        }
+
+        function openAdminAuthModal() {
+            document.getElementById('input-admin-pin').value = '';
+            const errEl = document.getElementById('admin-auth-error');
+            if (errEl) errEl.classList.add('hidden');
+            document.getElementById('modal-admin-auth').classList.remove('hidden');
+        }
+
+        function closeAdminAuthModal() {
+            document.getElementById('modal-admin-auth').classList.add('hidden');
+        }
+
+        function authenticateAdmin() {
+            const pin = document.getElementById('input-admin-pin').value;
+            const errEl = document.getElementById('admin-auth-error');
+
+            if (pin === adminPin) {
+                if (errEl) errEl.classList.add('hidden');
+                closeAdminAuthModal();
+                openAdminPanelModal();
+            } else {
+                if (errEl) errEl.classList.remove('hidden');
+            }
+        }
+
+        function openAdminPanelModal() {
+            renderAdminLeaderboard();
+            document.getElementById('admin-set-rounds').value = totalRounds;
+            document.getElementById('modal-admin-panel').classList.remove('hidden');
+        }
+
+        function renderAdminLeaderboard() {
+            const tbody = document.getElementById('admin-leaderboard-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            let leaderboard = JSON.parse(localStorage.getItem('func_blackjack_leaderboard') || '[]');
+            
+            if (leaderboard.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-slate-500">등록된 순위 데이터가 없습니다.</td></tr>`;
+            } else {
+                leaderboard.forEach((item, index) => {
+                    let rankBadge = `${index + 1}위`;
+                    if (index === 0) rankBadge = '🥇';
+                    else if (index === 1) rankBadge = '🥈';
+                    else if (index === 2) rankBadge = '🥉';
+
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-slate-700/30";
+                    row.innerHTML = `
+                        <td class="py-1.5 px-1 font-bold ${index < 3 ? 'text-amber-300' : 'text-slate-300'}">${rankBadge}</td>
+                        <td class="py-1.5 px-1 font-bold text-slate-100">${item.name}</td>
+                        <td class="py-1.5 px-1 font-mono font-bold text-amber-400 text-right">${item.chips.toLocaleString()}</td>
+                        <td class="py-1.5 px-1 font-mono text-cyan-300 text-right">${item.timeSec || '-'}초</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        function closeAdminPanelModal() {
+            document.getElementById('modal-admin-panel').classList.add('hidden');
+        }
+
+        // 라운드 수 직접 입력 및 초기 지급 칩 업데이트
+        function updateAdminSettings() {
+            const roundsInput = document.getElementById('admin-set-rounds');
+            const chipsSelect = document.getElementById('admin-set-chips');
+
+            let parsedRounds = parseInt(roundsInput.value);
+            if (isNaN(parsedRounds) || parsedRounds < 1) {
+                parsedRounds = 1;
+            }
+            totalRounds = parsedRounds;
+            initialChips = parseInt(chipsSelect.value);
+
+            document.getElementById('info-total-rounds').textContent = totalRounds;
+            showToast(`설정이 변경되었습니다: ${totalRounds}라운드 / ${initialChips}칩`);
+        }
+
+        function changeAdminPin() {
+            const newPin = document.getElementById('input-new-admin-pin').value.trim();
+            if (newPin.length < 4) {
+                showToast('비밀번호는 최소 4자리 이상이어야 합니다.', true);
+                return;
+            }
+            adminPin = newPin;
+            localStorage.setItem('func_blackjack_admin_pin', adminPin);
+            document.getElementById('input-new-admin-pin').value = '';
+            showToast('관리자 비밀번호가 새로 변경되었습니다.');
+        }
+
+        function exportLeaderboardData() {
+            let leaderboard = JSON.parse(localStorage.getItem('func_blackjack_leaderboard') || '[]');
+            if (leaderboard.length === 0) {
+                showToast('복사할 순위표 데이터가 없습니다.', true);
+                return;
+            }
+
+            let textData = "순위\t이름\t최종 칩\t소요시간(초)\t칭호\t날짜\n";
+            leaderboard.forEach((item, idx) => {
+                textData += `${idx + 1}\t${item.name}\t${item.chips}\t${item.timeSec || '-'}\t${item.badge}\t${item.date || '-'}\n`;
+            });
+
+            const textarea = document.createElement('textarea');
+            textarea.value = textData;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            showToast('📋 순위표 기록이 클립보드에 복사되었습니다!');
+        }
+
+        // 전체 초기화 확인 모달 열기
+        function resetLeaderboardData() {
+            document.getElementById('modal-reset-confirm').classList.remove('hidden');
+        }
+
+        // 전체 초기화 확인 모달 닫기
+        function closeResetConfirmModal() {
+            document.getElementById('modal-reset-confirm').classList.add('hidden');
+        }
+
+        // 실제 초기화 실행
+        function confirmResetLeaderboard() {
+            localStorage.removeItem('func_blackjack_leaderboard');
+            renderAdminLeaderboard();
+            closeResetConfirmModal();
+            showToast('순위표 데이터가 완전히 초기화되었습니다.');
+        }
+
+        function openRulesModal() { document.getElementById('modal-rules').classList.remove('hidden'); }
+        function closeRulesModal() { document.getElementById('modal-rules').classList.add('hidden'); }
+
+        function getCanvasCtx() {
+            const canvas = document.getElementById('graph-canvas');
+            if (!canvas) return null;
+            const ctx = canvas.getContext('2d');
+            const container = canvas.parentElement;
+            const width = container.clientWidth || 220;
+            const height = container.clientHeight || 220;
+            const dpr = window.devicePixelRatio || 1;
+
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            ctx.resetTransform();
+            ctx.scale(dpr, dpr);
+
+            return { canvas, ctx, width, height };
+        }
+
+        function drawEmptyCanvas() {
+            const cInfo = getCanvasCtx();
+            if (!cInfo) return;
+            const { ctx, width, height } = cInfo;
+
+            ctx.fillStyle = '#020617';
+            ctx.fillRect(0, 0, width, height);
+
+            const originX = width / 2;
+            const originY = height / 2;
+            const scale = width / 22;
+
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 1;
+
+            for (let i = -10; i <= 10; i++) {
+                if (i === 0) continue;
+                ctx.beginPath();
+                ctx.moveTo(originX + i * scale, 0);
+                ctx.lineTo(originX + i * scale, height);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(0, originY - i * scale);
+                ctx.lineTo(width, originY - i * scale);
+                ctx.stroke();
+            }
+
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 1.5;
+
+            ctx.beginPath();
+            ctx.moveTo(0, originY);
+            ctx.lineTo(width, originY);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(originX, 0);
+            ctx.lineTo(originX, height);
+            ctx.stroke();
+
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '10px monospace';
+            ctx.fillText('x', width - 12, originY + 12);
+            ctx.fillText('y', originX + 5, 12);
+            ctx.fillText('O', originX - 10, originY + 12);
+
+            const statusEl = document.getElementById('canvas-status');
+            if (statusEl) statusEl.textContent = '대기 중';
+        }
+
+        function drawPreviewGraph(a, b, aText, bText) {
+            const cInfo = getCanvasCtx();
+            if (!cInfo) return;
+            const { ctx, width, height } = cInfo;
+
+            drawEmptyCanvas();
+
+            const originX = width / 2;
+            const originY = height / 2;
+            const scale = width / 22;
+
+            ctx.strokeStyle = '#818cf8';
+            ctx.lineWidth = 2.5;
+            ctx.setLineDash([6, 4]);
+
+            const xStart = -11;
+            const yStart = a * xStart + b;
+            const xEnd = 11;
+            const yEnd = a * xEnd + b;
+
+            ctx.beginPath();
+            ctx.moveTo(originX + xStart * scale, originY - yStart * scale);
+            ctx.lineTo(originX + xEnd * scale, originY - yEnd * scale);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = '#a5b4fc';
+            ctx.beginPath();
+            ctx.arc(originX, originY - b * scale, 4.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            const statusEl = document.getElementById('canvas-status');
+            if (statusEl) statusEl.textContent = `미리보기: y = ${aText}x${bText}`;
+        }
+
+        function drawGraph(correctA, correctB, isCorrect, userA, userB) {
+            const cInfo = getCanvasCtx();
+            if (!cInfo) return;
+            const { ctx, width, height } = cInfo;
+
+            drawEmptyCanvas();
+
+            const originX = width / 2;
+            const originY = height / 2;
+            const scale = width / 22;
+
+            const xStart = -11;
+            const xEnd = 11;
+
+            if (!isCorrect && !isNaN(userA) && !isNaN(userB)) {
+                ctx.strokeStyle = '#f43f5e';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 4]);
+
+                const uYStart = userA * xStart + userB;
+                const uYEnd = userA * xEnd + userB;
+
+                ctx.beginPath();
+                ctx.moveTo(originX + xStart * scale, originY - uYStart * scale);
+                ctx.lineTo(originX + xEnd * scale, originY - uYEnd * scale);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 3;
+
+            const cYStart = correctA * xStart + correctB;
+            const cYEnd = correctA * xEnd + correctB;
+
+            ctx.beginPath();
+            ctx.moveTo(originX + xStart * scale, originY - cYStart * scale);
+            ctx.lineTo(originX + xEnd * scale, originY - cYEnd * scale);
+            ctx.stroke();
+
+            ctx.fillStyle = '#34d399';
+            ctx.beginPath();
+            ctx.arc(originX, originY - correctB * scale, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            const statusEl = document.getElementById('canvas-status');
+            if (statusEl) {
+                statusEl.textContent = isCorrect ? '정답 그래프!' : '정답 vs 제출 그래프';
+            }
+        }
+
+        window.addEventListener('resize', drawEmptyCanvas);
+        window.addEventListener('load', drawEmptyCanvas);
+    </script>
+</body>
+</html>
