@@ -1,0 +1,874 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>다온이의 수학 계산 연습</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font: Jua (귀엽고 가독성 높은 한글 폰트) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            font-family: 'Jua', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        /* 커스텀 스크롤바 숨기기 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* 애니메이션 */
+        @keyframes pop {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: pop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* 버튼 누름 효과 */
+        .btn-act:active {
+            transform: scale(0.95);
+        }
+
+        /* 세로셈 점선 가이드 */
+        .border-dashed-vertical {
+            background-image: linear-gradient(to bottom, #cbd5e1 50%, rgba(255, 255, 255, 0) 0%);
+            background-position: center;
+            background-size: 2px 10px;
+            background-repeat: repeat-y;
+        }
+    </style>
+</head>
+<body class="bg-amber-50 text-slate-800 h-screen w-screen overflow-hidden flex flex-col justify-between items-center p-2 sm:p-4">
+
+    <!-- 메인 앱 컨테이너 -->
+    <div id="appContainer" class="w-full max-w-4xl h-full flex flex-col bg-white rounded-3xl border-4 border-amber-300 shadow-xl overflow-hidden relative">
+        
+        <!-- 상단 헤더 -->
+        <header class="bg-amber-400 px-4 py-2.5 sm:py-3 flex items-center justify-between border-b-4 border-amber-500 shrink-0">
+            <h1 class="text-xl sm:text-2xl font-black text-amber-950 tracking-wide flex items-center gap-1">
+                🐥 다온이의 수학 계산 연습 👑
+            </h1>
+            
+            <div class="flex items-center gap-2">
+                <button id="btnHome" onclick="confirmGoHome()" class="hidden bg-white/90 hover:bg-white text-amber-900 font-bold px-3 py-1.5 rounded-xl shadow border border-amber-200 text-sm sm:text-base btn-act">
+                    🏠 처음으로
+                </button>
+                <button onclick="openModal('modalHistory')" class="bg-amber-100 hover:bg-white text-amber-900 font-bold px-3 py-1.5 rounded-xl shadow border border-amber-300 text-sm sm:text-base btn-act flex items-center gap-1">
+                    🏆 기록장
+                </button>
+            </div>
+        </header>
+
+        <!-- 메인 콘텐츠 영역 -->
+        <main class="flex-1 min-h-0 p-3 sm:p-5 flex flex-col justify-between overflow-hidden relative">
+            
+            <!-- 1. 설정 화면 (screenSettings) -->
+            <div id="screenSettings" class="h-full flex flex-col justify-between space-y-3 animate-pop">
+                <!-- 서브 안내 배너 -->
+                <div class="bg-amber-100 border-2 border-amber-300 rounded-2xl py-2.5 px-4 text-center shrink-0 shadow-sm">
+                    <p class="text-amber-900 font-extrabold text-lg sm:text-xl">
+                        ✏️ 1학년 2학기 덧셈과 뺄셈 <span class="text-amber-700 text-base sm:text-lg font-bold sm:inline block">(받아올림/내림 없음)</span>
+                    </p>
+                </div>
+
+                <!-- 옵션 선택 카드 영역 -->
+                <div class="flex-1 min-h-0 grid grid-cols-1 md:grid-cols-3 gap-3 my-auto">
+                    <!-- 문제 모양 선택 -->
+                    <div class="bg-amber-50/80 rounded-2xl p-3 border-2 border-amber-200 flex flex-col justify-between h-full">
+                        <span class="text-amber-900 font-black text-xl sm:text-2xl mb-1 block text-center">📐 문제 모양</span>
+                        <div class="flex flex-col gap-2 flex-1 justify-center">
+                            <button id="btnFmtVertical" onclick="selectFormat('vertical')" class="fmt-btn bg-amber-500 text-white p-3 rounded-xl border-2 border-amber-600 flex items-center justify-center gap-2 text-xl sm:text-2xl shadow-md font-extrabold transition flex-1 btn-act">
+                                세로셈
+                            </button>
+                            <button id="btnFmtHorizontal" onclick="selectFormat('horizontal')" class="fmt-btn bg-white text-slate-700 border-2 border-slate-200 p-3 rounded-xl flex items-center justify-center gap-2 text-xl sm:text-2xl shadow-sm font-bold transition flex-1 hover:bg-amber-50 btn-act">
+                                가로셈
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 연산 종류 선택 -->
+                    <div class="bg-amber-50/80 rounded-2xl p-3 border-2 border-amber-200 flex flex-col justify-between h-full">
+                        <span class="text-amber-900 font-black text-xl sm:text-2xl mb-1 block text-center">➕ 연산 종류</span>
+                        <div class="flex flex-col gap-2 flex-1 justify-center">
+                            <button id="btnOpAdd" onclick="selectOp('add')" class="op-btn bg-white text-slate-700 border-2 border-slate-200 p-2.5 rounded-xl text-center text-xl sm:text-2xl font-bold transition flex-1 hover:bg-amber-50 btn-act flex items-center justify-center">
+                                ➕ 덧셈만
+                            </button>
+                            <button id="btnOpSub" onclick="selectOp('sub')" class="op-btn bg-white text-slate-700 border-2 border-slate-200 p-2.5 rounded-xl text-center text-xl sm:text-2xl font-bold transition flex-1 hover:bg-amber-50 btn-act flex items-center justify-center">
+                                ➖ 뺄셈만
+                            </button>
+                            <button id="btnOpMix" onclick="selectOp('mix')" class="op-btn bg-amber-500 text-white border-2 border-amber-600 p-2.5 rounded-xl text-center text-xl sm:text-2xl font-extrabold transition flex-1 shadow-md btn-act flex items-center justify-center">
+                                🔀 섞어서
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 문제 수 선택 -->
+                    <div class="bg-amber-50/80 rounded-2xl p-3 border-2 border-amber-200 flex flex-col justify-between h-full">
+                        <span class="text-amber-900 font-black text-xl sm:text-2xl mb-1 block text-center">🔢 문제 수</span>
+                        <div class="flex flex-col gap-2 flex-1 justify-center">
+                            <button onclick="selectCount(10, event)" class="cnt-btn bg-amber-500 text-white border-2 border-amber-600 rounded-xl text-center text-lg sm:text-xl font-extrabold transition flex-1 shadow-md btn-act flex items-center justify-center">
+                                10 문제
+                            </button>
+                            <button onclick="selectCount(15, event)" class="cnt-btn bg-white text-slate-700 border-2 border-slate-200 rounded-xl text-center text-lg sm:text-xl font-bold transition flex-1 hover:bg-amber-50 btn-act flex items-center justify-center">
+                                15 문제
+                            </button>
+                            <button onclick="selectCount(20, event)" class="cnt-btn bg-white text-slate-700 border-2 border-slate-200 rounded-xl text-center text-lg sm:text-xl font-bold transition flex-1 hover:bg-amber-50 btn-act flex items-center justify-center">
+                                20 문제
+                            </button>
+                            <button onclick="selectCount(25, event)" class="cnt-btn bg-white text-slate-700 border-2 border-slate-200 rounded-xl text-center text-lg sm:text-xl font-bold transition flex-1 hover:bg-amber-50 btn-act flex items-center justify-center">
+                                25 문제
+                            </button>
+                            <button onclick="selectCount(30, event)" class="cnt-btn bg-white text-slate-700 border-2 border-slate-200 rounded-xl text-center text-lg sm:text-xl font-bold transition flex-1 hover:bg-amber-50 btn-act flex items-center justify-center">
+                                30 문제
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 시작 버튼 -->
+                <button onclick="startPractice()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-white text-3xl sm:text-4xl font-black py-3.5 sm:py-4 rounded-2xl border-b-4 border-emerald-700 shadow-lg btn-act shrink-0">
+                    🚀 연습 시작하기!
+                </button>
+            </div>
+
+            <!-- 2. 연습 화면 (screenPractice) -->
+            <div id="screenPractice" class="hidden h-full flex flex-col justify-between space-y-2">
+                <!-- 연습 정보 표시줄 -->
+                <div class="flex items-center justify-between bg-amber-100/90 rounded-2xl px-4 py-2 border border-amber-200 shrink-0">
+                    <span id="badgeRound" class="bg-amber-500 text-white text-xs sm:text-sm font-black px-2.5 py-1 rounded-lg">
+                        연습 1회차
+                    </span>
+                    <div class="flex items-center gap-3">
+                        <span id="txtProgress" class="font-black text-amber-900 text-base sm:text-lg">1 / 10 문제</span>
+                        <span id="txtTimer" class="font-black text-amber-700 text-sm sm:text-base bg-white/80 px-2.5 py-0.5 rounded-lg border border-amber-300">
+                            ⏱️ 00:00
+                        </span>
+                    </div>
+                </div>
+
+                <!-- 진행도 바 -->
+                <div class="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden shrink-0">
+                    <div id="barProgress" class="bg-amber-500 h-full transition-all duration-300" style="width: 10%;"></div>
+                </div>
+
+                <!-- 피드백 배너 -->
+                <div id="feedbackBanner" class="hidden absolute top-2 inset-x-4 py-2 rounded-2xl text-center font-black text-lg shadow-md animate-pop z-30"></div>
+
+                <!-- 문제 영역 및 키패드 (데스크톱: 좌우 배치 / 모바일: 상하 배치) -->
+                <div class="flex-1 min-h-0 flex flex-col md:flex-row gap-3 items-center justify-between my-auto overflow-hidden">
+                    
+                    <!-- [왼쪽] 문제 카드 보드 -->
+                    <div class="w-full md:w-1/2 h-full bg-slate-50 rounded-3xl border-3 border-amber-300 p-4 flex flex-col items-center justify-center relative shadow-inner overflow-hidden">
+                        
+                        <!-- 세로셈 문제 레이아웃 (십의자리/일의자리 분리 및 자릿수 구획) -->
+                        <div id="viewVertical" class="flex flex-col items-center justify-center w-full max-w-xs my-auto">
+                            <!-- 숫자 표시 카드 (십의자리/일의자리) -->
+                            <div class="w-full bg-white rounded-2xl border-2 border-slate-200 shadow-sm p-3.5 relative overflow-hidden">
+                                <!-- 세로 점선 분리선 -->
+                                <div class="absolute inset-y-0 left-1/2 w-0.5 border-dashed-vertical z-0"></div>
+
+                                <div class="relative z-10 flex flex-col space-y-1 font-black text-5xl sm:text-6xl text-slate-800">
+                                    <!-- 첫 번째 수 (십의자리 | 일의자리) -->
+                                    <div class="grid grid-cols-2 text-center items-center">
+                                        <span id="vNum1Tens" class="text-sky-600">2</span>
+                                        <span id="vNum1Ones" class="text-pink-600">3</span>
+                                    </div>
+                                    <!-- 두 번째 수 (십의자리 | 일의자리) 및 연산자 -->
+                                    <div class="grid grid-cols-2 text-center items-center relative">
+                                        <span id="vOp" class="absolute -left-1 sm:left-1 text-amber-500 font-extrabold text-3xl sm:text-4xl">+</span>
+                                        <span id="vNum2Tens" class="text-sky-600">1</span>
+                                        <span id="vNum2Ones" class="text-pink-600">2</span>
+                                    </div>
+                                </div>
+
+                                <!-- 계산 구분선 -->
+                                <div class="w-full h-1 bg-slate-800 my-2 rounded-full relative z-10"></div>
+
+                                <!-- 정답 입력 칸 (십의 자리 / 일의 자리 분리) -->
+                                <div class="grid grid-cols-2 gap-2 pt-1 relative z-10">
+                                    <!-- 십의 자리 박스 (하늘색) -->
+                                    <div id="boxTens" onclick="setActiveDigit('tens')" class="h-16 sm:h-20 bg-sky-50 border-3 border-sky-300 rounded-2xl flex items-center justify-center text-4xl sm:text-5xl font-black text-sky-900 cursor-pointer transition-all shadow-inner"></div>
+                                    
+                                    <!-- 일의 자리 박스 (분홍색 + '여기먼저!' 뱃지) -->
+                                    <div id="boxOnes" onclick="setActiveDigit('ones')" class="h-16 sm:h-20 bg-pink-50 border-3 border-pink-300 rounded-2xl flex items-center justify-center text-4xl sm:text-5xl font-black text-pink-900 cursor-pointer transition-all shadow-inner ring-4 ring-pink-400 relative">
+                                        <!-- '여기먼저!' 뱃지 -->
+                                        <div id="badgeHereFirst" class="absolute -top-3.5 -right-1 bg-pink-500 text-white text-xs sm:text-sm font-black px-2.5 py-0.5 rounded-full shadow-md animate-bounce z-20">
+                                            여기먼저!
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2 text-xs sm:text-sm text-slate-500 font-bold">일의자리(분홍색)부터 먼저 적어요!</div>
+                        </div>
+
+                        <!-- 가로셈 문제 레이아웃 (첨부 이미지 형태: 십의자리/일의자리 2개 분리 박스) -->
+                        <div id="viewHorizontal" class="hidden flex-col items-center justify-center my-auto space-y-4">
+                            <div class="flex items-center justify-center gap-2 sm:gap-3 font-black text-4xl sm:text-6xl text-slate-800">
+                                <span id="hNum1">14</span>
+                                <span id="hOp" class="text-amber-500">+</span>
+                                <span id="hNum2">1</span>
+                                <span class="text-slate-400 sm:mx-1">=</span>
+                                
+                                <!-- 정답 입력 칸 (십의 자리 / 일의 자리 2개 박스) -->
+                                <div class="flex items-center gap-2 relative">
+                                    <!-- 십의 자리 박스 (하늘색) -->
+                                    <div id="boxHTens" onclick="setActiveDigit('tens')" class="w-16 h-20 sm:w-20 sm:h-24 bg-sky-50 border-3 border-sky-300 rounded-2xl flex items-center justify-center text-4xl sm:text-5xl font-black text-sky-900 cursor-pointer transition-all shadow-inner"></div>
+                                    
+                                    <!-- 일의 자리 박스 (핑크색 + '여기먼저!' 뱃지) -->
+                                    <div id="boxHOnes" onclick="setActiveDigit('ones')" class="w-16 h-20 sm:w-20 sm:h-24 bg-pink-50 border-3 border-pink-300 rounded-2xl flex items-center justify-center text-4xl sm:text-5xl font-black text-pink-900 cursor-pointer transition-all shadow-inner ring-4 ring-pink-400 relative">
+                                        <!-- '여기먼저!' 뱃지 -->
+                                        <div id="badgeHHereFirst" class="absolute -top-3.5 -right-1 bg-pink-500 text-white text-xs sm:text-sm font-black px-2.5 py-0.5 rounded-full shadow-md animate-bounce z-20">
+                                            여기먼저!
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-sm text-slate-500 font-bold">일의자리(분홍색)부터 차례대로 입력돼요!</div>
+                        </div>
+
+                    </div>
+
+                    <!-- [오른쪽] 숫자 키패드 -->
+                    <div class="w-full md:w-1/2 h-full bg-amber-100/60 rounded-3xl border-2 border-amber-200 p-3 flex flex-col justify-between">
+                        <div class="grid grid-cols-3 gap-2 flex-1">
+                            <button onclick="pressNum('1')" class="bg-white hover:bg-amber-50 border-2 border-amber-300 rounded-2xl text-3xl font-black text-slate-800 shadow btn-act flex items-center justify-center">1</button>
+                            <button onclick="pressNum('2')" class="bg-white hover:bg-amber-50 border-2 border-amber-300 rounded-2xl text-3xl font-black text-slate-800 shadow btn-act flex items-center justify-center">2</button>
+                            <button onclick="pressNum('3')" class="bg-white hover:bg-amber-50 border-2 border-amber-300 rounded-2xl text-3xl font-black text-slate-800 shadow btn-act flex items-center justify-center">3</button>
+                            
+                            <button onclick="pressNum('4')" class="bg-white hover:bg-amber-50 border-2 border-amber-300 rounded-2xl text-3xl font-black text-slate-800 shadow btn-act flex items-center justify-center">4</button>
+                            <button onclick="pressNum('5')" class="bg-white hover:bg-amber-50 border-2 border-amber-300 rounded-2xl text-3xl font-black text-slate-800 shadow btn-act flex items-center justify-center">5</button>
+                            <button onclick="pressNum('6')" class="bg-white hover:bg-amber-50 border-2 border-amber-300 rounded-2xl text-3xl font-black text-slate-800 shadow btn-act flex items-center justify-center">6</button>
+                            
+                            <button onclick="pressNum('7')" class="bg-white hover:bg-amber-50 border-2 border-amber-300 rounded-2xl text-3xl font-black text-slate-800 shadow btn-act flex items-center justify-center">7</button>
+                            <button onclick="pressNum('8')" class="bg-white hover:bg-amber-50 border-2 border-amber-300 rounded-2xl text-3xl font-black text-slate-800 shadow btn-act flex items-center justify-center">8</button>
+                            <button onclick="pressNum('9')" class="bg-white hover:bg-amber-50 border-2 border-amber-300 rounded-2xl text-3xl font-black text-slate-800 shadow btn-act flex items-center justify-center">9</button>
+                            
+                            <button onclick="pressDelete()" class="bg-rose-100 hover:bg-rose-200 border-2 border-rose-300 rounded-2xl text-2xl font-black text-rose-700 shadow btn-act flex items-center justify-center">지움 ⌫</button>
+                            <button onclick="pressNum('0')" class="bg-white hover:bg-amber-50 border-2 border-amber-300 rounded-2xl text-3xl font-black text-slate-800 shadow btn-act flex items-center justify-center">0</button>
+                            <button onclick="submitAnswer()" class="bg-emerald-500 hover:bg-emerald-600 border-2 border-emerald-600 rounded-2xl text-2xl font-black text-white shadow btn-act flex items-center justify-center">확인 ↵</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 3. 결과 화면 (screenResult) -->
+            <div id="screenResult" class="hidden h-full flex flex-col justify-between items-center text-center p-3 animate-pop my-auto">
+                <div class="text-5xl sm:text-6xl my-2">🎉</div>
+                <h2 class="text-3xl sm:text-4xl font-black text-amber-950">참 잘했어요!</h2>
+                
+                <div class="w-full max-w-sm bg-amber-50 border-2 border-amber-200 rounded-2xl p-4 my-2 space-y-2 text-left">
+                    <div class="flex justify-between items-center text-lg font-bold">
+                        <span class="text-slate-600">풀은 문제:</span>
+                        <span id="resTotal" class="font-black text-amber-950">10문제</span>
+                    </div>
+                    <div class="flex justify-between items-center text-lg font-bold">
+                        <span class="text-slate-600">맞힌 문제:</span>
+                        <span id="resCorrect" class="font-black text-emerald-600">10문제</span>
+                    </div>
+                    <div class="flex justify-between items-center text-lg font-bold">
+                        <span class="text-slate-600">정답률:</span>
+                        <span id="resAccuracy" class="font-black text-amber-600">100%</span>
+                    </div>
+                    <div class="flex justify-between items-center text-lg font-bold border-t pt-2">
+                        <span class="text-slate-600">걸린 시간:</span>
+                        <span id="resTime" class="font-black text-slate-800">01:20</span>
+                    </div>
+                </div>
+
+                <!-- 틀린 문제 다시 풀기 여부 영역 -->
+                <div id="areaRetryWrong" class="hidden w-full max-w-sm bg-rose-50 border-2 border-rose-200 rounded-2xl p-3 text-center">
+                    <p class="text-rose-800 font-extrabold text-base mb-2">
+                        💡 틀린 문제 <span id="txtWrongCount" class="text-rose-600 font-black">0</span>개가 있어요!
+                    </p>
+                    <button onclick="startWrongRetry()" class="w-full bg-rose-500 hover:bg-rose-600 text-white font-black py-2.5 rounded-xl shadow btn-act">
+                        🔄 오답만 다시 풀어보기
+                    </button>
+                </div>
+
+                <button onclick="goHome()" class="w-full max-w-sm bg-amber-500 hover:bg-amber-600 text-white text-2xl font-black py-3 rounded-2xl border-b-4 border-amber-700 shadow-md btn-act">
+                    🏠 처음 화면으로
+                </button>
+            </div>
+
+        </main>
+
+        <!-- Footer 수정 -->
+        <footer class="py-1.5 text-center text-xs text-amber-900/60 font-bold bg-amber-200/50 border-t border-amber-300 shrink-0">
+            © 2026 김효경│수학 수업용 인터랙티브 콘텐츠
+        </footer>
+    </div>
+
+    <!-- 4. 기록장 모달 (modalHistory) -->
+    <div id="modalHistory" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full border-4 border-amber-300 p-5 shadow-2xl flex flex-col space-y-4 animate-pop">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-2xl font-black text-amber-950 flex items-center gap-2">
+                    🏆 최고 기록장
+                </h3>
+                <button onclick="closeModal('modalHistory')" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
+            </div>
+            
+            <div id="historyList" class="space-y-2 max-h-60 overflow-y-auto no-scrollbar py-1">
+                <!-- 기록 리스트 삽입 -->
+            </div>
+
+            <div class="flex gap-2 pt-2">
+                <button onclick="clearHistory()" class="text-sm text-rose-500 hover:underline font-bold px-2 py-1">기록 초기화</button>
+                <button onclick="closeModal('modalHistory')" class="flex-1 bg-amber-500 text-white font-extrabold py-2.5 rounded-xl shadow btn-act">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 처음으로 확인 모달 -->
+    <div id="modalQuitConfirm" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-xs w-full border-4 border-rose-300 p-5 shadow-2xl text-center space-y-4 animate-pop">
+            <div class="text-5xl">⚠️</div>
+            <h3 class="text-xl font-black text-slate-800">연습을 그만둘까요?</h3>
+            <p class="text-sm text-slate-500 font-bold">지금 나가면 풀던 문제는 저장되지 않아요.</p>
+            <div class="flex gap-2">
+                <button onclick="closeModal('modalQuitConfirm')" class="flex-1 bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl btn-act">계속 풀기</button>
+                <button onclick="goHome()" class="flex-1 bg-rose-500 text-white font-extrabold py-2.5 rounded-xl shadow btn-act">그만두기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* --- Audio Synthesizer (Web Audio API) --- */
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            const now = audioCtx.currentTime;
+            if (type === 'correct') {
+                // 딩동댕 (도-미-솔-높은도)
+                const freqs = [523.25, 659.25, 783.99, 1046.50];
+                freqs.forEach((freq, idx) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.3);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + idx * 0.08);
+                    osc.stop(now + idx * 0.08 + 0.3);
+                });
+            } else if (type === 'wrong') {
+                // 명확한 오답 경고음 (낮은 2음 "삐-뿝")
+                const osc1 = audioCtx.createOscillator();
+                const gain1 = audioCtx.createGain();
+                osc1.type = 'triangle';
+                osc1.frequency.setValueAtTime(280, now);
+                gain1.gain.setValueAtTime(0.35, now);
+                gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                osc1.connect(gain1);
+                gain1.connect(audioCtx.destination);
+                osc1.start(now);
+                osc1.stop(now + 0.15);
+
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.type = 'triangle';
+                osc2.frequency.setValueAtTime(190, now + 0.15);
+                gain2.gain.setValueAtTime(0.35, now + 0.15);
+                gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                osc2.start(now + 0.15);
+                osc2.stop(now + 0.35);
+            }
+        }
+
+        /* --- App State & Config --- */
+        let config = {
+            format: 'vertical',
+            opType: 'mix',      
+            totalCount: 10
+        };
+
+        let state = {
+            round: 1,           
+            questions: [],      
+            wrongList: [],      
+            currentIndex: 0,
+            activeDigit: 'ones',
+            inputTens: '',
+            inputOnes: '',
+            startTime: null,
+            timerInterval: null,
+            elapsedSeconds: 0,
+            firstTryCorrectCount: 0
+        };
+
+        /* --- Config Setters --- */
+        function selectFormat(fmt) {
+            config.format = fmt;
+            document.querySelectorAll('.fmt-btn').forEach(btn => {
+                btn.className = 'fmt-btn bg-white text-slate-700 border-2 border-slate-200 p-3 rounded-xl flex items-center justify-center gap-2 text-xl sm:text-2xl shadow-sm font-bold transition flex-1 hover:bg-amber-50 btn-act';
+            });
+            const selected = fmt === 'vertical' ? 'btnFmtVertical' : 'btnFmtHorizontal';
+            const selectedEl = document.getElementById(selected);
+            if (selectedEl) {
+                selectedEl.className = 'fmt-btn bg-amber-500 text-white p-3 rounded-xl border-2 border-amber-600 flex items-center justify-center gap-2 text-xl sm:text-2xl shadow-md font-extrabold transition flex-1 btn-act';
+            }
+        }
+
+        function selectOp(op) {
+            config.opType = op;
+            document.querySelectorAll('.op-btn').forEach(btn => {
+                btn.className = 'op-btn bg-white text-slate-700 border-2 border-slate-200 p-2.5 rounded-xl text-center text-xl sm:text-2xl font-bold transition flex-1 flex items-center justify-center gap-2 hover:bg-amber-50 btn-act';
+            });
+            const idMap = { add: 'btnOpAdd', sub: 'btnOpSub', mix: 'btnOpMix' };
+            const selectedEl = document.getElementById(idMap[op]);
+            if (selectedEl) {
+                selectedEl.className = 'op-btn bg-amber-500 text-white border-2 border-amber-600 p-2.5 rounded-xl text-center text-xl sm:text-2xl font-extrabold transition flex-1 flex items-center justify-center gap-2 shadow-md btn-act';
+            }
+        }
+
+        function selectCount(cnt, evt) {
+            config.totalCount = cnt;
+            document.querySelectorAll('.cnt-btn').forEach(btn => {
+                btn.className = 'cnt-btn bg-white text-slate-700 border-2 border-slate-200 rounded-xl text-center text-lg sm:text-xl font-bold transition flex-1 hover:bg-amber-50 btn-act flex items-center justify-center';
+            });
+            const target = evt ? evt.currentTarget : (typeof event !== 'undefined' ? event.currentTarget : null);
+            if (target) {
+                target.className = 'cnt-btn bg-amber-500 text-white border-2 border-amber-600 rounded-xl text-center text-lg sm:text-xl font-extrabold transition flex-1 shadow-md btn-act flex items-center justify-center';
+            }
+        }
+
+        function selectOp(op) {
+            config.opType = op;
+            document.querySelectorAll('.op-btn').forEach(btn => {
+                btn.className = 'op-btn bg-white text-slate-700 border-2 border-slate-200 p-2.5 rounded-xl text-center text-lg sm:text-xl font-bold transition flex-1 flex items-center justify-center gap-2 hover:bg-amber-50 btn-act';
+            });
+            const idMap = { add: 'btnOpAdd', sub: 'btnOpSub', mix: 'btnOpMix' };
+            const selectedEl = document.getElementById(idMap[op]);
+            if (selectedEl) {
+                selectedEl.className = 'op-btn bg-amber-500 text-white border-2 border-amber-600 p-2.5 rounded-xl text-center text-lg sm:text-xl font-extrabold transition flex-1 flex items-center justify-center gap-2 shadow-md btn-act';
+            }
+        }
+
+        function selectCount(cnt, evt) {
+            config.totalCount = cnt;
+            document.querySelectorAll('.cnt-btn').forEach(btn => {
+                btn.className = 'cnt-btn bg-white text-slate-700 border-2 border-slate-200 rounded-xl text-center text-base sm:text-lg font-bold transition flex-1 hover:bg-amber-50 btn-act flex items-center justify-center';
+            });
+            const target = evt ? evt.currentTarget : (typeof event !== 'undefined' ? event.currentTarget : null);
+            if (target) {
+                target.className = 'cnt-btn bg-amber-500 text-white border-2 border-amber-600 rounded-xl text-center text-base sm:text-lg font-extrabold transition flex-1 shadow-md btn-act flex items-center justify-center';
+            }
+        }
+
+        function selectOp(op) {
+            config.opType = op;
+            document.querySelectorAll('.op-btn').forEach(btn => {
+                btn.className = 'op-btn bg-white text-slate-700 border-2 border-slate-200 p-2.5 rounded-xl text-center text-base sm:text-lg font-bold transition flex-1 flex items-center justify-center gap-2 hover:bg-amber-50 btn-act';
+            });
+            const idMap = { add: 'btnOpAdd', sub: 'btnOpSub', mix: 'btnOpMix' };
+            const selectedEl = document.getElementById(idMap[op]);
+            if (selectedEl) {
+                selectedEl.className = 'op-btn bg-amber-500 text-white border-2 border-amber-600 p-2.5 rounded-xl text-center text-base sm:text-lg font-extrabold transition flex-1 flex items-center justify-center gap-2 shadow-md btn-act';
+            }
+        }
+
+        function selectCount(cnt, evt) {
+            config.totalCount = cnt;
+            document.querySelectorAll('.cnt-btn').forEach(btn => {
+                btn.className = 'cnt-btn bg-white text-slate-700 border-2 border-slate-200 py-2.5 rounded-xl text-center text-base sm:text-lg font-bold transition flex-1 hover:bg-amber-50 btn-act';
+            });
+            const target = evt ? evt.currentTarget : (typeof event !== 'undefined' ? event.currentTarget : null);
+            if (target) {
+                target.className = 'cnt-btn bg-amber-500 text-white border-2 border-amber-600 py-2.5 rounded-xl text-center text-base sm:text-lg font-extrabold transition flex-1 shadow-md btn-act';
+            }
+        }
+
+        /* --- Question Generator (1학년 2학기: 받아올림/내림 없는 2자리수) --- */
+        function generateQuestions(count) {
+            const list = [];
+            for (let i = 0; i < count; i++) {
+                let op = config.opType;
+                if (op === 'mix') op = Math.random() < 0.5 ? 'add' : 'sub';
+
+                let n1, n2, ans;
+                if (op === 'add') {
+                    // 받아올림 없는 덧셈 (십의자리합 < 10, 일의자리합 < 10)
+                    const tens1 = Math.floor(Math.random() * 8) + 1; // 1~8
+                    const tens2 = Math.floor(Math.random() * (9 - tens1)) + 1;
+                    const ones1 = Math.floor(Math.random() * 9) + 0; // 0~8
+                    const ones2 = Math.floor(Math.random() * (9 - ones1)) + 0;
+                    
+                    n1 = tens1 * 10 + ones1;
+                    n2 = tens2 * 10 + ones2;
+                    ans = n1 + n2;
+                } else {
+                    // 받아내림 없는 뺄셈 (각 자릿수 n1 >= n2)
+                    const tens1 = Math.floor(Math.random() * 8) + 2; // 2~9
+                    const tens2 = Math.floor(Math.random() * tens1) + 1;
+                    const ones1 = Math.floor(Math.random() * 9) + 1;
+                    const ones2 = Math.floor(Math.random() * (ones1 + 1));
+                    
+                    n1 = tens1 * 10 + ones1;
+                    n2 = tens2 * 10 + ones2;
+                    ans = n1 - n2;
+                }
+                list.push({ n1, n2, op: op === 'add' ? '+' : '-', ans, isCorrect: false });
+            }
+            return list;
+        }
+
+        /* --- Practice Management --- */
+        function startPractice() {
+            state.round = 1;
+            state.questions = generateQuestions(config.totalCount);
+            state.wrongList = [];
+            state.currentIndex = 0;
+            state.firstTryCorrectCount = 0;
+            state.elapsedSeconds = 0;
+
+            showScreen('screenPractice');
+            document.getElementById('btnHome').classList.remove('hidden');
+            document.getElementById('badgeRound').textContent = '연습 1회차';
+
+            startTimer();
+            loadQuestion();
+        }
+
+        function startWrongRetry() {
+            state.round++;
+            state.currentIndex = 0;
+            showScreen('screenPractice');
+            document.getElementById('badgeRound').textContent = `오답 다시풀기 (${state.round}회차)`;
+            loadQuestion();
+        }
+
+        /* --- Load Question --- */
+        function loadQuestion() {
+            clearInputs();
+            hideFeedback();
+
+            const qList = state.round === 1 ? state.questions : state.wrongList.map(idx => state.questions[idx]);
+            const q = qList[state.currentIndex];
+
+            // Progress text
+            document.getElementById('txtProgress').textContent = `${state.currentIndex + 1} / ${qList.length} 문제`;
+            const pct = ((state.currentIndex) / qList.length) * 100;
+            document.getElementById('barProgress').style.width = `${pct}%`;
+
+            if (config.format === 'vertical') {
+                document.getElementById('viewVertical').classList.remove('hidden');
+                document.getElementById('viewVertical').classList.add('flex');
+                document.getElementById('viewHorizontal').classList.add('hidden');
+                document.getElementById('viewHorizontal').classList.remove('flex');
+
+                // 십의자리 / 일의자리 분리 표시
+                const n1Tens = Math.floor(q.n1 / 10);
+                const n1Ones = q.n1 % 10;
+                const n2Tens = Math.floor(q.n2 / 10);
+                const n2Ones = q.n2 % 10;
+
+                document.getElementById('vNum1Tens').textContent = n1Tens || '';
+                document.getElementById('vNum1Ones').textContent = n1Ones;
+                document.getElementById('vNum2Tens').textContent = n2Tens || '';
+                document.getElementById('vNum2Ones').textContent = n2Ones;
+                document.getElementById('vOp').textContent = q.op;
+
+                setActiveDigit('ones'); // 기본 일의자리부터 작성
+            } else {
+                document.getElementById('viewHorizontal').classList.remove('hidden');
+                document.getElementById('viewHorizontal').classList.add('flex');
+                document.getElementById('viewVertical').classList.add('hidden');
+                document.getElementById('viewVertical').classList.remove('flex');
+
+                document.getElementById('hNum1').textContent = q.n1;
+                document.getElementById('hOp').textContent = q.op;
+                document.getElementById('hNum2').textContent = q.n2;
+
+                setActiveDigit('ones'); // 가로셈도 기본 일의자리부터 작성
+            }
+        }
+
+        /* --- Digit Focus & Input --- */
+        function setActiveDigit(digit) {
+            state.activeDigit = digit;
+            const tensBox = document.getElementById('boxTens');
+            const onesBox = document.getElementById('boxOnes');
+            const badge = document.getElementById('badgeHereFirst');
+
+            const hTensBox = document.getElementById('boxHTens');
+            const hOnesBox = document.getElementById('boxHOnes');
+            const hBadge = document.getElementById('badgeHHereFirst');
+
+            if (digit === 'tens') {
+                if (tensBox) tensBox.classList.add('ring-4', 'ring-sky-400');
+                if (onesBox) onesBox.classList.remove('ring-4', 'ring-pink-400');
+                if (badge) badge.classList.add('hidden');
+
+                if (hTensBox) hTensBox.classList.add('ring-4', 'ring-sky-400');
+                if (hOnesBox) hOnesBox.classList.remove('ring-4', 'ring-pink-400');
+                if (hBadge) hBadge.classList.add('hidden');
+            } else {
+                if (onesBox) onesBox.classList.add('ring-4', 'ring-pink-400');
+                if (tensBox) tensBox.classList.remove('ring-4', 'ring-sky-400');
+                if (badge) badge.classList.remove('hidden');
+
+                if (hOnesBox) hOnesBox.classList.add('ring-4', 'ring-pink-400');
+                if (hTensBox) hTensBox.classList.remove('ring-4', 'ring-sky-400');
+                if (hBadge) hBadge.classList.remove('hidden');
+            }
+        }
+
+        function pressNum(num) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            if (state.activeDigit === 'ones') {
+                state.inputOnes = num;
+                const boxOnes = document.getElementById('boxOnes');
+                const boxHOnes = document.getElementById('boxHOnes');
+                if (boxOnes) boxOnes.textContent = num;
+                if (boxHOnes) boxHOnes.textContent = num;
+                setActiveDigit('tens'); // 십의자리로 자동 이동
+            } else {
+                state.inputTens = num;
+                const boxTens = document.getElementById('boxTens');
+                const boxHTens = document.getElementById('boxHTens');
+                if (boxTens) boxTens.textContent = num;
+                if (boxHTens) boxHTens.textContent = num;
+            }
+        }
+
+        function pressDelete() {
+            if (state.activeDigit === 'tens' && state.inputTens !== '') {
+                state.inputTens = '';
+                const boxTens = document.getElementById('boxTens');
+                const boxHTens = document.getElementById('boxHTens');
+                if (boxTens) boxTens.textContent = '';
+                if (boxHTens) boxHTens.textContent = '';
+            } else {
+                state.inputOnes = '';
+                const boxOnes = document.getElementById('boxOnes');
+                const boxHOnes = document.getElementById('boxHOnes');
+                if (boxOnes) boxOnes.textContent = '';
+                if (boxHOnes) boxHOnes.textContent = '';
+                setActiveDigit('ones');
+            }
+        }
+
+        function clearInputs() {
+            state.inputTens = '';
+            state.inputOnes = '';
+            const boxTens = document.getElementById('boxTens');
+            const boxOnes = document.getElementById('boxOnes');
+            const boxHTens = document.getElementById('boxHTens');
+            const boxHOnes = document.getElementById('boxHOnes');
+            if (boxTens) boxTens.textContent = '';
+            if (boxOnes) boxOnes.textContent = '';
+            if (boxHTens) boxHTens.textContent = '';
+            if (boxHOnes) boxHOnes.textContent = '';
+        }
+
+        /* --- Physical Keyboard Event Handler --- */
+        window.addEventListener('keydown', function(e) {
+            const practiceScreen = document.getElementById('screenPractice');
+            if (practiceScreen && !practiceScreen.classList.contains('hidden')) {
+                if (e.key >= '0' && e.key <= '9') {
+                    pressNum(e.key);
+                } else if (e.key === 'Backspace' || e.key === 'Delete') {
+                    pressDelete();
+                } else if (e.key === 'Enter') {
+                    submitAnswer();
+                }
+            }
+        });
+
+        /* --- Answer Check --- */
+        function submitAnswer() {
+            if (state.inputOnes === '') return;
+            const userAns = parseInt((state.inputTens || '0') + state.inputOnes, 10);
+
+            const qList = state.round === 1 ? state.questions : state.wrongList.map(idx => state.questions[idx]);
+            const q = qList[state.currentIndex];
+            const isCorrect = userAns === q.ans;
+
+            if (isCorrect) {
+                playSound('correct');
+                showFeedback(true, '⭕ 정답입니다! 최고예요!');
+                if (state.round === 1) {
+                    q.isCorrect = true;
+                    state.firstTryCorrectCount++;
+                }
+            } else {
+                playSound('wrong');
+                showFeedback(false, '❌ 다시 한번 생각해 봐요!');
+                if (state.round === 1) {
+                    q.isCorrect = false;
+                    if (!state.wrongList.includes(state.currentIndex)) {
+                        state.wrongList.push(state.currentIndex);
+                    }
+                }
+            }
+
+            setTimeout(() => {
+                state.currentIndex++;
+                if (state.currentIndex < qList.length) {
+                    loadQuestion();
+                } else {
+                    finishPractice();
+                }
+            }, 1000);
+        }
+
+        function showFeedback(isCorrect, text) {
+            const banner = document.getElementById('feedbackBanner');
+            banner.textContent = text;
+            banner.className = `absolute top-3 inset-x-3 py-2 px-3 rounded-2xl text-center font-black text-lg shadow-md animate-pop z-20 ${
+                isCorrect ? 'bg-emerald-100 text-emerald-800 border-2 border-emerald-300' : 'bg-rose-100 text-rose-800 border-2 border-rose-300'
+            }`;
+            banner.classList.remove('hidden');
+        }
+
+        function hideFeedback() {
+            document.getElementById('feedbackBanner').classList.add('hidden');
+        }
+
+        /* --- Timer & History --- */
+        function startTimer() {
+            clearInterval(state.timerInterval);
+            state.startTime = Date.now();
+            state.timerInterval = setInterval(() => {
+                state.elapsedSeconds = Math.floor((Date.now() - state.startTime) / 1000);
+                const m = String(Math.floor(state.elapsedSeconds / 60)).padStart(2, '0');
+                const s = String(state.elapsedSeconds % 60).padStart(2, '0');
+                document.getElementById('txtTimer').textContent = `${m}:${s}`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(state.timerInterval);
+        }
+
+        function finishPractice() {
+            stopTimer();
+            showScreen('screenResult');
+            document.getElementById('btnHome').classList.add('hidden');
+
+            const total = state.questions.length;
+            const correct = state.firstTryCorrectCount;
+            const accuracy = Math.round((correct / total) * 100);
+
+            const m = String(Math.floor(state.elapsedSeconds / 60)).padStart(2, '0');
+            const s = String(state.elapsedSeconds % 60).padStart(2, '0');
+            const timeStr = `${m}:${s}`;
+
+            document.getElementById('resTotal').textContent = `${total}문제`;
+            document.getElementById('resCorrect').textContent = `${correct}문제`;
+            document.getElementById('resAccuracy').textContent = `${accuracy}%`;
+            document.getElementById('resTime').textContent = timeStr;
+
+            const wrongCount = total - correct;
+            if (wrongCount > 0 && state.round === 1) {
+                document.getElementById('areaRetryWrong').classList.remove('hidden');
+                document.getElementById('txtWrongCount').textContent = wrongCount;
+            } else {
+                document.getElementById('areaRetryWrong').classList.add('hidden');
+            }
+
+            saveHistory({
+                date: new Date().toLocaleDateString('ko-KR', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+                accuracy,
+                timeStr,
+                total
+            });
+        }
+
+        function saveHistory(record) {
+            let history = JSON.parse(localStorage.getItem('daon_math_history') || '[]');
+            history.unshift(record);
+            if (history.length > 10) history = history.slice(0, 10);
+            localStorage.setItem('daon_math_history', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const listEl = document.getElementById('historyList');
+            const history = JSON.parse(localStorage.getItem('daon_math_history') || '[]');
+            
+            if (history.length === 0) {
+                listEl.innerHTML = '<div class="text-center text-slate-400 py-6 font-bold">아직 기록이 없어요! 첫 연습에 도전해봐요!</div>';
+                return;
+            }
+
+            listEl.innerHTML = history.map((item, idx) => `
+                <div class="flex items-center justify-between p-3 rounded-2xl bg-amber-50 border border-amber-200">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">${idx === 0 ? '👑' : '⭐'}</span>
+                        <div>
+                            <div class="text-xs text-slate-400 font-bold">${item.date}</div>
+                            <div class="text-base font-black text-slate-800">${item.total}문제 중 정답률 ${item.accuracy}%</div>
+                        </div>
+                    </div>
+                    <div class="text-xs font-black text-amber-800 bg-amber-200/80 px-2.5 py-1 rounded-xl">
+                        ⏱️ ${item.timeStr}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function clearHistory() {
+            localStorage.removeItem('daon_math_history');
+            renderHistory();
+        }
+
+        /* --- Navigation & Modal Helpers --- */
+        function showScreen(screenId) {
+            document.getElementById('screenSettings').classList.add('hidden');
+            document.getElementById('screenPractice').classList.add('hidden');
+            document.getElementById('screenResult').classList.add('hidden');
+
+            document.getElementById(screenId).classList.remove('hidden');
+        }
+
+        function confirmGoHome() {
+            openModal('modalQuitConfirm');
+        }
+
+        function goHome() {
+            stopTimer();
+            closeModal('modalQuitConfirm');
+            document.getElementById('btnHome').classList.add('hidden');
+            showScreen('screenSettings');
+        }
+
+        function openModal(modalId) {
+            if (modalId === 'modalHistory') renderHistory();
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        /* Initial Setup */
+        window.onload = function() {
+            selectFormat('vertical');
+            selectOp('mix');
+        };
+    </script>
+</body>
+</html>
