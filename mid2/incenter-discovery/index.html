@@ -1,0 +1,1455 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>미션2. 세 변에서 같은 거리에 있는 점 찾기!</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tone.js for interactive sound effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .font-gowun {
+            font-family: 'Gowun Dodum', sans-serif;
+        }
+        @keyframes pulse-subtle {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.08); opacity: 0.85; }
+        }
+        .animate-pulse-subtle {
+            animation: pulse-subtle 2s infinite ease-in-out;
+        }
+        @keyframes line-reveal {
+            from { stroke-dashoffset: 1000; }
+            to { stroke-dashoffset: 0; }
+        }
+        .reveal-line {
+            stroke-dasharray: 1000;
+            animation: line-reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .touch-board {
+            touch-action: none;
+            -webkit-touch-callout: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white shadow-lg sticky top-0 z-30">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center space-x-3">
+                <div class="p-2 bg-indigo-500 rounded-lg shadow-inner">
+                    <i class="fa-solid fa-shapes text-2xl text-yellow-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold font-gowun tracking-tight">미션2. 세 변에서 같은 거리에 있는 점 찾기!</h1>
+                    <p class="text-xs text-indigo-200">수학적 탐구: 세 벤치가 놓인 변으로부터의 거리와 각의 이등분선</p>
+                </div>
+            </div>
+
+            <div class="flex bg-indigo-800/60 p-1 rounded-xl gap-1 border border-indigo-400/30 text-xs sm:text-sm">
+                <button id="tab-step1" onclick="switchStep(1)" class="px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all duration-200 bg-white text-indigo-700 shadow-md">
+                    <i class="fa-solid fa-chair mr-1"></i>1단계: 세 변 탐구
+                </button>
+                <button id="tab-step2" onclick="switchStep(2)" class="px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>2단계: 선의 비밀 탐구
+                </button>
+                <button id="tab-step3" onclick="switchStep(3)" class="px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50">
+                    <i id="tab-step3-icon" class="fa-solid fa-lock mr-1 text-amber-300"></i>3단계: 완성하기
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Floating Global Toast Notification -->
+    <div id="global-toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-slate-900/90 text-white text-xs sm:text-sm px-5 py-3 rounded-2xl shadow-2xl transition-all duration-300 transform -translate-y-10 opacity-0 pointer-events-none flex items-center gap-2 border border-slate-700">
+        <span id="global-toast-icon" class="text-amber-400 text-base"><i class="fa-solid fa-triangle-exclamation"></i></span>
+        <span id="global-toast-msg">안내 메시지</span>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto w-full p-3 sm:p-5 flex-grow flex flex-col gap-4">
+
+        <!-- ==================== STEP 1 SECTION ==================== -->
+        <section id="step1-container" class="flex flex-col gap-4">
+            <!-- Instruction Banner -->
+            <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-xl shadow-sm flex items-start justify-between">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-lightbulb text-amber-500 text-2xl mt-0.5"></i>
+                    <div>
+                        <h2 class="font-bold text-amber-900 text-base">활동 안내: 세 벤치가 있는 변에서 똑같이 떨어져 있는 점 찾기</h2>
+                        <p class="text-sm text-amber-800 mt-0.5">
+                            삼각형의 세 변 위에 벤치의자가 놓여 있습니다. 
+                            <strong>삼각형 내부를 클릭</strong>하여 세 변으로부터 정확히 똑같이 떨어져 있는 위치(점 P)를 찾아보세요! <br>
+                            점 P를 지정하면 세 변까지 내려수선이 그려지고 수선의 길이가 측정됩니다. 점을 드래그하여 자유롭게 이동해보세요.
+                        </p>
+                    </div>
+                </div>
+                <button onclick="resetStep1()" class="px-3 py-1.5 bg-white border border-amber-300 hover:bg-amber-100 text-amber-800 font-medium text-xs rounded-lg shadow-sm transition flex items-center shrink-0">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> 다시 하기
+                </button>
+            </div>
+
+            <!-- Stage Canvas Container -->
+            <div class="relative w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[500px]">
+                
+                <div class="relative flex-grow h-[420px] md:h-[520px] bg-slate-50 cursor-crosshair overflow-hidden touch-board select-none" id="step1-board">
+                    <!-- Background Grid Pattern -->
+                    <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" width="100%" height="100%">
+                        <defs>
+                            <pattern id="grid1" width="30" height="30" patternUnits="userSpaceOnUse">
+                                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#64748b" stroke-width="0.8"/>
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#grid1)" />
+                    </svg>
+
+                    <!-- SVG Interactive Layer -->
+                    <svg id="svg-step1" class="absolute inset-0 w-full h-full touch-board"></svg>
+
+                    <!-- Overlay Instruction Toast -->
+                    <div id="step1-hint-toast" class="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-800/80 text-white px-4 py-2 rounded-full text-xs sm:text-sm font-medium shadow-lg pointer-events-none transition-opacity duration-300">
+                        <i class="fa-solid fa-hand-pointer mr-1.5 text-yellow-400"></i> 삼각형 내부를 클릭하여 점 P를 지정해 보세요!
+                    </div>
+                </div>
+
+                <!-- Control & Distance Feedback Sidebar -->
+                <div class="w-full md:w-80 border-t md:border-t-0 md:border-l border-slate-200 bg-slate-50 p-4 flex flex-col justify-between gap-4">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base mb-3 flex items-center border-b pb-2">
+                            <i class="fa-solid fa-ruler-combined text-indigo-600 mr-2"></i>세 변까지의 거리 측정
+                        </h3>
+
+                        <!-- Distances List -->
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between items-center p-2.5 bg-rose-50 border border-rose-200 rounded-xl">
+                                <span class="font-semibold text-rose-700 flex items-center"><span class="w-3 h-3 rounded-full bg-rose-500 inline-block mr-2"></span>변 AB까지의 거리</span>
+                                <span id="dist-s1" class="font-mono font-bold text-slate-700">- m</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
+                                <span class="font-semibold text-emerald-700 flex items-center"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block mr-2"></span>변 BC까지의 거리</span>
+                                <span id="dist-s2" class="font-mono font-bold text-slate-700">- m</span>
+                            </div>
+                            <div class="flex justify-between items-center p-2.5 bg-blue-50 border border-blue-200 rounded-xl">
+                                <span class="font-semibold text-blue-700 flex items-center"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block mr-2"></span>변 CA까지의 거리</span>
+                                <span id="dist-s3" class="font-mono font-bold text-slate-700">- m</span>
+                            </div>
+                        </div>
+
+                        <!-- Status Message Card -->
+                        <div id="step1-status-card" class="mt-4 p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-xs text-indigo-900 flex items-start gap-2">
+                            <i class="fa-solid fa-circle-info text-indigo-500 text-base mt-0.5 shrink-0"></i>
+                            <div id="step1-status-text">
+                                세 변에서 똑같은 거리만큼 떨어진 점 P를 찾아보세요! 수선의 세 길이가 같아질수록 정답에 가까워집니다.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <div class="flex flex-col gap-2">
+                        <button onclick="switchStep(2)" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-sm shadow-md transition duration-200 flex items-center justify-center gap-2">
+                            2단계: 선의 비밀 탐구하기 <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==================== STEP 2 SECTION ==================== -->
+        <section id="step2-container" class="hidden flex flex-col gap-4">
+            <!-- Instruction Banner -->
+            <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-xl shadow-sm flex items-start justify-between">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-wand-magic-sparkles text-indigo-600 text-2xl mt-0.5"></i>
+                    <div>
+                        <h2 class="font-bold text-indigo-900 text-base">활동 안내: 두 변에서 같은 거리에 있는 점들의 비밀</h2>
+                        <p class="text-sm text-indigo-800 mt-0.5">
+                            1. 두 변 주변을 클릭하여 두 변에서 <strong>같은 거리에 있을 만한 점들</strong>을 찍어보세요.<br>
+                            &nbsp;&nbsp;&nbsp;(실제 점은 두 변이 이루는 각의 이등분선 위로 보정되어 찍히며, 각 변으로의 수선과 길이가 표시됩니다.)<br>
+                            2. 점을 여러 개 찍은 후, <strong>찍은 점 중 하나를 누른 채 다른 점 방향으로 쭉 드래그해 보세요!</strong> 수선이 사라지고 비밀의 선이 나타납니다.
+                        </p>
+                    </div>
+                </div>
+                <button onclick="resetStep2()" class="px-3 py-1.5 bg-white border border-indigo-300 hover:bg-indigo-100 text-indigo-800 font-medium text-xs rounded-lg shadow-sm transition flex items-center shrink-0">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> 처음부터 다시
+                </button>
+            </div>
+
+            <!-- Step 2 Canvas Container -->
+            <div class="relative w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col min-h-[520px]">
+                
+                <div class="relative flex-grow h-[460px] bg-slate-50 overflow-hidden cursor-crosshair touch-board select-none" id="step2-board">
+                    <!-- Grid Background -->
+                    <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" width="100%" height="100%">
+                        <defs>
+                            <pattern id="grid2" width="30" height="30" patternUnits="userSpaceOnUse">
+                                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#64748b" stroke-width="0.8"/>
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#grid2)" />
+                    </svg>
+
+                    <!-- Interactive SVG Step 2 Layer -->
+                    <svg id="svg-step2" class="absolute inset-0 w-full h-full touch-board"></svg>
+
+                    <!-- Step 2 Floating Instruction Overlay -->
+                    <div id="step2-guide-box" class="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900/85 text-white px-5 py-2.5 rounded-full text-xs sm:text-sm font-medium shadow-xl pointer-events-none transition-all duration-300 flex items-center gap-2">
+                        <span id="step2-guide-icon" class="text-amber-400 text-base"><i class="fa-solid fa-mouse-pointer"></i></span>
+                        <span id="step2-guide-text">두 변에서 같은 거리에 있을 만한 위치를 클릭해보세요!</span>
+                    </div>
+
+                    <!-- Floating Drag Prompt (Appears when points >= 2) -->
+                    <div id="step2-drag-prompt" class="hidden absolute bottom-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-rose-500 text-white font-bold px-6 py-3 rounded-2xl shadow-2xl animate-bounce flex items-center gap-2 cursor-pointer pointer-events-none">
+                        <i class="fa-solid fa-hand-line text-xl"></i>
+                        <span>찍은 점 하나를 누르고 다른 점 쪽으로 쭉 이어서 드래그해 보세요!</span>
+                    </div>
+
+                    <!-- Button to check answer (Revealed when line is drawn) -->
+                    <div id="btn-reveal-secret-container" class="hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
+                        <button onclick="openAnswerModal()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base rounded-2xl shadow-2xl transition duration-300 transform hover:scale-105 flex items-center gap-2 border-2 border-emerald-300">
+                            <i class="fa-solid fa-pen-to-square text-yellow-300"></i> 정답 입력하기
+                        </button>
+                    </div>
+                </div>
+
+                <div id="step2-answer-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+                    <div class="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 max-w-sm sm:max-w-md w-full my-auto flex flex-col gap-3 sm:gap-4 border border-slate-200">
+                        <div class="flex justify-between items-center border-b pb-2.5 sm:pb-3">
+                            <h3 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-pen-to-square text-indigo-600"></i> 정답 입력하기
+                            </h3>
+                            <button onclick="closeAnswerModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                                <i class="fa-solid fa-xmark text-xl"></i>
+                            </button>
+                        </div>
+                        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                            두 변에서 같은 거리에 있는 모든 점들을 연결하고, 두 각의 크기를 같게 만들어 준 이 선의 정확한 이름은 무엇일까요?
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <input type="text" id="step2-answer-input" onkeydown="if(event.key==='Enter') submitStep2Answer()" placeholder="정답을 입력하세요" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-800 text-sm">
+                            <button onclick="submitStep2Answer()" class="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition shrink-0 text-sm">
+                                확인
+                            </button>
+                        </div>
+                        <p id="step2-answer-feedback" class="hidden text-xs font-semibold px-3 py-2 rounded-lg"></p>
+                    </div>
+                </div>
+
+                <!-- Explanation Panel (Revealed after entering correct answer) -->
+                <div id="step2-secret-panel" class="hidden bg-emerald-950 text-white p-5 border-t border-emerald-800 transition-all duration-500">
+                    <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div class="flex items-start gap-3">
+                            <div class="p-3 bg-emerald-500/20 border border-emerald-500/40 rounded-2xl text-emerald-400 text-2xl shrink-0">
+                                <i class="fa-solid fa-award"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-lg font-bold text-emerald-300 font-gowun">🎉 정답입니다! 각의 이등분선의 성질</h3>
+                                <p class="text-sm text-emerald-100 mt-1 leading-relaxed">
+                                    두 변에서 같은 거리에 있는 모든 점들을 이으면 바로 <strong>두 변이 이루는 '각의 이등분선'</strong>이 됩니다!
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <button onclick="switchStep(1)" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm rounded-xl shadow transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-arrow-left"></i> 1단계로 돌아가기
+                            </button>
+                            <button onclick="switchStep(3)" class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm rounded-xl shadow-lg transition flex items-center gap-1.5">
+                                3단계로 이동 <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==================== STEP 3 SECTION ==================== -->
+        <section id="step3-container" class="hidden flex flex-col gap-4">
+            <!-- Instruction Banner -->
+            <div class="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-r-xl shadow-sm flex items-start justify-between">
+                <div class="flex items-start space-x-3">
+                    <i class="fa-solid fa-compass-drafting text-purple-600 text-2xl mt-0.5"></i>
+                    <div>
+                        <h2 class="font-bold text-purple-900 text-base">활동 안내: 세 각의 이등분선으로 명당 위치 완성하기</h2>
+                        <p class="text-sm text-purple-800 mt-0.5">
+                            1. 두 개의 변을 차례대로 클릭하여 <strong>각의 이등분선</strong>을 만들어보세요. (다른 두 변들도 반복!)<br>
+                            2. 각의 이등분선들이 만나는 <strong>교점을 클릭</strong>하여 점 P를 찍고, 세 변까지의 거리가 같은지 확인해보세요!<br>
+                            3. 교점을 <strong>한 번 더 클릭</strong>하면 완성 모습과 비밀이 밝혀집니다.
+                        </p>
+                    </div>
+                </div>
+                <button onclick="resetStep3()" class="px-3 py-1.5 bg-white border border-purple-300 hover:bg-purple-100 text-purple-800 font-medium text-xs rounded-lg shadow-sm transition flex items-center shrink-0">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> 처음부터 다시
+                </button>
+            </div>
+
+            <!-- Step 3 Canvas & Sidebar Container -->
+            <div class="relative w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[500px]">
+                
+                <div class="relative flex-grow h-[420px] md:h-[520px] bg-slate-50 cursor-pointer overflow-hidden touch-board select-none" id="step3-board">
+                    <!-- Grid Pattern -->
+                    <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" width="100%" height="100%">
+                        <defs>
+                            <pattern id="grid3" width="30" height="30" patternUnits="userSpaceOnUse">
+                                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#64748b" stroke-width="0.8"/>
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#grid3)" />
+                    </svg>
+
+                    <!-- SVG Layer -->
+                    <svg id="svg-step3" class="absolute inset-0 w-full h-full touch-board"></svg>
+
+                    <!-- Top Floating Toast -->
+                    <div id="step3-toast" class="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900/85 text-white px-5 py-2.5 rounded-full text-xs sm:text-sm font-medium shadow-xl pointer-events-none transition-all duration-300 flex items-center gap-2">
+                        <i class="fa-solid fa-hand-pointer text-yellow-400"></i>
+                        <span id="step3-toast-text">두 변을 차례로 클릭하여 각의 이등분선을 그려보세요!</span>
+                    </div>
+                </div>
+
+                <!-- Sidebar for Step 3 -->
+                <div class="w-full md:w-80 border-t md:border-t-0 md:border-l border-slate-200 bg-slate-50 p-4 flex flex-col justify-between gap-4">
+                    <div>
+                        <h3 class="font-bold text-slate-800 text-base mb-3 flex items-center border-b pb-2">
+                            <i class="fa-solid fa-list-check text-purple-600 mr-2"></i>각의 이등분선 완성 현황
+                        </h3>
+
+                        <!-- Progress checklist -->
+                        <div class="space-y-2 text-sm mb-4">
+                            <div id="check-b" class="flex justify-between items-center p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500">
+                                <span class="font-semibold flex items-center"><i class="fa-regular fa-square mr-2 text-slate-400"></i>변 AB와 변 BC의 이등분선</span>
+                                <span class="text-xs font-bold font-mono">미완성</span>
+                            </div>
+                            <div id="check-c" class="flex justify-between items-center p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500">
+                                <span class="font-semibold flex items-center"><i class="fa-regular fa-square mr-2 text-slate-400"></i>변 BC와 변 CA의 이등분선</span>
+                                <span class="text-xs font-bold font-mono">미완성</span>
+                            </div>
+                            <div id="check-a" class="flex justify-between items-center p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500">
+                                <span class="font-semibold flex items-center"><i class="fa-regular fa-square mr-2 text-slate-400"></i>변 CA와 변 AB의 이등분선</span>
+                                <span class="text-xs font-bold font-mono">미완성</span>
+                            </div>
+                        </div>
+
+                        <!-- Distance Result Card (when point P clicked) -->
+                        <div id="step3-distance-card" class="hidden p-3 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-900 space-y-2">
+                            <div class="font-bold text-purple-900 border-b border-purple-200 pb-1 flex items-center justify-between">
+                                <span><i class="fa-solid fa-star text-amber-500 mr-1"></i>교점에서 각 변까지의 거리</span>
+                                <span class="text-xs text-emerald-600 font-bold">모두 일치!</span>
+                            </div>
+                            <div class="flex justify-between text-xs font-mono">
+                                <span>변 AB: <strong id="step3-d1" class="text-rose-600">-</strong></span>
+                                <span>변 BC: <strong id="step3-d2" class="text-emerald-600">-</strong></span>
+                                <span>변 CA: <strong id="step3-d3" class="text-blue-600">-</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Action -->
+                    <div class="flex flex-col gap-2">
+                        <button onclick="switchStep(1)" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-sm shadow-md transition duration-200 flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-rotate-left"></i> 1단계로 돌아가기
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-200 border-t border-slate-300 py-3 text-center text-xs text-slate-600">
+        <p>© 2026 김효경│수학 수업용 인터랙티브 콘텐츠</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        let synth = null;
+        function initAudio() {
+            if (!synth && window.Tone) {
+                synth = new Tone.PolySynth(Tone.Synth, {
+                    oscillator: { type: "sine" },
+                    envelope: { attack: 0.005, decay: 0.1, sustain: 0.1, release: 0.3 }
+                }).toDestination();
+                synth.volume.value = -12;
+            }
+        }
+
+        function playSound(type) {
+            initAudio();
+            if (!synth) return;
+            try {
+                if (type === 'click') {
+                    synth.triggerAttackRelease('C5', '8n');
+                } else if (type === 'snap') {
+                    synth.triggerAttackRelease('E5', '8n');
+                } else if (type === 'success') {
+                    synth.triggerAttackRelease(['C5', 'E5', 'G5', 'C6'], '4n');
+                } else if (type === 'reveal') {
+                    synth.triggerAttackRelease(['G4', 'C5', 'E5'], '8n');
+                }
+            } catch (e) {}
+        }
+
+        function showGlobalToast(msg, iconClass = "fa-solid fa-lock text-amber-400") {
+            const toast = document.getElementById('global-toast');
+            const toastMsg = document.getElementById('global-toast-msg');
+            const toastIcon = document.getElementById('global-toast-icon');
+
+            toastMsg.textContent = msg;
+            toastIcon.innerHTML = `<i class="${iconClass}"></i>`;
+
+            toast.classList.remove('-translate-y-10', 'opacity-0', 'pointer-events-none');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('-translate-y-10', 'opacity-0', 'pointer-events-none');
+            }, 2600);
+        }
+
+        // Geometry Vertices A, B, C for Triangle
+        let triangleABC = {
+            A: { x: 300, y: 90, label: 'A' },
+            B: { x: 100, y: 400, label: 'B' },
+            C: { x: 500, y: 400, label: 'C' }
+        };
+
+        // Calculates responsive triangle coordinates matching the board container size
+        function setupResponsiveCoordinates() {
+            const board = document.getElementById('step1-board') || document.getElementById('step2-board') || document.getElementById('step3-board');
+            if (!board) return;
+            const rect = board.getBoundingClientRect();
+            const w = rect.width > 0 ? rect.width : 600;
+            const h = rect.height > 0 ? rect.height : 480;
+
+            triangleABC.A = { x: w * 0.5, y: h * 0.18, label: 'A' };
+            triangleABC.B = { x: w * 0.15, y: h * 0.82, label: 'B' };
+            triangleABC.C = { x: w * 0.85, y: h * 0.82, label: 'C' };
+        }
+
+        // Distance between two points
+        function getDistance(p1, p2) {
+            if (!p1 || !p2) return 0;
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // Formats numeric distance into standard meter string
+        function formatDistance(dist) {
+            if (dist === undefined || dist === null || isNaN(dist)) return '0 m';
+            return (dist / 10).toFixed(1) + ' m';
+        }
+
+        // Projects point P onto line segment AB, returning foot coordinates, distance, and parameter t
+        function projectToLineSegment(p, a, b) {
+            const abx = b.x - a.x;
+            const aby = b.y - a.y;
+            const apx = p.x - a.x;
+            const apy = p.y - a.y;
+            const ab2 = abx * abx + aby * aby;
+            if (ab2 === 0) return { foot: { x: a.x, y: a.y }, dist: getDistance(p, a), t: 0 };
+
+            let t = (apx * abx + apy * aby) / ab2;
+            const foot = { x: a.x + t * abx, y: a.y + t * aby };
+            const dist = getDistance(p, foot);
+            return { foot, dist, t };
+        }
+
+        // Calculates normalized direction vector for the angle bisector of angle (A - V - C)
+        function getAngleBisectorRay(V, A, C) {
+            const vVA = { x: A.x - V.x, y: A.y - V.y };
+            const vVC = { x: C.x - V.x, y: C.y - V.y };
+            const lenVA = Math.sqrt(vVA.x * vVA.x + vVA.y * vVA.y);
+            const lenVC = Math.sqrt(vVC.x * vVC.x + vVC.y * vVC.y);
+            if (lenVA === 0 || lenVC === 0) return { x: 1, y: 0 };
+
+            const uVA = { x: vVA.x / lenVA, y: vVA.y / lenVA };
+            const uVC = { x: vVC.x / lenVC, y: vVC.y / lenVC };
+
+            let bisector = { x: uVA.x + uVC.x, y: uVA.y + uVC.y };
+            const lenB = Math.sqrt(bisector.x * bisector.x + bisector.y * bisector.y);
+            if (lenB === 0) return { x: 1, y: 0 };
+
+            return { x: bisector.x / lenB, y: bisector.y / lenB };
+        }
+
+        // Snaps click position to the angle bisector ray originating at vertex V
+        function projectToAngleBisector(clickPt, V, A, C) {
+            const ray = getAngleBisectorRay(V, A, C);
+            const vVClick = { x: clickPt.x - V.x, y: clickPt.y - V.y };
+            const dot = vVClick.x * ray.x + vVClick.y * ray.y;
+            const t = Math.max(15, dot);
+            return { x: V.x + ray.x * t, y: V.y + ray.y * t };
+        }
+
+        // Calculates exact coordinates of incenter and inradius r for triangle ABC
+        function calculateIncenter(A, B, C) {
+            const a = getDistance(B, C);
+            const b = getDistance(C, A);
+            const c = getDistance(A, B);
+            const perimeter = a + b + c;
+
+            if (perimeter === 0) return { x: 0, y: 0, r: 0 };
+
+            const incenterX = (a * A.x + b * B.x + c * C.x) / perimeter;
+            const incenterY = (a * A.y + b * B.y + c * C.y) / perimeter;
+
+            const area = Math.abs((B.x - A.x) * (C.y - A.y) - (C.x - A.x) * (B.y - A.y)) / 2;
+            const semiPerimeter = perimeter / 2;
+            const r = area / semiPerimeter;
+
+            return { x: incenterX, y: incenterY, r: r };
+        }
+
+        let currentStep = 1;
+
+        function switchStep(step) {
+            // Gate check: Block access to Step 3 if Step 2 answer was not correctly solved!
+            if (step === 3 && !step2State.secretRevealed) {
+                playSound('click');
+                showGlobalToast("2단계 정답을 먼저 맞춰야 3단계로 이동할 수 있습니다!", "fa-solid fa-lock text-amber-400");
+                return;
+            }
+
+            currentStep = step;
+            
+            // Toggle step containers
+            document.getElementById('step1-container').classList.toggle('hidden', step !== 1);
+            document.getElementById('step2-container').classList.toggle('hidden', step !== 2);
+            document.getElementById('step3-container').classList.toggle('hidden', step !== 3);
+            
+            // Update active tab styles
+            const activeTabClass = "px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all duration-200 bg-white text-indigo-700 shadow-md";
+            const inactiveTabClass = "px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50";
+            
+            document.getElementById('tab-step1').className = step === 1 ? activeTabClass : inactiveTabClass;
+            document.getElementById('tab-step2').className = step === 2 ? activeTabClass : inactiveTabClass;
+            document.getElementById('tab-step3').className = step === 3 ? activeTabClass : inactiveTabClass;
+
+            // Recalculate coordinates and render current step
+            setupResponsiveCoordinates();
+            if (step === 1) renderStep1();
+            if (step === 2) renderStep2();
+            if (step === 3) renderStep3();
+        }
+
+        // Step 1 State
+        const step1State = {
+            userPoint: null, // {x, y}
+            draggingPoint: false
+        };
+
+        // Step 2 State
+        const step2State = {
+            userPoints: [],
+            isDraggingLine: false,
+            dragStartPoint: null,
+            dragCurrentPos: null,
+            lineDrawn: false,
+            secretRevealed: false
+        };
+
+        // Step 3 State
+        const step3State = {
+            selectedSide: null, // index 0 (AB), 1 (BC), 2 (CA)
+            drawnBisectors: new Set(), // Set of 'B', 'C', 'A' (vertex key for bisector)
+            userPointP: null,
+            circleRevealed: false
+        };
+
+        function preventTouchScroll(element) {
+            element.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    // Prevent page scrolling on drag
+                }
+            }, { passive: false });
+            element.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 1) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+        }
+
+        function initStep1() {
+            const board = document.getElementById('step1-board');
+            preventTouchScroll(board);
+            
+            board.addEventListener('pointerdown', (e) => {
+                if (currentStep !== 1) return;
+                const rect = board.getBoundingClientRect();
+                const clickPt = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+                if (step1State.userPoint && getDistance(clickPt, step1State.userPoint) < 30) {
+                    step1State.draggingPoint = true;
+                    return;
+                }
+
+                step1State.userPoint = clickPt;
+                playSound('snap');
+                renderStep1();
+            });
+
+            board.addEventListener('pointermove', (e) => {
+                if (currentStep !== 1 || !step1State.draggingPoint) return;
+                const rect = board.getBoundingClientRect();
+                step1State.userPoint = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+                renderStep1();
+            });
+
+            board.addEventListener('pointerup', () => {
+                step1State.draggingPoint = false;
+            });
+            board.addEventListener('pointercancel', () => {
+                step1State.draggingPoint = false;
+            });
+        }
+
+        function resetStep1() {
+            step1State.userPoint = null;
+            step1State.draggingPoint = false;
+            renderStep1();
+        }
+
+        function renderStep1() {
+            const svg = document.getElementById('svg-step1');
+            if (!svg) return;
+            svg.innerHTML = '';
+
+            const { A, B, C } = triangleABC;
+            const { userPoint } = step1State;
+
+            // Draw Triangle ABC with light dashed outline
+            const triPath = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+            triPath.setAttribute("points", `${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`);
+            triPath.setAttribute("fill", "rgba(238, 242, 255, 0.5)");
+            triPath.setAttribute("stroke", "#94a3b8");
+            triPath.setAttribute("stroke-width", "2");
+            triPath.setAttribute("stroke-dasharray", "6 4");
+            svg.appendChild(triPath);
+
+            // Draw elongated benches aligned along triangle sides
+            renderBenchIcons(svg, [
+                { p1: A, p2: B, label: '변 AB 벤치' },
+                { p1: B, p2: C, label: '변 BC 벤치' },
+                { p1: C, p2: A, label: '변 CA 벤치' }
+            ]);
+
+            // Draw Point P and perpendicular distance lines to sides
+            if (userPoint) {
+                const proj1 = projectToLineSegment(userPoint, A, B);
+                const proj2 = projectToLineSegment(userPoint, B, C);
+                const proj3 = projectToLineSegment(userPoint, C, A);
+
+                document.getElementById('dist-s1').textContent = formatDistance(proj1.dist);
+                document.getElementById('dist-s2').textContent = formatDistance(proj2.dist);
+                document.getElementById('dist-s3').textContent = formatDistance(proj3.dist);
+
+                const maxDiff = Math.max(
+                    Math.abs(proj1.dist - proj2.dist),
+                    Math.abs(proj2.dist - proj3.dist),
+                    Math.abs(proj3.dist - proj1.dist)
+                );
+                const statusBox = document.getElementById('step1-status-card');
+                const statusText = document.getElementById('step1-status-text');
+
+                if (maxDiff < 8) {
+                    statusBox.className = "mt-4 p-3 rounded-xl bg-emerald-100 border border-emerald-300 text-xs text-emerald-900 flex items-start gap-2 shadow-sm animate-pulse-subtle";
+                    statusText.innerHTML = `세 변까지의 수선 거리가 거의 같습니다! (${formatDistance(proj1.dist)}) 점 P를 조금씩 움직여 명당 위치를 더 정밀하게 확인해보세요.`;
+                } else {
+                    statusBox.className = "mt-4 p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-xs text-indigo-900 flex items-start gap-2";
+                    statusText.innerHTML = `현재 세 수선의 최대 길이 차이가 약 <strong>${formatDistance(maxDiff)}</strong> 입니다. 점 P를 드래그하여 세 거리가 같아지도록 이동해보세요!`;
+                }
+
+                // Render perpendicular lines and right-angle symbols
+                const perpendiculars = [
+                    { foot: proj1.foot, color: '#f43f5e', dist: proj1.dist, lineStart: A, lineEnd: B },
+                    { foot: proj2.foot, color: '#10b981', dist: proj2.dist, lineStart: B, lineEnd: C },
+                    { foot: proj3.foot, color: '#3b82f6', dist: proj3.dist, lineStart: C, lineEnd: A }
+                ];
+
+                perpendiculars.forEach(item => {
+                    // Line
+                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    line.setAttribute("x1", userPoint.x);
+                    line.setAttribute("y1", userPoint.y);
+                    line.setAttribute("x2", item.foot.x);
+                    line.setAttribute("y2", item.foot.y);
+                    line.setAttribute("stroke", item.color);
+                    line.setAttribute("stroke-width", "2.5");
+                    line.setAttribute("stroke-dasharray", "4 3");
+                    svg.appendChild(line);
+
+                    // Right angle marker at foot
+                    svg.appendChild(createRightAngleSymbol(userPoint, item.foot, item.lineStart, item.color));
+
+                    // Distance tag
+                    const midX = (userPoint.x + item.foot.x) / 2;
+                    const midY = (userPoint.y + item.foot.y) / 2;
+                    svg.appendChild(createDistanceTag(midX, midY, formatDistance(item.dist), item.color));
+                });
+
+                // Point P Group
+                const groupP = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                groupP.setAttribute("class", "cursor-grab active:cursor-grabbing");
+
+                const circlePOuter = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circlePOuter.setAttribute("cx", userPoint.x);
+                circlePOuter.setAttribute("cy", userPoint.y);
+                circlePOuter.setAttribute("r", "14");
+                circlePOuter.setAttribute("fill", "rgba(99, 102, 241, 0.25)");
+
+                const circleP = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circleP.setAttribute("cx", userPoint.x);
+                circleP.setAttribute("cy", userPoint.y);
+                circleP.setAttribute("r", "9");
+                circleP.setAttribute("fill", "#4f46e5");
+                circleP.setAttribute("stroke", "white");
+                circleP.setAttribute("stroke-width", "3");
+
+                const labelP = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                labelP.setAttribute("x", userPoint.x + 14);
+                labelP.setAttribute("y", userPoint.y - 10);
+                labelP.setAttribute("font-size", "14");
+                labelP.setAttribute("font-weight", "bold");
+                labelP.setAttribute("fill", "#312e81");
+                labelP.textContent = "점 P";
+
+                groupP.appendChild(circlePOuter);
+                groupP.appendChild(circleP);
+                groupP.appendChild(labelP);
+                svg.appendChild(groupP);
+            }
+        }
+
+        function initStep2() {
+            const board = document.getElementById('step2-board');
+            preventTouchScroll(board);
+
+            board.addEventListener('pointerdown', (e) => {
+                if (currentStep !== 2) return;
+                const rect = board.getBoundingClientRect();
+                const clickPt = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+                const clickedPoint = step2State.userPoints.find(p => getDistance(clickPt, p) < 30);
+
+                if (clickedPoint) {
+                    step2State.isDraggingLine = true;
+                    step2State.dragStartPoint = clickedPoint;
+                    step2State.dragCurrentPos = clickPt;
+                    playSound('click');
+                    return;
+                }
+
+                if (step2State.lineDrawn) return;
+
+                const { A, B, C } = triangleABC;
+                // Snap click point to the angle bisector of angle B (between BA and BC)
+                const projPt = projectToAngleBisector(clickPt, B, A, C);
+                projPt.id = Date.now();
+                step2State.userPoints.push(projPt);
+
+                playSound('snap');
+
+                const count = step2State.userPoints.length;
+                const guideText = document.getElementById('step2-guide-text');
+                const dragPrompt = document.getElementById('step2-drag-prompt');
+
+                if (count >= 1) {
+                    guideText.textContent = "점이 찍혔어요! 두 변으로 내려진 수선의 길이가 같은 것을 확인해보세요. 점을 더 찍어보세요!";
+                }
+                if (count >= 2) {
+                    dragPrompt.classList.remove('hidden');
+                }
+
+                renderStep2();
+            });
+
+            board.addEventListener('pointermove', (e) => {
+                if (currentStep !== 2 || !step2State.isDraggingLine) return;
+                const rect = board.getBoundingClientRect();
+                step2State.dragCurrentPos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+                renderStep2();
+            });
+
+            board.addEventListener('pointerup', (e) => {
+                if (currentStep !== 2 || !step2State.isDraggingLine) return;
+
+                const rect = board.getBoundingClientRect();
+                const releasePt = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+                const startPt = step2State.dragStartPoint;
+
+                if (startPt && getDistance(startPt, releasePt) > 25) {
+                    triggerStep2LineDrawn();
+                }
+
+                step2State.isDraggingLine = false;
+                step2State.dragStartPoint = null;
+                step2State.dragCurrentPos = null;
+                renderStep2();
+            });
+
+            board.addEventListener('pointercancel', () => {
+                step2State.isDraggingLine = false;
+                step2State.dragStartPoint = null;
+                step2State.dragCurrentPos = null;
+            });
+        }
+
+        function resetStep2() {
+            step2State.userPoints = [];
+            step2State.lineDrawn = false;
+            step2State.secretRevealed = false;
+            step2State.isDraggingLine = false;
+
+            closeAnswerModal();
+            document.getElementById('step2-secret-panel').classList.add('hidden');
+            document.getElementById('step2-drag-prompt').classList.add('hidden');
+            document.getElementById('btn-reveal-secret-container').classList.add('hidden');
+
+            // Lock Step 3 tab icon back to lock
+            const lockIcon = document.getElementById('tab-step3-icon');
+            if (lockIcon) lockIcon.className = "fa-solid fa-lock mr-1 text-amber-300";
+            
+            const guideBox = document.getElementById('step2-guide-box');
+            guideBox.className = "absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900/85 text-white px-5 py-2.5 rounded-full text-xs sm:text-sm font-medium shadow-xl pointer-events-none transition-all duration-300 flex items-center gap-2";
+            document.getElementById('step2-guide-text').textContent = "두 변에서 같은 거리에 있을 만한 위치를 클릭해보세요!";
+            
+            renderStep2();
+        }
+
+        function triggerStep2LineDrawn() {
+            step2State.lineDrawn = true;
+            playSound('reveal');
+
+            document.getElementById('step2-drag-prompt').classList.add('hidden');
+            document.getElementById('btn-reveal-secret-container').classList.remove('hidden');
+
+            const guideBox = document.getElementById('step2-guide-box');
+            guideBox.className = "absolute top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-xl pointer-events-none transition-all duration-300 flex items-center gap-2 animate-bounce";
+            document.getElementById('step2-guide-text').textContent = "✨ 선의 이름을 맞춰보세요! '정답 입력하기' 버튼을 눌러보세요.";
+
+            renderStep2();
+        }
+
+        function openAnswerModal() {
+            playSound('click');
+            const modal = document.getElementById('step2-answer-modal');
+            const input = document.getElementById('step2-answer-input');
+            const feedback = document.getElementById('step2-answer-feedback');
+            
+            input.value = '';
+            feedback.className = "hidden text-xs font-semibold px-3 py-2 rounded-lg";
+            modal.classList.remove('hidden');
+            setTimeout(() => input.focus(), 100);
+        }
+
+        function closeAnswerModal() {
+            document.getElementById('step2-answer-modal').classList.add('hidden');
+        }
+
+        function submitStep2Answer() {
+            const input = document.getElementById('step2-answer-input');
+            const feedback = document.getElementById('step2-answer-feedback');
+            const val = input.value.trim().replace(/\s+/g, '');
+
+            if (val === '각의이등분선' || val === '각이등분선') {
+                playSound('success');
+                closeAnswerModal();
+                step2State.secretRevealed = true;
+
+                // Unlock Step 3 tab icon
+                const lockIcon = document.getElementById('tab-step3-icon');
+                if (lockIcon) lockIcon.className = "fa-solid fa-compass-drafting mr-1 text-yellow-300";
+
+                document.getElementById('btn-reveal-secret-container').classList.add('hidden');
+                document.getElementById('step2-secret-panel').classList.remove('hidden');
+
+                showGlobalToast("🔓 축하합니다! 3단계 잠금이 해제되었습니다.", "fa-solid fa-unlock text-emerald-400");
+            } else {
+                playSound('click');
+                feedback.className = "text-xs font-semibold px-3 py-2 rounded-lg bg-rose-100 text-rose-800 border border-rose-300 block";
+                feedback.textContent = "아쉽네요! 힌트: '각'을 두 개로 똑같이 '이등분'하는 선이에요.";
+            }
+        }
+
+        function renderStep2() {
+            const svg = document.getElementById('svg-step2');
+            if (!svg) return;
+            svg.innerHTML = '';
+
+            const { A, B, C } = triangleABC;
+            const { userPoints, lineDrawn, isDraggingLine, dragStartPoint, dragCurrentPos } = step2State;
+
+            // Render Two Sides forming angle B (Side BA and Side BC)
+            const rayBA = createLine(B, A, "#334155", "3.5");
+            const rayBC = createLine(B, C, "#334155", "3.5");
+            svg.appendChild(rayBA);
+            svg.appendChild(rayBC);
+
+            // Labels for sides and vertex B
+            renderText(svg, B.x - 18, B.y + 22, "꼭짓점 B", "14", "#0f172a", "bold");
+            renderText(svg, (A.x + B.x)/2 - 22, (A.y + B.y)/2, "변 AB", "13", "#475569", "bold");
+            renderText(svg, (B.x + C.x)/2, (B.y + C.y)/2 + 25, "변 BC", "13", "#475569", "bold");
+
+            if (!lineDrawn) {
+                // BEFORE LINE DRAWN: Show points with perpendicular lines & lengths
+                userPoints.forEach((pt) => {
+                    const proj1 = projectToLineSegment(pt, B, A);
+                    const proj2 = projectToLineSegment(pt, B, C);
+
+                    // Perpendiculars
+                    const line1 = createLine(pt, proj1.foot, "#f43f5e", "2", "4 3");
+                    const line2 = createLine(pt, proj2.foot, "#10b981", "2", "4 3");
+                    svg.appendChild(line1);
+                    svg.appendChild(line2);
+
+                    // Right angle markers
+                    svg.appendChild(createRightAngleSymbol(pt, proj1.foot, A, "#f43f5e"));
+                    svg.appendChild(createRightAngleSymbol(pt, proj2.foot, C, "#10b981"));
+
+                    // Tags
+                    const mid1X = (pt.x + proj1.foot.x) / 2;
+                    const mid1Y = (pt.y + proj1.foot.y) / 2;
+                    svg.appendChild(createDistanceTag(mid1X, mid1Y, formatDistance(proj1.dist), "#f43f5e"));
+
+                    const mid2X = (pt.x + proj2.foot.x) / 2;
+                    const mid2Y = (pt.y + proj2.foot.y) / 2;
+                    svg.appendChild(createDistanceTag(mid2X, mid2Y, formatDistance(proj2.dist), "#10b981"));
+
+                    // Point Circle
+                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    circle.setAttribute("cx", pt.x);
+                    circle.setAttribute("cy", pt.y);
+                    circle.setAttribute("r", "8");
+                    circle.setAttribute("fill", "#6366f1");
+                    circle.setAttribute("stroke", "white");
+                    circle.setAttribute("stroke-width", "2.5");
+                    circle.setAttribute("class", "hover:scale-125 transition-transform cursor-pointer");
+                    svg.appendChild(circle);
+                });
+
+                if (isDraggingLine && dragStartPoint && dragCurrentPos) {
+                    const dragLine = createLine(dragStartPoint, dragCurrentPos, "#f59e0b", "4");
+                    dragLine.setAttribute("stroke-linecap", "round");
+                    svg.appendChild(dragLine);
+                }
+
+            } else {
+                // AFTER LINE DRAWN: Perpendiculars/distances erased! Angle Bisector & Arc angles displayed!
+                const dir = getAngleBisectorRay(B, A, C);
+                const maxLen = 500;
+                const endPt = { x: B.x + dir.x * maxLen, y: B.y + dir.y * maxLen };
+
+                const bisector = createLine(B, endPt, "#059669", "4", "8 4");
+                bisector.setAttribute("class", "reveal-line");
+                svg.appendChild(bisector);
+
+                // Calculate split angle in degrees
+                const vecBA = { x: A.x - B.x, y: A.y - B.y };
+                const vecBC = { x: C.x - B.x, y: C.y - B.y };
+                const angleBA = Math.atan2(vecBA.y, vecBA.x);
+                const angleBC = Math.atan2(vecBC.y, vecBC.x);
+                const angleBisector = Math.atan2(dir.y, dir.x);
+
+                let degHalf1 = Math.abs((angleBisector - angleBA) * 180 / Math.PI);
+                let degHalf2 = Math.abs((angleBC - angleBisector) * 180 / Math.PI);
+                if (degHalf1 > 180) degHalf1 = 360 - degHalf1;
+                if (degHalf2 > 180) degHalf2 = 360 - degHalf2;
+                const angleDisplayStr = `${degHalf1.toFixed(1)}°`;
+
+                // Draw Angle Arcs at Vertex B
+                svg.appendChild(createAngleArc(B, angleBA, angleBisector, 45, "#10b981"));
+                svg.appendChild(createAngleArc(B, angleBisector, angleBC, 45, "#3b82f6"));
+
+                // Angle degree labels
+                const label1Angle = (angleBA + angleBisector) / 2;
+                const label2Angle = (angleBisector + angleBC) / 2;
+
+                const tag1 = { x: B.x + 65 * Math.cos(label1Angle), y: B.y + 65 * Math.sin(label1Angle) };
+                const tag2 = { x: B.x + 65 * Math.cos(label2Angle), y: B.y + 65 * Math.sin(label2Angle) };
+
+                svg.appendChild(createDistanceTag(tag1.x, tag1.y, angleDisplayStr, "#10b981"));
+                svg.appendChild(createDistanceTag(tag2.x, tag2.y, angleDisplayStr, "#3b82f6"));
+
+                // Render placed points along the bisector line
+                userPoints.forEach(pt => {
+                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    circle.setAttribute("cx", pt.x);
+                    circle.setAttribute("cy", pt.y);
+                    circle.setAttribute("r", "7");
+                    circle.setAttribute("fill", "#10b981");
+                    circle.setAttribute("stroke", "white");
+                    circle.setAttribute("stroke-width", "2");
+                    svg.appendChild(circle);
+                });
+            }
+        }
+
+        function initStep3() {
+            const board = document.getElementById('step3-board');
+            preventTouchScroll(board);
+
+            board.addEventListener('click', (e) => {
+                if (currentStep !== 3) return;
+                const rect = board.getBoundingClientRect();
+                const clickPt = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+                const { A, B, C } = triangleABC;
+                const { drawnBisectors, userPointP, circleRevealed } = step3State;
+
+                // Sides definitions: 0 (AB), 1 (BC), 2 (CA)
+                const sides = [
+                    { id: 0, p1: A, p2: B, label: 'AB' },
+                    { id: 1, p1: B, p2: C, label: 'BC' },
+                    { id: 2, p1: C, p2: A, label: 'CA' }
+                ];
+
+                // Check side click
+                const clickedSide = sides.find(s => {
+                    const proj = projectToLineSegment(clickPt, s.p1, s.p2);
+                    return proj.dist < 25 && proj.t >= 0 && proj.t <= 1;
+                });
+
+                if (clickedSide) {
+                    playSound('click');
+
+                    if (step3State.selectedSide === null) {
+                        step3State.selectedSide = clickedSide.id;
+                    } else if (step3State.selectedSide !== clickedSide.id) {
+                        // Pair of sides determines vertex: AB & BC -> B, BC & CA -> C, CA & AB -> A
+                        const s1 = Math.min(step3State.selectedSide, clickedSide.id);
+                        const s2 = Math.max(step3State.selectedSide, clickedSide.id);
+
+                        let vertexKey = '';
+                        if (s1 === 0 && s2 === 1) vertexKey = 'B';
+                        else if (s1 === 1 && s2 === 2) vertexKey = 'C';
+                        else if (s1 === 0 && s2 === 2) vertexKey = 'A';
+
+                        if (vertexKey && !drawnBisectors.has(vertexKey)) {
+                            drawnBisectors.add(vertexKey);
+                            playSound('snap');
+                        }
+                        step3State.selectedSide = null;
+                    }
+                    updateStep3Checklist();
+                    renderStep3();
+                    return;
+                }
+
+                // If 2 or 3 bisectors drawn, check click on intersection point
+                if (drawnBisectors.size >= 2) {
+                    const incenter = calculateIncenter(A, B, C);
+                    if (getDistance(clickPt, incenter) < 40) {
+                        if (!userPointP) {
+                            // First click: place point P and show distances to all 3 sides
+                            step3State.userPointP = incenter;
+                            playSound('success');
+
+                            const toastText = document.getElementById('step3-toast-text');
+                            toastText.innerHTML = "🎉 각의 이등분선들의 교점은 세 변까지의 거리가 모두 같습니다! (교점을 한 번 더 클릭해보세요)";
+                            
+                            const distCard = document.getElementById('step3-distance-card');
+                            distCard.classList.remove('hidden');
+
+                            const distVal = formatDistance(incenter.r);
+                            document.getElementById('step3-d1').textContent = distVal;
+                            document.getElementById('step3-d2').textContent = distVal;
+                            document.getElementById('step3-d3').textContent = distVal;
+
+                        } else if (!circleRevealed) {
+                            // Second click: reveal Incircle, write 내심 and 내접원, remove bisector lines
+                            step3State.circleRevealed = true;
+                            playSound('reveal');
+
+                            const toastText = document.getElementById('step3-toast-text');
+                            toastText.innerHTML = "✨ 세 각의 이등분선의 교점은 <strong>내심</strong>, 이 원은 <strong>내접원</strong>입니다!";
+                        }
+
+                        renderStep3();
+                    }
+                }
+            });
+        }
+
+        function resetStep3() {
+            step3State.selectedSide = null;
+            step3State.drawnBisectors.clear();
+            step3State.userPointP = null;
+            step3State.circleRevealed = false;
+
+            document.getElementById('step3-toast-text').textContent = "두 변을 차례로 클릭하여 각의 이등분선을 그려보세요!";
+            document.getElementById('step3-distance-card').classList.add('hidden');
+
+            updateStep3Checklist();
+            renderStep3();
+        }
+
+        function updateStep3Checklist() {
+            const list = [
+                { key: 'B', id: 'check-b' },
+                { key: 'C', id: 'check-c' },
+                { key: 'A', id: 'check-a' }
+            ];
+
+            list.forEach(item => {
+                const checkEl = document.getElementById(item.id);
+                if (step3State.drawnBisectors.has(item.key)) {
+                    checkEl.className = "flex justify-between items-center p-2.5 bg-purple-100 border border-purple-300 rounded-xl text-purple-900 font-bold";
+                    checkEl.querySelector('i').className = "fa-solid fa-square-check mr-2 text-purple-600";
+                    checkEl.querySelector('span:last-child').textContent = "완성";
+                    checkEl.querySelector('span:last-child').className = "text-xs font-bold text-purple-700";
+                } else {
+                    checkEl.className = "flex justify-between items-center p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500";
+                    checkEl.querySelector('i').className = "fa-regular fa-square mr-2 text-slate-400";
+                    checkEl.querySelector('span:last-child').textContent = "미완성";
+                    checkEl.querySelector('span:last-child').className = "text-xs font-bold font-mono text-slate-400";
+                }
+            });
+
+            if (step3State.drawnBisectors.size >= 2 && !step3State.userPointP) {
+                document.getElementById('step3-toast-text').innerHTML = "✨ 각의 이등분선들이 만나는 <strong>교점</strong>을 클릭해 보세요!";
+            }
+        }
+
+        function renderStep3() {
+            const svg = document.getElementById('svg-step3');
+            if (!svg) return;
+            svg.innerHTML = '';
+
+            const { A, B, C } = triangleABC;
+            const { selectedSide, drawnBisectors, userPointP, circleRevealed } = step3State;
+
+            // Draw Triangle ABC
+            const triPath = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+            triPath.setAttribute("points", `${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`);
+            triPath.setAttribute("fill", circleRevealed ? "rgba(168, 85, 247, 0.05)" : "rgba(238, 242, 255, 0.5)");
+            triPath.setAttribute("stroke", "#475569");
+            triPath.setAttribute("stroke-width", "3");
+            svg.appendChild(triPath);
+
+            // Highlight selected side if any
+            if (selectedSide !== null) {
+                const sidePairs = [[A, B], [B, C], [C, A]];
+                const pair = sidePairs[selectedSide];
+                const activeSide = createLine(pair[0], pair[1], "#a855f7", "5");
+                svg.appendChild(activeSide);
+            }
+
+            // Draw Angle Bisectors ONLY IF circle is NOT revealed
+            if (!circleRevealed) {
+                drawnBisectors.forEach(vKey => {
+                    let V, P1, P2;
+                    if (vKey === 'B') { V = B; P1 = A; P2 = C; }
+                    else if (vKey === 'C') { V = C; P1 = B; P2 = A; }
+                    else if (vKey === 'A') { V = A; P1 = B; P2 = C; }
+
+                    const dir = getAngleBisectorRay(V, P1, P2);
+                    const bisectorLine = createLine(V, { x: V.x + dir.x * 500, y: V.y + dir.y * 500 }, "#9333ea", "2.5", "6 4");
+                    bisectorLine.setAttribute("class", "reveal-line");
+                    svg.appendChild(bisectorLine);
+                });
+            }
+
+            // When at least 2 bisectors are drawn, locate incenter
+            if (drawnBisectors.size >= 2) {
+                const incenter = calculateIncenter(A, B, C);
+
+                if (!userPointP) {
+                    // Pulsing guide on intersection point
+                    const hintCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    hintCircle.setAttribute("cx", incenter.x);
+                    hintCircle.setAttribute("cy", incenter.y);
+                    hintCircle.setAttribute("r", "12");
+                    hintCircle.setAttribute("fill", "rgba(147, 51, 234, 0.25)");
+                    hintCircle.setAttribute("stroke", "#9333ea");
+                    hintCircle.setAttribute("stroke-width", "2");
+                    hintCircle.setAttribute("class", "animate-ping");
+                    svg.appendChild(hintCircle);
+                } else {
+                    // Point P placed at Incenter
+                    const proj1 = projectToLineSegment(incenter, A, B);
+                    const proj2 = projectToLineSegment(incenter, B, C);
+                    const proj3 = projectToLineSegment(incenter, C, A);
+
+                    // Render perpendiculars & right-angle marks
+                    const perpendiculars = [
+                        { foot: proj1.foot, color: '#f43f5e', lineStart: A },
+                        { foot: proj2.foot, color: '#10b981', lineStart: B },
+                        { foot: proj3.foot, color: '#3b82f6', lineStart: C }
+                    ];
+
+                    perpendiculars.forEach(item => {
+                        const line = createLine(incenter, item.foot, item.color, "2.5", "4 3");
+                        svg.appendChild(line);
+                        svg.appendChild(createRightAngleSymbol(incenter, item.foot, item.lineStart, item.color));
+
+                        const midX = (incenter.x + item.foot.x) / 2;
+                        const midY = (incenter.y + item.foot.y) / 2;
+                        svg.appendChild(createDistanceTag(midX, midY, formatDistance(incenter.r), item.color));
+                    });
+
+                    // ON SECOND CLICK: Reveal Incircle & Labels "내심", "내접원"
+                    if (circleRevealed) {
+                        // Incircle
+                        const incircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                        incircle.setAttribute("cx", incenter.x);
+                        incircle.setAttribute("cy", incenter.y);
+                        incircle.setAttribute("r", incenter.r);
+                        incircle.setAttribute("fill", "rgba(168, 85, 247, 0.1)");
+                        incircle.setAttribute("stroke", "#a855f7");
+                        incircle.setAttribute("stroke-width", "3.5");
+                        incircle.setAttribute("class", "reveal-line");
+                        svg.appendChild(incircle);
+
+                        // Label: 내접원 (placed near upper tangent of circle)
+                        const labelCircle = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                        labelCircle.setAttribute("x", incenter.x + incenter.r * 0.7);
+                        labelCircle.setAttribute("y", incenter.y - incenter.r * 0.7 - 8);
+                        labelCircle.setAttribute("font-size", "16");
+                        labelCircle.setAttribute("font-weight", "900");
+                        labelCircle.setAttribute("fill", "#7e22ce");
+                        labelCircle.textContent = "내접원";
+                        svg.appendChild(labelCircle);
+                    }
+
+                    // Point Marker
+                    const pMarker = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    pMarker.setAttribute("cx", incenter.x);
+                    pMarker.setAttribute("cy", incenter.y);
+                    pMarker.setAttribute("r", "9");
+                    pMarker.setAttribute("fill", "#7e22ce");
+                    pMarker.setAttribute("stroke", "white");
+                    pMarker.setAttribute("stroke-width", "3");
+                    svg.appendChild(pMarker);
+
+                    // Label: Point P or 내심
+                    const labelP = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    labelP.setAttribute("x", incenter.x + 14);
+                    labelP.setAttribute("y", incenter.y - 10);
+                    labelP.setAttribute("font-size", "16");
+                    labelP.setAttribute("font-weight", "900");
+                    labelP.setAttribute("fill", "#581c87");
+                    labelP.textContent = circleRevealed ? "내심" : "점 P";
+                    svg.appendChild(labelP);
+                }
+            }
+
+            // Render Vertex labels A, B, C
+            renderText(svg, A.x, A.y - 12, "A", "16", "#0f172a", "bold", "middle");
+            renderText(svg, B.x - 16, B.y + 18, "B", "16", "#0f172a", "bold", "middle");
+            renderText(svg, C.x + 16, C.y + 18, "C", "16", "#0f172a", "bold", "middle");
+        }
+
+        function createLine(p1, p2, color, strokeWidth = "2", dashArray = null) {
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", p1.x);
+            line.setAttribute("y1", p1.y);
+            line.setAttribute("x2", p2.x);
+            line.setAttribute("y2", p2.y);
+            line.setAttribute("stroke", color);
+            line.setAttribute("stroke-width", strokeWidth);
+            if (dashArray) line.setAttribute("stroke-dasharray", dashArray);
+            return line;
+        }
+
+        function createRightAngleSymbol(pointP, foot, lineStart, color) {
+            const size = 12;
+            const vPF = { x: pointP.x - foot.x, y: pointP.y - foot.y };
+            const vFS = { x: lineStart.x - foot.x, y: lineStart.y - foot.y };
+
+            const lenPF = Math.sqrt(vPF.x * vPF.x + vPF.y * vPF.y);
+            const lenFS = Math.sqrt(vFS.x * vFS.x + vFS.y * vFS.y);
+
+            if (lenPF === 0 || lenFS === 0) return document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+            const uPF = { x: vPF.x / lenPF, y: vPF.y / lenPF };
+            const uFS = { x: vFS.x / lenFS, y: vFS.y / lenFS };
+
+            const p1 = { x: foot.x + uPF.x * size, y: foot.y + uPF.y * size };
+            const p2 = { x: p1.x + uFS.x * size, y: p1.y + uFS.y * size };
+            const p3 = { x: foot.x + uFS.x * size, y: foot.y + uFS.y * size };
+
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y} L ${p3.x} ${p3.y}`);
+            path.setAttribute("fill", "none");
+            path.setAttribute("stroke", color);
+            path.setAttribute("stroke-width", "1.8");
+
+            return path;
+        }
+
+        function createAngleArc(center, startAngle, endAngle, radius, color) {
+            const x1 = center.x + radius * Math.cos(startAngle);
+            const y1 = center.y + radius * Math.sin(startAngle);
+            const x2 = center.x + radius * Math.cos(endAngle);
+            const y2 = center.y + radius * Math.sin(endAngle);
+
+            let diff = endAngle - startAngle;
+            while (diff < 0) diff += 2 * Math.PI;
+            const largeArcFlag = diff > Math.PI ? 1 : 0;
+
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`);
+            path.setAttribute("fill", "none");
+            path.setAttribute("stroke", color);
+            path.setAttribute("stroke-width", "2.5");
+
+            return path;
+        }
+
+        function createDistanceTag(x, y, textVal, color) {
+            const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+            const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            rect.setAttribute("x", x - 26);
+            rect.setAttribute("y", y - 10);
+            rect.setAttribute("width", "52");
+            rect.setAttribute("height", "20");
+            rect.setAttribute("rx", "5");
+            rect.setAttribute("fill", "white");
+            rect.setAttribute("stroke", color);
+            rect.setAttribute("stroke-width", "1.5");
+
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", x);
+            text.setAttribute("y", y + 4);
+            text.setAttribute("text-anchor", "middle");
+            text.setAttribute("font-size", "10");
+            text.setAttribute("font-weight", "bold");
+            text.setAttribute("fill", "#1e293b");
+            text.textContent = textVal;
+
+            g.appendChild(rect);
+            g.appendChild(text);
+            return g;
+        }
+
+        function renderText(svg, x, y, textStr, fontSize = "12", color = "#0f172a", fontWeight = "normal", anchor = "start") {
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", x);
+            text.setAttribute("y", y);
+            text.setAttribute("font-size", fontSize);
+            text.setAttribute("font-weight", fontWeight);
+            text.setAttribute("fill", color);
+            text.setAttribute("text-anchor", anchor);
+            text.textContent = textStr;
+            svg.appendChild(text);
+        }
+
+        function renderBenchIcons(svg, benches) {
+            benches.forEach(b => {
+                const p1 = b.p1 || b.pos;
+                const p2 = b.p2 || b.pos;
+
+                // Calculate midpoint, slope angle along side segment
+                const midX = (p1.x + p2.x) / 2;
+                const midY = (p1.y + p2.y) / 2;
+                const angleRad = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+                const angleDeg = angleRad * (180 / Math.PI);
+
+                // Elongated bench dimensions aligned along side
+                const benchLen = 140; // Extended bench length
+                const benchWidth = 14;
+
+                const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                g.setAttribute("transform", `translate(${midX}, ${midY}) rotate(${angleDeg})`);
+
+                // Main wooden bench plank
+                const benchBase = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                benchBase.setAttribute("x", -benchLen / 2);
+                benchBase.setAttribute("y", -benchWidth / 2);
+                benchBase.setAttribute("width", benchLen);
+                benchBase.setAttribute("height", benchWidth);
+                benchBase.setAttribute("rx", "4");
+                benchBase.setAttribute("fill", "#d97706");
+                benchBase.setAttribute("stroke", "#78350f");
+                benchBase.setAttribute("stroke-width", "2");
+
+                // Wooden slat lines detail
+                const slat1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                slat1.setAttribute("x1", -benchLen / 2 + 8);
+                slat1.setAttribute("y1", -2);
+                slat1.setAttribute("x2", benchLen / 2 - 8);
+                slat1.setAttribute("y2", -2);
+                slat1.setAttribute("stroke", "#92400e");
+                slat1.setAttribute("stroke-width", "1.5");
+
+                const slat2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                slat2.setAttribute("x1", -benchLen / 2 + 8);
+                slat2.setAttribute("y1", 2);
+                slat2.setAttribute("x2", benchLen / 2 - 8);
+                slat2.setAttribute("y2", 2);
+                slat2.setAttribute("stroke", "#92400e");
+                slat2.setAttribute("stroke-width", "1.5");
+
+                // Metal frame leg supports at bench ends
+                const leg1 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                leg1.setAttribute("x", -benchLen / 2 + 10);
+                leg1.setAttribute("y", -benchWidth / 2 - 2);
+                leg1.setAttribute("width", "6");
+                leg1.setAttribute("height", benchWidth + 4);
+                leg1.setAttribute("rx", "2");
+                leg1.setAttribute("fill", "#334155");
+
+                const leg2 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                leg2.setAttribute("x", benchLen / 2 - 16);
+                leg2.setAttribute("y", -benchWidth / 2 - 2);
+                leg2.setAttribute("width", "6");
+                leg2.setAttribute("height", benchWidth + 4);
+                leg2.setAttribute("rx", "2");
+                leg2.setAttribute("fill", "#334155");
+
+                g.appendChild(benchBase);
+                g.appendChild(slat1);
+                g.appendChild(slat2);
+                g.appendChild(leg1);
+                g.appendChild(leg2);
+                svg.appendChild(g);
+
+                // Bench label offset
+                const perpOffset = 22;
+                const labelX = midX + Math.sin(angleRad) * perpOffset;
+                const labelY = midY - Math.cos(angleRad) * perpOffset;
+
+                const textLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                textLabel.setAttribute("x", labelX);
+                textLabel.setAttribute("y", labelY);
+                textLabel.setAttribute("text-anchor", "middle");
+                textLabel.setAttribute("font-size", "12");
+                textLabel.setAttribute("font-weight", "bold");
+                textLabel.setAttribute("fill", "#1e293b");
+                textLabel.textContent = b.label;
+
+                svg.appendChild(textLabel);
+            });
+        }
+
+        window.addEventListener('load', () => {
+            initStep1();
+            initStep2();
+            initStep3();
+            switchStep(1);
+        });
+
+        window.addEventListener('resize', () => {
+            setupResponsiveCoordinates();
+            if (currentStep === 1) renderStep1();
+            if (currentStep === 2) renderStep2();
+            if (currentStep === 3) renderStep3();
+        });
+    </script>
+</body>
+</html>
