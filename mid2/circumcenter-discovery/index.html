@@ -104,10 +104,10 @@
             </div>
 
             <!-- Stage Canvas Container -->
-            <div class="relative w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[500px]">
+            <div class="relative w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[380px] md:min-h-[500px]">
                 
                 <!-- Interactive SVG Board -->
-                <div class="relative flex-grow h-[420px] md:h-[520px] bg-slate-50 cursor-crosshair overflow-hidden touch-none" id="step1-board">
+                <div class="relative flex-grow h-[320px] sm:h-[400px] md:h-[500px] bg-slate-50 cursor-crosshair overflow-hidden touch-none" id="step1-board">
                     <!-- Background Grid Pattern -->
                     <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" width="100%" height="100%">
                         <defs>
@@ -191,9 +191,9 @@
             </div>
 
             <!-- Step 2 Canvas Container -->
-            <div class="relative w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col min-h-[520px]">
+            <div class="relative w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col min-h-[380px] md:min-h-[500px]">
                 
-                <div class="relative flex-grow h-[460px] bg-slate-50 overflow-hidden cursor-crosshair touch-none" id="step2-board">
+                <div class="relative flex-grow h-[320px] sm:h-[400px] md:h-[500px] bg-slate-50 overflow-hidden cursor-crosshair touch-none" id="step2-board">
                     <!-- Grid Background -->
                     <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" width="100%" height="100%">
                         <defs>
@@ -300,10 +300,10 @@
             </div>
 
             <!-- Step 3 Canvas & Sidebar Container -->
-            <div class="relative w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[500px]">
+            <div class="relative w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[380px] md:min-h-[500px]">
                 
                 <!-- Interactive SVG Step 3 Board -->
-                <div class="relative flex-grow h-[420px] md:h-[520px] bg-slate-50 cursor-pointer overflow-hidden touch-none" id="step3-board">
+                <div class="relative flex-grow h-[320px] sm:h-[400px] md:h-[500px] bg-slate-50 cursor-pointer overflow-hidden touch-none" id="step3-board">
                     <!-- Grid Pattern -->
                     <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" width="100%" height="100%">
                         <defs>
@@ -510,9 +510,9 @@
                 const w = board1.clientWidth || 700;
                 const h = board1.clientHeight || 450;
                 
-                step1State.chairA = { x: Math.round(w * 0.25), y: Math.round(h * 0.38), label: 'A' };
-                step1State.chairB = { x: Math.round(w * 0.75), y: Math.round(h * 0.34), label: 'B' };
-                step1State.chairC = { x: Math.round(w * 0.48), y: Math.round(h * 0.82), label: 'C' };
+                step1State.chairA = { x: Math.round(w * 0.22), y: Math.round(h * 0.28), label: 'A' };
+                step1State.chairB = { x: Math.round(w * 0.78), y: Math.round(h * 0.25), label: 'B' };
+                step1State.chairC = { x: Math.round(w * 0.50), y: Math.round(h * 0.72), label: 'C' };
 
                 step3State.chairA = { ...step1State.chairA };
                 step3State.chairB = { ...step1State.chairB };
@@ -523,8 +523,8 @@
             if (board2) {
                 const w = board2.clientWidth || 700;
                 const h = board2.clientHeight || 450;
-                step2State.pointA = { x: Math.round(w * 0.25), y: Math.round(h * 0.50), label: 'A' };
-                step2State.pointB = { x: Math.round(w * 0.75), y: Math.round(h * 0.50), label: 'B' };
+                step2State.pointA = { x: Math.round(w * 0.22), y: Math.round(h * 0.50), label: 'A' };
+                step2State.pointB = { x: Math.round(w * 0.78), y: Math.round(h * 0.50), label: 'B' };
             }
         }
 
