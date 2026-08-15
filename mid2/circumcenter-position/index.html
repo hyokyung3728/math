@@ -3,7 +3,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>삼각형의 모양에 따른 외심의 위치</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,8 +13,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
     <style>
-        body {
+        * {
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+        html, body {
+            height: 100%;
+            height: 100dvh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
             font-family: 'Noto Sans KR', sans-serif;
             user-select: none;
             -webkit-user-select: none;
@@ -54,62 +64,60 @@
         }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between overflow-x-hidden">
+<body class="bg-slate-100 text-slate-800 h-full h-[100dvh] flex flex-col justify-between overflow-hidden">
 
-    <!-- Header -->
-    <header class="bg-indigo-600 text-white shadow-lg sticky top-0 z-30">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
-            <div class="flex items-center space-x-3">
-                <div class="p-2.5 bg-indigo-500 rounded-xl shadow-inner">
-                    <i class="fa-solid fa-shapes text-2xl text-yellow-300"></i>
+    <!-- Compact Responsive Header -->
+    <header class="bg-indigo-600 text-white shadow-md shrink-0 z-30">
+        <div class="max-w-7xl mx-auto px-3 py-1.5 sm:py-2 flex flex-wrap justify-between items-center gap-2">
+            <div class="flex items-center space-x-2 min-w-0">
+                <div class="p-1.5 bg-indigo-500 rounded-lg shadow-inner shrink-0">
+                    <i class="fa-solid fa-shapes text-lg sm:text-xl text-yellow-300"></i>
                 </div>
-                <div>
-                    <h1 class="text-xl md:text-2xl font-bold font-gowun tracking-tight">삼각형의 모양에 따른 외심의 위치</h1>
-                    <p class="text-xs text-indigo-200">수학적 탐구: 각의 크기 변화와 수직이등분선의 교점(외심) 탐구</p>
+                <div class="truncate">
+                    <h1 class="text-sm sm:text-base md:text-lg font-bold font-gowun tracking-tight truncate">삼각형의 모양에 따른 외심의 위치</h1>
+                    <p class="text-[10px] sm:text-xs text-indigo-200 hidden sm:block truncate">수학적 탐구: 각의 크기 변화와 수직이등분선의 교점(외심) 탐구</p>
                 </div>
             </div>
 
             <!-- Quick Presets -->
-            <div class="flex bg-indigo-800/60 p-1 rounded-xl gap-1 border border-indigo-400/30 text-xs sm:text-sm">
-                <button onclick="applyPreset('acute')" class="px-3 py-1.5 rounded-lg font-semibold transition-all hover:bg-indigo-700/60 text-indigo-100 flex items-center gap-1">
+            <div class="flex bg-indigo-800/60 p-1 rounded-xl gap-1 border border-indigo-400/30 text-xs shrink-0">
+                <button onclick="applyPreset('acute')" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all hover:bg-indigo-700/60 text-indigo-100 flex items-center gap-1">
                     <i class="fa-solid fa-play text-xs text-emerald-400"></i> 예각삼각형
                 </button>
-                <button onclick="applyPreset('right')" class="px-3 py-1.5 rounded-lg font-semibold transition-all hover:bg-indigo-700/60 text-indigo-100 flex items-center gap-1">
+                <button onclick="applyPreset('right')" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all hover:bg-indigo-700/60 text-indigo-100 flex items-center gap-1">
                     <i class="fa-solid fa-play text-xs text-amber-400"></i> 직각삼각형
                 </button>
-                <button onclick="applyPreset('obtuse')" class="px-3 py-1.5 rounded-lg font-semibold transition-all hover:bg-indigo-700/60 text-indigo-100 flex items-center gap-1">
+                <button onclick="applyPreset('obtuse')" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all hover:bg-indigo-700/60 text-indigo-100 flex items-center gap-1">
                     <i class="fa-solid fa-play text-xs text-rose-400"></i> 둔각삼각형
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Content Container -->
-    <main class="max-w-6xl mx-auto w-full p-3 sm:p-5 flex-grow flex flex-col gap-4">
+    <!-- Main Content Container (Fills remaining height without scroll) -->
+    <main class="max-w-7xl mx-auto w-full p-2 sm:p-3 flex-1 min-h-0 flex flex-col overflow-hidden gap-2">
 
         <!-- Instruction Banner -->
-        <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-xl shadow-sm flex items-start justify-between gap-3">
-            <div class="flex items-start space-x-3">
-                <i class="fa-solid fa-lightbulb text-indigo-600 text-2xl mt-0.5 shrink-0"></i>
-                <div class="text-sm text-indigo-900 leading-relaxed">
-                    <h2 class="font-bold text-indigo-950 text-base mb-0.5">활동 안내: 각의 크기와 외심의 위치 관계 탐구</h2>
-                    <p>
-                        1. <strong>각 꼭짓점(A, B, C)을 클릭하여 드래그</strong>하면 각의 크기가 1도 단위로 변합니다 (내각의 합 = 180° 유지).<br>
-                        2. <strong>삼각형의 세 변(AB, BC, CA)을 클릭</strong>하면 각 변의 <strong>수직이등분선</strong>이 그려집니다.<br>
-                        3. 2개 이상의 수직이등분선이 그려지면 교점인 <strong>'외심'</strong>이 나타납니다. 예각, 직각, 둔각에 따라 외심의 위치 변화를 관찰해 보세요!
-                    </p>
+        <div class="bg-indigo-50 border-l-4 border-indigo-500 px-3 py-2 rounded-r-xl shadow-sm flex items-center justify-between shrink-0 gap-2">
+            <div class="flex items-center space-x-2 text-xs sm:text-sm min-w-0">
+                <i class="fa-solid fa-lightbulb text-indigo-600 text-base sm:text-lg shrink-0"></i>
+                <div class="text-xs sm:text-sm text-indigo-900 leading-tight min-w-0">
+                    <span class="font-bold text-indigo-950 block sm:inline">활동 안내: 각의 크기와 외심의 위치 관계 탐구</span>
+                    <span class="text-[11px] sm:text-xs text-indigo-800 hidden md:inline ml-2">
+                        (꼭짓점 A,B,C 드래그: 각도 조절 | 세 변 클릭: 수직이등분선 표시)
+                    </span>
                 </div>
             </div>
-            <button onclick="resetBoard()" class="px-3 py-1.5 bg-white border border-indigo-300 hover:bg-indigo-100 text-indigo-800 font-medium text-xs rounded-lg shadow-sm transition flex items-center shrink-0">
+            <button onclick="resetBoard()" class="px-2.5 py-1 bg-white border border-indigo-300 hover:bg-indigo-100 text-indigo-800 font-medium text-xs rounded-lg shadow-sm transition flex items-center shrink-0">
                 <i class="fa-solid fa-rotate-right mr-1"></i> 초기화
             </button>
         </div>
 
         <!-- Interactive Canvas & Sidebar Container -->
-        <div class="relative w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[540px]">
+        <div class="flex-1 min-h-0 relative bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden flex flex-col md:flex-row">
             
             <!-- SVG Interactive Board -->
-            <div class="relative flex-grow h-[450px] md:h-[550px] bg-slate-50 cursor-crosshair overflow-hidden touch-none" id="board-container">
+            <div class="relative flex-1 min-h-0 bg-slate-50 cursor-crosshair overflow-hidden touch-none select-none" id="board-container">
                 <!-- Background Grid Pattern -->
                 <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" width="100%" height="100%">
                     <defs>
@@ -124,80 +132,80 @@
                 <svg id="main-svg" class="absolute inset-0 w-full h-full"></svg>
 
                 <!-- Floating Helper Toast -->
-                <div id="hint-toast" class="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900/85 text-white px-4 py-2 rounded-full text-xs sm:text-sm font-medium shadow-lg pointer-events-none transition-all duration-300 flex items-center gap-2">
+                <div id="hint-toast" class="absolute top-2.5 left-1/2 -translate-x-1/2 bg-slate-900/85 text-white px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-medium shadow-md pointer-events-none transition-all duration-300 flex items-center gap-1.5">
                     <i class="fa-solid fa-hand-pointer text-yellow-400"></i>
                     <span id="hint-text">삼각형의 변을 클릭하여 수직이등분선을 그려보세요!</span>
                 </div>
             </div>
 
             <!-- Sidebar Panel -->
-            <div class="w-full md:w-80 border-t md:border-t-0 md:border-l border-slate-200 bg-slate-50 p-4 flex flex-col justify-between gap-4 shrink-0">
-                <div class="space-y-4">
+            <div class="w-full md:w-72 lg:w-80 border-t md:border-t-0 md:border-l border-slate-200 bg-slate-50 p-2.5 sm:p-3.5 flex flex-col justify-between gap-2 shrink-0 max-h-[42%] md:max-h-none overflow-y-auto">
+                <div class="space-y-2.5">
                     
                     <!-- Triangle Classification Card -->
-                    <div id="type-card" class="p-4 rounded-xl bg-indigo-50 border border-indigo-200 transition-all">
-                        <div class="flex justify-between items-center mb-1.5">
-                            <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">삼각형의 종류</span>
-                            <span id="type-badge" class="px-2.5 py-0.5 rounded-full text-xs font-black bg-indigo-600 text-white">예각삼각형</span>
+                    <div id="type-card" class="p-3 rounded-xl bg-indigo-50 border border-indigo-200 transition-all">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="text-[10px] sm:text-xs font-bold text-indigo-600 uppercase tracking-wider">삼각형의 종류</span>
+                            <span id="type-badge" class="px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-black bg-indigo-600 text-white">예각삼각형</span>
                         </div>
-                        <h3 id="type-title" class="text-lg font-extrabold text-indigo-950 font-gowun">모든 각이 예각입니다</h3>
-                        <p id="type-desc" class="text-xs text-indigo-800 mt-1 leading-relaxed">
+                        <h3 id="type-title" class="text-sm sm:text-base font-extrabold text-indigo-950 font-gowun">모든 각이 예각입니다</h3>
+                        <p id="type-desc" class="text-[11px] sm:text-xs text-indigo-800 mt-1 leading-relaxed">
                             세 각이 모두 90°보다 작으므로 외심은 삼각형의 <strong>내부</strong>에 위치합니다.
                         </p>
                     </div>
 
                     <!-- Angles Summary List -->
                     <div>
-                        <h4 class="font-bold text-slate-800 text-sm mb-2 flex items-center justify-between border-b pb-1">
+                        <h4 class="font-bold text-slate-800 text-xs sm:text-sm mb-1.5 flex items-center justify-between border-b pb-1">
                             <span class="flex items-center"><i class="fa-solid fa-compass text-indigo-600 mr-1.5"></i>내각의 크기</span>
-                            <span class="text-xs text-slate-500 font-normal">합 = 180°</span>
+                            <span class="text-[10px] text-slate-500 font-normal">합 = 180°</span>
                         </h4>
-                        <div class="grid grid-cols-3 gap-2 text-center text-xs">
-                            <div class="p-2 bg-rose-50 border border-rose-200 rounded-xl">
-                                <span class="block text-rose-500 font-bold mb-0.5">∠A</span>
-                                <span id="angle-a-val" class="font-mono text-sm font-black text-slate-800">60°</span>
+                        <div class="grid grid-cols-3 gap-1.5 text-center text-xs">
+                            <div class="p-1.5 sm:p-2 bg-rose-50 border border-rose-200 rounded-xl">
+                                <span class="block text-rose-500 font-bold text-[10px] sm:text-xs mb-0.5">∠A</span>
+                                <span id="angle-a-val" class="font-mono text-xs sm:text-sm font-black text-slate-800">60°</span>
                             </div>
-                            <div class="p-2 bg-emerald-50 border border-emerald-200 rounded-xl">
-                                <span class="block text-emerald-600 font-bold mb-0.5">∠B</span>
-                                <span id="angle-b-val" class="font-mono text-sm font-black text-slate-800">70°</span>
+                            <div class="p-1.5 sm:p-2 bg-emerald-50 border border-emerald-200 rounded-xl">
+                                <span class="block text-emerald-600 font-bold text-[10px] sm:text-xs mb-0.5">∠B</span>
+                                <span id="angle-b-val" class="font-mono text-xs sm:text-sm font-black text-slate-800">70°</span>
                             </div>
-                            <div class="p-2 bg-blue-50 border border-blue-200 rounded-xl">
-                                <span class="block text-blue-600 font-bold mb-0.5">∠C</span>
-                                <span id="angle-c-val" class="font-mono text-sm font-black text-slate-800">50°</span>
+                            <div class="p-1.5 sm:p-2 bg-blue-50 border border-blue-200 rounded-xl">
+                                <span class="block text-blue-600 font-bold text-[10px] sm:text-xs mb-0.5">∠C</span>
+                                <span id="angle-c-val" class="font-mono text-xs sm:text-sm font-black text-slate-800">50°</span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Perpendicular Bisectors Interactive Checklist -->
                     <div>
-                        <h4 class="font-bold text-slate-800 text-sm mb-2 flex items-center border-b pb-1">
+                        <h4 class="font-bold text-slate-800 text-xs sm:text-sm mb-1.5 flex items-center border-b pb-1">
                             <i class="fa-solid fa-ruler-combined text-purple-600 mr-1.5"></i>수직이등분선 (변 클릭)
                         </h4>
                         <div class="space-y-1.5 text-xs">
-                            <button onclick="toggleSide('AB')" id="btn-side-ab" class="w-full flex justify-between items-center p-2.5 rounded-xl border transition text-left bg-white border-slate-200 hover:bg-slate-100">
-                                <span class="font-semibold text-slate-700 flex items-center">
-                                    <i id="icon-side-ab" class="fa-regular fa-square mr-2 text-slate-400"></i>변 AB 수직이등분선
+                            <button onclick="toggleSide('AB')" id="btn-side-ab" class="w-full flex justify-between items-center p-2 rounded-xl border transition text-left bg-white border-slate-200 hover:bg-slate-100">
+                                <span class="font-semibold text-slate-700 flex items-center text-[11px] sm:text-xs">
+                                    <i id="icon-side-ab" class="fa-regular fa-square mr-1.5 text-slate-400"></i>변 AB 수직이등분선
                                 </span>
-                                <span id="status-side-ab" class="font-bold text-slate-400">미완성</span>
+                                <span id="status-side-ab" class="font-bold text-slate-400 text-[10px] sm:text-xs">미완성</span>
                             </button>
-                            <button onclick="toggleSide('BC')" id="btn-side-bc" class="w-full flex justify-between items-center p-2.5 rounded-xl border transition text-left bg-white border-slate-200 hover:bg-slate-100">
-                                <span class="font-semibold text-slate-700 flex items-center">
-                                    <i id="icon-side-bc" class="fa-regular fa-square mr-2 text-slate-400"></i>변 BC 수직이등분선
+                            <button onclick="toggleSide('BC')" id="btn-side-bc" class="w-full flex justify-between items-center p-2 rounded-xl border transition text-left bg-white border-slate-200 hover:bg-slate-100">
+                                <span class="font-semibold text-slate-700 flex items-center text-[11px] sm:text-xs">
+                                    <i id="icon-side-bc" class="fa-regular fa-square mr-1.5 text-slate-400"></i>변 BC 수직이등분선
                                 </span>
-                                <span id="status-side-bc" class="font-bold text-slate-400">미완성</span>
+                                <span id="status-side-bc" class="font-bold text-slate-400 text-[10px] sm:text-xs">미완성</span>
                             </button>
-                            <button onclick="toggleSide('CA')" id="btn-side-ca" class="w-full flex justify-between items-center p-2.5 rounded-xl border transition text-left bg-white border-slate-200 hover:bg-slate-100">
-                                <span class="font-semibold text-slate-700 flex items-center">
-                                    <i id="icon-side-ca" class="fa-regular fa-square mr-2 text-slate-400"></i>변 CA 수직이등분선
+                            <button onclick="toggleSide('CA')" id="btn-side-ca" class="w-full flex justify-between items-center p-2 rounded-xl border transition text-left bg-white border-slate-200 hover:bg-slate-100">
+                                <span class="font-semibold text-slate-700 flex items-center text-[11px] sm:text-xs">
+                                    <i id="icon-side-ca" class="fa-regular fa-square mr-1.5 text-slate-400"></i>변 CA 수직이등분선
                                 </span>
-                                <span id="status-side-ca" class="font-bold text-slate-400">미완성</span>
+                                <span id="status-side-ca" class="font-bold text-slate-400 text-[10px] sm:text-xs">미완성</span>
                             </button>
                         </div>
                     </div>
 
                     <!-- Circumcircle Toggle Option -->
-                    <div class="p-3 bg-purple-50 border border-purple-200 rounded-xl flex items-center justify-between">
-                        <label for="toggle-circle" class="text-xs font-bold text-purple-900 flex items-center cursor-pointer">
+                    <div class="p-2 sm:p-2.5 bg-purple-50 border border-purple-200 rounded-xl flex items-center justify-between">
+                        <label for="toggle-circle" class="text-[11px] sm:text-xs font-bold text-purple-900 flex items-center cursor-pointer">
                             <i class="fa-solid fa-circle-notch text-purple-600 mr-1.5"></i>외접원 표시하기
                         </label>
                         <input type="checkbox" id="toggle-circle" onchange="toggleCircumcircle()" class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer">
@@ -206,7 +214,7 @@
                 </div>
 
                 <!-- Footer info in sidebar -->
-                <div class="text-[11px] text-slate-400 text-center border-t pt-2">
+                <div class="text-[10px] sm:text-[11px] text-slate-400 text-center border-t pt-1.5">
                     꼭짓점을 드래그하여 각을 조절하세요.
                 </div>
             </div>
@@ -215,7 +223,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-slate-200 border-t border-slate-300 py-3 text-center text-xs text-slate-600">
+    <footer class="bg-slate-200 border-t border-slate-300 py-1 sm:py-1.5 text-center text-[10px] sm:text-xs text-slate-600 shrink-0">
         <p>© 2026 김효경│수학 수업용 인터랙티브 콘텐츠</p>
     </footer>
 
@@ -253,7 +261,8 @@
             C: { x: 520, y: 390, label: 'C' },
             activeBisectors: new Set(), // 'AB', 'BC', 'CA'
             showCircumcircle: false,
-            draggingVertex: null
+            draggingVertex: null,
+            currentPreset: 'acute'
         };
 
         /* Geometry & Angle Math Functions */
@@ -326,22 +335,23 @@
         /* Preset Handlers */
         function applyPreset(type) {
             playSound('snap');
+            state.currentPreset = type;
             const board = document.getElementById('board-container');
             const w = board ? board.clientWidth : 600;
             const h = board ? board.clientHeight : 450;
 
             if (type === 'acute') {
-                state.A = { x: Math.round(w * 0.45), y: Math.round(h * 0.22), label: 'A' };
-                state.B = { x: Math.round(w * 0.22), y: Math.round(h * 0.78), label: 'B' };
-                state.C = { x: Math.round(w * 0.78), y: Math.round(h * 0.78), label: 'C' };
+                state.A = { x: Math.round(w * 0.45), y: Math.round(h * 0.20), label: 'A' };
+                state.B = { x: Math.round(w * 0.20), y: Math.round(h * 0.80), label: 'B' };
+                state.C = { x: Math.round(w * 0.80), y: Math.round(h * 0.80), label: 'C' };
             } else if (type === 'right') {
-                state.A = { x: Math.round(w * 0.25), y: Math.round(h * 0.22), label: 'A' };
-                state.B = { x: Math.round(w * 0.25), y: Math.round(h * 0.78), label: 'B' };
-                state.C = { x: Math.round(w * 0.75), y: Math.round(h * 0.78), label: 'C' };
+                state.A = { x: Math.round(w * 0.22), y: Math.round(h * 0.20), label: 'A' };
+                state.B = { x: Math.round(w * 0.22), y: Math.round(h * 0.80), label: 'B' };
+                state.C = { x: Math.round(w * 0.78), y: Math.round(h * 0.80), label: 'C' };
             } else if (type === 'obtuse') {
-                state.A = { x: Math.round(w * 0.20), y: Math.round(h * 0.38), label: 'A' };
-                state.B = { x: Math.round(w * 0.45), y: Math.round(h * 0.72), label: 'B' };
-                state.C = { x: Math.round(w * 0.85), y: Math.round(h * 0.72), label: 'C' };
+                state.A = { x: Math.round(w * 0.18), y: Math.round(h * 0.35), label: 'A' };
+                state.B = { x: Math.round(w * 0.42), y: Math.round(h * 0.75), label: 'B' };
+                state.C = { x: Math.round(w * 0.86), y: Math.round(h * 0.75), label: 'C' };
             }
             render();
         }
@@ -509,23 +519,23 @@
             const typeCard = document.getElementById('type-card');
 
             if (maxAngle < 90) {
-                typeBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-600 text-white";
+                typeBadge.className = "px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-black bg-emerald-600 text-white";
                 typeBadge.textContent = "예각삼각형";
                 typeTitle.textContent = "모든 각이 예각입니다";
                 typeDesc.innerHTML = "세 각이 모두 90°보다 작으므로 외심은 삼각형의 <strong>내부</strong>에 위치합니다.";
-                typeCard.className = "p-4 rounded-xl bg-emerald-50 border border-emerald-200 transition-all";
+                typeCard.className = "p-3 rounded-xl bg-emerald-50 border border-emerald-200 transition-all";
             } else if (maxAngle === 90) {
-                typeBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-600 text-white";
+                typeBadge.className = "px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-black bg-amber-600 text-white";
                 typeBadge.textContent = "직각삼각형";
                 typeTitle.textContent = "한 각이 직각(90°)입니다";
                 typeDesc.innerHTML = "한 각이 90°이므로 외심은 가장 긴 변(빗변)의 <strong>중점</strong>에 위치합니다!";
-                typeCard.className = "p-4 rounded-xl bg-amber-50 border border-amber-200 transition-all";
+                typeCard.className = "p-3 rounded-xl bg-amber-50 border border-amber-200 transition-all";
             } else {
-                typeBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-600 text-white";
+                typeBadge.className = "px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-black bg-rose-600 text-white";
                 typeBadge.textContent = "둔각삼각형";
                 typeTitle.textContent = "한 각이 둔각(>90°)입니다";
                 typeDesc.innerHTML = "한 각이 90°보다 크므로 외심은 삼각형의 <strong>외부</strong>에 위치합니다.";
-                typeCard.className = "p-4 rounded-xl bg-rose-50 border border-rose-200 transition-all";
+                typeCard.className = "p-3 rounded-xl bg-rose-50 border border-rose-200 transition-all";
             }
 
             // Update Side Bisector Checklist UI
@@ -535,15 +545,15 @@
                 const status = document.getElementById(`status-side-${key.toLowerCase()}`);
 
                 if (activeBisectors.has(key)) {
-                    btn.className = "w-full flex justify-between items-center p-2.5 rounded-xl border transition text-left bg-purple-100 border-purple-300 font-bold text-purple-900";
-                    icon.className = "fa-solid fa-square-check mr-2 text-purple-600";
+                    btn.className = "w-full flex justify-between items-center p-2 rounded-xl border transition text-left bg-purple-100 border-purple-300 font-bold text-purple-900";
+                    icon.className = "fa-solid fa-square-check mr-1.5 text-purple-600";
                     status.textContent = "표시됨";
-                    status.className = "font-bold text-purple-700";
+                    status.className = "font-bold text-purple-700 text-[10px] sm:text-xs";
                 } else {
-                    btn.className = "w-full flex justify-between items-center p-2.5 rounded-xl border transition text-left bg-white border-slate-200 hover:bg-slate-100";
-                    icon.className = "fa-regular fa-square mr-2 text-slate-400";
+                    btn.className = "w-full flex justify-between items-center p-2 rounded-xl border transition text-left bg-white border-slate-200 hover:bg-slate-100";
+                    icon.className = "fa-regular fa-square mr-1.5 text-slate-400";
                     status.textContent = "미완성";
-                    status.className = "font-bold text-slate-400";
+                    status.className = "font-bold text-slate-400 text-[10px] sm:text-xs";
                 }
             });
 
@@ -917,7 +927,7 @@
         });
 
         window.addEventListener('resize', () => {
-            render();
+            applyPreset(state.currentPreset || 'acute');
         });
     </script>
 </body>
