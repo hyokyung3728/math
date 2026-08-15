@@ -3,7 +3,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>미션2. 세 변에서 같은 거리에 있는 점 찾기!</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -13,8 +13,18 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+    
     <style>
-        body {
+        * {
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+        html, body {
+            height: 100%;
+            height: 100dvh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
             font-family: 'Noto Sans KR', sans-serif;
             user-select: none;
             -webkit-user-select: none;
@@ -24,7 +34,7 @@
         }
         @keyframes pulse-subtle {
             0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.08); opacity: 0.85; }
+            50% { transform: scale(1.05); opacity: 0.85; }
         }
         .animate-pulse-subtle {
             animation: pulse-subtle 2s infinite ease-in-out;
@@ -43,68 +53,63 @@
         }
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between overflow-x-hidden">
+<body class="bg-slate-100 text-slate-800 h-full h-[100dvh] flex flex-col justify-between overflow-hidden">
 
-    <!-- Header -->
-    <header class="bg-indigo-600 text-white shadow-lg sticky top-0 z-30">
-        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-2">
-            <div class="flex items-center space-x-3">
-                <div class="p-2 bg-indigo-500 rounded-lg shadow-inner">
-                    <i class="fa-solid fa-shapes text-2xl text-yellow-300"></i>
+    <!-- Compact Responsive Header -->
+    <header class="bg-indigo-600 text-white shadow-md shrink-0 z-30">
+        <div class="max-w-7xl mx-auto px-3 py-1.5 sm:py-2 flex justify-between items-center gap-2">
+            <div class="flex items-center space-x-2 min-w-0">
+                <div class="p-1.5 bg-indigo-500 rounded-lg shadow-inner shrink-0">
+                    <i class="fa-solid fa-shapes text-lg sm:text-xl text-yellow-300"></i>
                 </div>
-                <div>
-                    <h1 class="text-xl md:text-2xl font-bold font-gowun tracking-tight">미션2. 세 변에서 같은 거리에 있는 점 찾기!</h1>
-                    <p class="text-xs text-indigo-200">수학적 탐구: 세 벤치가 놓인 변으로부터의 거리와 각의 이등분선</p>
+                <div class="truncate">
+                    <h1 class="text-sm sm:text-base md:text-lg font-bold font-gowun tracking-tight truncate">미션2. 세 변에서 같은 거리에 있는 점 찾기!</h1>
+                    <p class="text-[10px] sm:text-xs text-indigo-200 hidden sm:block truncate">수학적 탐구: 세 벤치가 놓인 변으로부터의 거리와 각의 이등분선</p>
                 </div>
             </div>
 
-            <div class="flex bg-indigo-800/60 p-1 rounded-xl gap-1 border border-indigo-400/30 text-xs sm:text-sm">
-                <button id="tab-step1" onclick="switchStep(1)" class="px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all duration-200 bg-white text-indigo-700 shadow-md">
-                    <i class="fa-solid fa-chair mr-1"></i>1단계: 세 변 탐구
+            <div class="flex bg-indigo-800/60 p-1 rounded-xl gap-1 border border-indigo-400/30 text-xs shrink-0">
+                <button id="tab-step1" onclick="switchStep(1)" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 bg-white text-indigo-700 shadow-md">
+                    <i class="fa-solid fa-chair mr-1"></i><span class="hidden sm:inline">1단계: </span>세 변
                 </button>
-                <button id="tab-step2" onclick="switchStep(2)" class="px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50">
-                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>2단계: 선의 비밀 탐구
+                <button id="tab-step2" onclick="switchStep(2)" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i><span class="hidden sm:inline">2단계: </span>선의 비밀
                 </button>
-                <button id="tab-step3" onclick="switchStep(3)" class="px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50">
-                    <i id="tab-step3-icon" class="fa-solid fa-lock mr-1 text-amber-300"></i>3단계: 완성하기
+                <button id="tab-step3" onclick="switchStep(3)" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50">
+                    <i id="tab-step3-icon" class="fa-solid fa-lock mr-1 text-amber-300"></i><span class="hidden sm:inline">3단계: </span>완성하기
                 </button>
             </div>
         </div>
     </header>
 
     <!-- Floating Global Toast Notification -->
-    <div id="global-toast" class="fixed top-20 left-1/2 -translate-x-1/2 z-50 bg-slate-900/90 text-white text-xs sm:text-sm px-5 py-3 rounded-2xl shadow-2xl transition-all duration-300 transform -translate-y-10 opacity-0 pointer-events-none flex items-center gap-2 border border-slate-700">
-        <span id="global-toast-icon" class="text-amber-400 text-base"><i class="fa-solid fa-triangle-exclamation"></i></span>
+    <div id="global-toast" class="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-slate-900/90 text-white text-xs sm:text-sm px-4 py-2 sm:py-2.5 rounded-2xl shadow-2xl transition-all duration-300 transform -translate-y-10 opacity-0 pointer-events-none flex items-center gap-2 border border-slate-700">
+        <span id="global-toast-icon" class="text-amber-400 text-sm"><i class="fa-solid fa-triangle-exclamation"></i></span>
         <span id="global-toast-msg">안내 메시지</span>
     </div>
 
-    <!-- Main Content Container -->
-    <main class="max-w-6xl mx-auto w-full p-3 sm:p-5 flex-grow flex flex-col gap-4">
+    <!-- Main Content Container (Fills remaining height without scroll) -->
+    <main class="max-w-7xl mx-auto w-full p-2 sm:p-3 flex-1 min-h-0 flex flex-col overflow-hidden">
 
         <!-- ==================== STEP 1 SECTION ==================== -->
-        <section id="step1-container" class="flex flex-col gap-4">
+        <section id="step1-container" class="flex-1 min-h-0 flex flex-col gap-2 overflow-hidden">
             <!-- Instruction Banner -->
-            <div class="bg-amber-50 border-l-4 border-amber-400 p-4 rounded-r-xl shadow-sm flex items-start justify-between">
-                <div class="flex items-start space-x-3">
-                    <i class="fa-solid fa-lightbulb text-amber-500 text-2xl mt-0.5"></i>
-                    <div>
-                        <h2 class="font-bold text-amber-900 text-base">활동 안내: 세 벤치가 있는 변에서 똑같이 떨어져 있는 점 찾기</h2>
-                        <p class="text-sm text-amber-800 mt-0.5">
-                            삼각형의 세 변 위에 벤치의자가 놓여 있습니다. 
-                            <strong>삼각형 내부를 클릭</strong>하여 세 변으로부터 정확히 똑같이 떨어져 있는 위치(점 P)를 찾아보세요! <br>
-                            점 P를 지정하면 세 변까지 내려수선이 그려지고 수선의 길이가 측정됩니다. 점을 드래그하여 자유롭게 이동해보세요.
-                        </p>
-                    </div>
+            <div class="bg-amber-50 border-l-4 border-amber-400 px-3 py-2 rounded-r-xl shadow-sm flex items-center justify-between shrink-0 gap-2">
+                <div class="flex items-center space-x-2 text-xs sm:text-sm min-w-0">
+                    <i class="fa-solid fa-lightbulb text-amber-500 text-base sm:text-lg shrink-0"></i>
+                    <p class="text-amber-900 font-medium truncate sm:whitespace-normal">
+                        <strong>삼각형 내부를 클릭/드래그</strong>하여 세 벤치가 놓인 변에서 똑같이 떨어져 있는 위치(점 P)를 찾아보세요!
+                    </p>
                 </div>
-                <button onclick="resetStep1()" class="px-3 py-1.5 bg-white border border-amber-300 hover:bg-amber-100 text-amber-800 font-medium text-xs rounded-lg shadow-sm transition flex items-center shrink-0">
-                    <i class="fa-solid fa-rotate-right mr-1"></i> 다시 하기
+                <button onclick="resetStep1()" class="px-2.5 py-1 bg-white border border-amber-300 hover:bg-amber-100 text-amber-800 font-medium text-xs rounded-lg shadow-sm transition flex items-center shrink-0">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> 다시하기
                 </button>
             </div>
 
             <!-- Stage Canvas Container -->
-            <div class="relative w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[500px]">
+            <div class="flex-1 min-h-0 relative bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden flex flex-col md:flex-row">
                 
-                <div class="relative flex-grow h-[420px] md:h-[520px] bg-slate-50 cursor-crosshair overflow-hidden touch-board select-none" id="step1-board">
+                <div class="relative flex-1 min-h-0 bg-slate-50 cursor-crosshair overflow-hidden touch-board select-none" id="step1-board">
                     <!-- Background Grid Pattern -->
                     <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" width="100%" height="100%">
                         <defs>
@@ -119,78 +124,71 @@
                     <svg id="svg-step1" class="absolute inset-0 w-full h-full touch-board"></svg>
 
                     <!-- Overlay Instruction Toast -->
-                    <div id="step1-hint-toast" class="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-800/80 text-white px-4 py-2 rounded-full text-xs sm:text-sm font-medium shadow-lg pointer-events-none transition-opacity duration-300">
-                        <i class="fa-solid fa-hand-pointer mr-1.5 text-yellow-400"></i> 삼각형 내부를 클릭하여 점 P를 지정해 보세요!
+                    <div id="step1-hint-toast" class="absolute top-2.5 left-1/2 -translate-x-1/2 bg-slate-800/80 text-white px-3 py-1.5 rounded-full text-[11px] sm:text-xs font-medium shadow-md pointer-events-none transition-opacity duration-300">
+                        <i class="fa-solid fa-hand-pointer mr-1 text-yellow-400"></i> 삼각형 내부를 클릭하여 점 P를 지정해 보세요!
                     </div>
                 </div>
 
                 <!-- Control & Distance Feedback Sidebar -->
-                <div class="w-full md:w-80 border-t md:border-t-0 md:border-l border-slate-200 bg-slate-50 p-4 flex flex-col justify-between gap-4">
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-base mb-3 flex items-center border-b pb-2">
+                <div class="w-full md:w-72 lg:w-80 border-t md:border-t-0 md:border-l border-slate-200 bg-slate-50 p-2.5 sm:p-3.5 flex flex-col justify-between gap-2 shrink-0 max-h-[38%] md:max-h-none overflow-y-auto">
+                    <div class="space-y-2">
+                        <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center border-b pb-1.5">
                             <i class="fa-solid fa-ruler-combined text-indigo-600 mr-2"></i>세 변까지의 거리 측정
                         </h3>
 
                         <!-- Distances List -->
-                        <div class="space-y-2 text-sm">
-                            <div class="flex justify-between items-center p-2.5 bg-rose-50 border border-rose-200 rounded-xl">
-                                <span class="font-semibold text-rose-700 flex items-center"><span class="w-3 h-3 rounded-full bg-rose-500 inline-block mr-2"></span>변 AB까지의 거리</span>
-                                <span id="dist-s1" class="font-mono font-bold text-slate-700">- m</span>
+                        <div class="grid grid-cols-3 md:grid-cols-1 gap-1.5 text-xs">
+                            <div class="flex flex-col md:flex-row justify-between items-center p-1.5 sm:p-2 bg-rose-50 border border-rose-200 rounded-lg">
+                                <span class="font-semibold text-rose-700 flex items-center text-[11px] sm:text-xs"><span class="w-2 h-2 rounded-full bg-rose-500 inline-block mr-1"></span>변 AB</span>
+                                <span id="dist-s1" class="font-mono font-bold text-slate-700 text-xs sm:text-sm">- m</span>
                             </div>
-                            <div class="flex justify-between items-center p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
-                                <span class="font-semibold text-emerald-700 flex items-center"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block mr-2"></span>변 BC까지의 거리</span>
-                                <span id="dist-s2" class="font-mono font-bold text-slate-700">- m</span>
+                            <div class="flex flex-col md:flex-row justify-between items-center p-1.5 sm:p-2 bg-emerald-50 border border-emerald-200 rounded-lg">
+                                <span class="font-semibold text-emerald-700 flex items-center text-[11px] sm:text-xs"><span class="w-2 h-2 rounded-full bg-emerald-500 inline-block mr-1"></span>변 BC</span>
+                                <span id="dist-s2" class="font-mono font-bold text-slate-700 text-xs sm:text-sm">- m</span>
                             </div>
-                            <div class="flex justify-between items-center p-2.5 bg-blue-50 border border-blue-200 rounded-xl">
-                                <span class="font-semibold text-blue-700 flex items-center"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block mr-2"></span>변 CA까지의 거리</span>
-                                <span id="dist-s3" class="font-mono font-bold text-slate-700">- m</span>
+                            <div class="flex flex-col md:flex-row justify-between items-center p-1.5 sm:p-2 bg-blue-50 border border-blue-200 rounded-lg">
+                                <span class="font-semibold text-blue-700 flex items-center text-[11px] sm:text-xs"><span class="w-2 h-2 rounded-full bg-blue-500 inline-block mr-1"></span>변 CA</span>
+                                <span id="dist-s3" class="font-mono font-bold text-slate-700 text-xs sm:text-sm">- m</span>
                             </div>
                         </div>
 
                         <!-- Status Message Card -->
-                        <div id="step1-status-card" class="mt-4 p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-xs text-indigo-900 flex items-start gap-2">
-                            <i class="fa-solid fa-circle-info text-indigo-500 text-base mt-0.5 shrink-0"></i>
-                            <div id="step1-status-text">
+                        <div id="step1-status-card" class="p-2 sm:p-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-[11px] sm:text-xs text-indigo-900 flex items-start gap-1.5">
+                            <i class="fa-solid fa-circle-info text-indigo-500 text-sm mt-0.5 shrink-0"></i>
+                            <div id="step1-status-text" class="leading-tight">
                                 세 변에서 똑같은 거리만큼 떨어진 점 P를 찾아보세요! 수선의 세 길이가 같아질수록 정답에 가까워집니다.
                             </div>
                         </div>
                     </div>
 
                     <!-- Action Button -->
-                    <div class="flex flex-col gap-2">
-                        <button onclick="switchStep(2)" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-sm shadow-md transition duration-200 flex items-center justify-center gap-2">
-                            2단계: 선의 비밀 탐구하기 <i class="fa-solid fa-arrow-right"></i>
-                        </button>
-                    </div>
+                    <button onclick="switchStep(2)" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs sm:text-sm shadow-md transition duration-200 flex items-center justify-center gap-1.5 shrink-0">
+                        2단계: 선의 비밀 탐구하기 <i class="fa-solid fa-arrow-right"></i>
+                    </button>
                 </div>
 
             </div>
         </section>
 
         <!-- ==================== STEP 2 SECTION ==================== -->
-        <section id="step2-container" class="hidden flex flex-col gap-4">
+        <section id="step2-container" class="hidden flex-1 min-h-0 flex flex-col gap-2 overflow-hidden">
             <!-- Instruction Banner -->
-            <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-xl shadow-sm flex items-start justify-between">
-                <div class="flex items-start space-x-3">
-                    <i class="fa-solid fa-wand-magic-sparkles text-indigo-600 text-2xl mt-0.5"></i>
-                    <div>
-                        <h2 class="font-bold text-indigo-900 text-base">활동 안내: 두 변에서 같은 거리에 있는 점들의 비밀</h2>
-                        <p class="text-sm text-indigo-800 mt-0.5">
-                            1. 두 변 주변을 클릭하여 두 변에서 <strong>같은 거리에 있을 만한 점들</strong>을 찍어보세요.<br>
-                            &nbsp;&nbsp;&nbsp;(실제 점은 두 변이 이루는 각의 이등분선 위로 보정되어 찍히며, 각 변으로의 수선과 길이가 표시됩니다.)<br>
-                            2. 점을 여러 개 찍은 후, <strong>찍은 점 중 하나를 누른 채 다른 점 방향으로 쭉 드래그해 보세요!</strong> 수선이 사라지고 비밀의 선이 나타납니다.
-                        </p>
-                    </div>
+            <div class="bg-indigo-50 border-l-4 border-indigo-500 px-3 py-2 rounded-r-xl shadow-sm flex items-center justify-between shrink-0 gap-2">
+                <div class="flex items-center space-x-2 text-xs sm:text-sm min-w-0">
+                    <i class="fa-solid fa-wand-magic-sparkles text-indigo-600 text-base sm:text-lg shrink-0"></i>
+                    <p class="text-indigo-900 font-medium truncate sm:whitespace-normal">
+                        <strong>1. 점 찍기</strong>: 두 변에서 같은 거리의 점 찍기 &nbsp;|&nbsp; <strong>2. 드래그</strong>: 찍은 점을 쭉 이어서 선 그리기
+                    </p>
                 </div>
-                <button onclick="resetStep2()" class="px-3 py-1.5 bg-white border border-indigo-300 hover:bg-indigo-100 text-indigo-800 font-medium text-xs rounded-lg shadow-sm transition flex items-center shrink-0">
-                    <i class="fa-solid fa-rotate-right mr-1"></i> 처음부터 다시
+                <button onclick="resetStep2()" class="px-2.5 py-1 bg-white border border-indigo-300 hover:bg-indigo-100 text-indigo-800 font-medium text-xs rounded-lg shadow-sm transition flex items-center shrink-0">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> 다시하기
                 </button>
             </div>
 
             <!-- Step 2 Canvas Container -->
-            <div class="relative w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col min-h-[520px]">
+            <div class="flex-1 min-h-0 relative bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden flex flex-col">
                 
-                <div class="relative flex-grow h-[460px] bg-slate-50 overflow-hidden cursor-crosshair touch-board select-none" id="step2-board">
+                <div class="relative flex-1 min-h-0 bg-slate-50 overflow-hidden cursor-crosshair touch-board select-none" id="step2-board">
                     <!-- Grid Background -->
                     <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" width="100%" height="100%">
                         <defs>
@@ -205,68 +203,69 @@
                     <svg id="svg-step2" class="absolute inset-0 w-full h-full touch-board"></svg>
 
                     <!-- Step 2 Floating Instruction Overlay -->
-                    <div id="step2-guide-box" class="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900/85 text-white px-5 py-2.5 rounded-full text-xs sm:text-sm font-medium shadow-xl pointer-events-none transition-all duration-300 flex items-center gap-2">
-                        <span id="step2-guide-icon" class="text-amber-400 text-base"><i class="fa-solid fa-mouse-pointer"></i></span>
+                    <div id="step2-guide-box" class="absolute top-2.5 left-1/2 -translate-x-1/2 bg-slate-900/85 text-white px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-medium shadow-md pointer-events-none transition-all duration-300 flex items-center gap-1.5">
+                        <span id="step2-guide-icon" class="text-amber-400"><i class="fa-solid fa-mouse-pointer"></i></span>
                         <span id="step2-guide-text">두 변에서 같은 거리에 있을 만한 위치를 클릭해보세요!</span>
                     </div>
 
                     <!-- Floating Drag Prompt (Appears when points >= 2) -->
-                    <div id="step2-drag-prompt" class="hidden absolute bottom-6 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-rose-500 text-white font-bold px-6 py-3 rounded-2xl shadow-2xl animate-bounce flex items-center gap-2 cursor-pointer pointer-events-none">
-                        <i class="fa-solid fa-hand-line text-xl"></i>
+                    <div id="step2-drag-prompt" class="hidden absolute bottom-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-rose-500 text-white font-bold px-4 py-2 rounded-xl shadow-xl animate-bounce flex items-center gap-2 cursor-pointer pointer-events-none text-xs sm:text-sm">
+                        <i class="fa-solid fa-hand-line text-base"></i>
                         <span>찍은 점 하나를 누르고 다른 점 쪽으로 쭉 이어서 드래그해 보세요!</span>
                     </div>
 
                     <!-- Button to check answer (Revealed when line is drawn) -->
-                    <div id="btn-reveal-secret-container" class="hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-20">
-                        <button onclick="openAnswerModal()" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base rounded-2xl shadow-2xl transition duration-300 transform hover:scale-105 flex items-center gap-2 border-2 border-emerald-300">
+                    <div id="btn-reveal-secret-container" class="hidden absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
+                        <button onclick="openAnswerModal()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xl transition duration-300 transform hover:scale-105 flex items-center gap-1.5 border border-emerald-300">
                             <i class="fa-solid fa-pen-to-square text-yellow-300"></i> 정답 입력하기
                         </button>
                     </div>
                 </div>
 
-                <div id="step2-answer-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-                    <div class="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 max-w-sm sm:max-w-md w-full my-auto flex flex-col gap-3 sm:gap-4 border border-slate-200">
-                        <div class="flex justify-between items-center border-b pb-2.5 sm:pb-3">
-                            <h3 class="text-base sm:text-lg font-bold text-slate-800 flex items-center gap-2">
+                <!-- Step 2 Answer Modal -->
+                <div id="step2-answer-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 overflow-y-auto">
+                    <div class="bg-white rounded-2xl shadow-2xl p-4 max-w-xs sm:max-w-md w-full my-auto flex flex-col gap-2.5 border border-slate-200">
+                        <div class="flex justify-between items-center border-b pb-2">
+                            <h3 class="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-1.5">
                                 <i class="fa-solid fa-pen-to-square text-indigo-600"></i> 정답 입력하기
                             </h3>
                             <button onclick="closeAnswerModal()" class="text-slate-400 hover:text-slate-600 p-1">
-                                <i class="fa-solid fa-xmark text-xl"></i>
+                                <i class="fa-solid fa-xmark text-lg"></i>
                             </button>
                         </div>
-                        <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                        <p class="text-xs text-slate-600 leading-relaxed">
                             두 변에서 같은 거리에 있는 모든 점들을 연결하고, 두 각의 크기를 같게 만들어 준 이 선의 정확한 이름은 무엇일까요?
                         </p>
-                        <div class="flex flex-col sm:flex-row gap-2">
-                            <input type="text" id="step2-answer-input" onkeydown="if(event.key==='Enter') submitStep2Answer()" placeholder="정답을 입력하세요" class="w-full px-3.5 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-800 text-sm">
-                            <button onclick="submitStep2Answer()" class="w-full sm:w-auto px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition shrink-0 text-sm">
+                        <div class="flex gap-2">
+                            <input type="text" id="step2-answer-input" onkeydown="if(event.key==='Enter') submitStep2Answer()" placeholder="정답을 입력하세요" class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-800 text-xs sm:text-sm">
+                            <button onclick="submitStep2Answer()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition shrink-0 text-xs sm:text-sm">
                                 확인
                             </button>
                         </div>
-                        <p id="step2-answer-feedback" class="hidden text-xs font-semibold px-3 py-2 rounded-lg"></p>
+                        <p id="step2-answer-feedback" class="hidden text-xs font-semibold px-2.5 py-1.5 rounded-lg"></p>
                     </div>
                 </div>
 
                 <!-- Explanation Panel (Revealed after entering correct answer) -->
-                <div id="step2-secret-panel" class="hidden bg-emerald-950 text-white p-5 border-t border-emerald-800 transition-all duration-500">
-                    <div class="max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-                        <div class="flex items-start gap-3">
-                            <div class="p-3 bg-emerald-500/20 border border-emerald-500/40 rounded-2xl text-emerald-400 text-2xl shrink-0">
+                <div id="step2-secret-panel" class="hidden bg-emerald-950 text-white p-3 border-t border-emerald-800 shrink-0">
+                    <div class="max-w-4xl mx-auto flex flex-row items-center justify-between gap-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <div class="p-2 bg-emerald-500/20 border border-emerald-500/40 rounded-xl text-emerald-400 text-lg shrink-0">
                                 <i class="fa-solid fa-award"></i>
                             </div>
-                            <div>
-                                <h3 class="text-lg font-bold text-emerald-300 font-gowun">🎉 정답입니다! 각의 이등분선의 성질</h3>
-                                <p class="text-sm text-emerald-100 mt-1 leading-relaxed">
-                                    두 변에서 같은 거리에 있는 모든 점들을 이으면 바로 <strong>두 변이 이루는 '각의 이등분선'</strong>이 됩니다!
+                            <div class="min-w-0">
+                                <h3 class="text-xs sm:text-sm font-bold text-emerald-300 font-gowun truncate">🎉 정답입니다! 각의 이등분선의 성질</h3>
+                                <p class="text-[11px] sm:text-xs text-emerald-100 truncate">
+                                    두 변에서 같은 거리에 있는 모든 점들을 이으면 바로 <strong>'각의 이등분선'</strong>이 됩니다!
                                 </p>
                             </div>
                         </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <button onclick="switchStep(1)" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-sm rounded-xl shadow transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-arrow-left"></i> 1단계로 돌아가기
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <button onclick="switchStep(1)" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-lg shadow transition flex items-center gap-1">
+                                <i class="fa-solid fa-arrow-left"></i> <span class="hidden sm:inline">1단계</span>
                             </button>
-                            <button onclick="switchStep(3)" class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm rounded-xl shadow-lg transition flex items-center gap-1.5">
-                                3단계로 이동 <i class="fa-solid fa-arrow-right"></i>
+                            <button onclick="switchStep(3)" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg shadow transition flex items-center gap-1">
+                                3단계 <i class="fa-solid fa-arrow-right"></i>
                             </button>
                         </div>
                     </div>
@@ -276,29 +275,24 @@
         </section>
 
         <!-- ==================== STEP 3 SECTION ==================== -->
-        <section id="step3-container" class="hidden flex flex-col gap-4">
+        <section id="step3-container" class="hidden flex-1 min-h-0 flex flex-col gap-2 overflow-hidden">
             <!-- Instruction Banner -->
-            <div class="bg-purple-50 border-l-4 border-purple-500 p-4 rounded-r-xl shadow-sm flex items-start justify-between">
-                <div class="flex items-start space-x-3">
-                    <i class="fa-solid fa-compass-drafting text-purple-600 text-2xl mt-0.5"></i>
-                    <div>
-                        <h2 class="font-bold text-purple-900 text-base">활동 안내: 세 각의 이등분선으로 명당 위치 완성하기</h2>
-                        <p class="text-sm text-purple-800 mt-0.5">
-                            1. 두 개의 변을 차례대로 클릭하여 <strong>각의 이등분선</strong>을 만들어보세요. (다른 두 변들도 반복!)<br>
-                            2. 각의 이등분선들이 만나는 <strong>교점을 클릭</strong>하여 점 P를 찍고, 세 변까지의 거리가 같은지 확인해보세요!<br>
-                            3. 교점을 <strong>한 번 더 클릭</strong>하면 완성 모습과 비밀이 밝혀집니다.
-                        </p>
-                    </div>
+            <div class="bg-purple-50 border-l-4 border-purple-500 px-3 py-2 rounded-r-xl shadow-sm flex items-center justify-between shrink-0 gap-2">
+                <div class="flex items-center space-x-2 text-xs sm:text-sm min-w-0">
+                    <i class="fa-solid fa-compass-drafting text-purple-600 text-base sm:text-lg shrink-0"></i>
+                    <p class="text-purple-900 font-medium truncate sm:whitespace-normal">
+                        <strong>1. 두 변씩 클릭</strong>하여 각의 이등분선 만들기 &nbsp;|&nbsp; <strong>2. 교점 클릭</strong>하여 명당 위치 완성하기
+                    </p>
                 </div>
-                <button onclick="resetStep3()" class="px-3 py-1.5 bg-white border border-purple-300 hover:bg-purple-100 text-purple-800 font-medium text-xs rounded-lg shadow-sm transition flex items-center shrink-0">
-                    <i class="fa-solid fa-rotate-right mr-1"></i> 처음부터 다시
+                <button onclick="resetStep3()" class="px-2.5 py-1 bg-white border border-purple-300 hover:bg-purple-100 text-purple-800 font-medium text-xs rounded-lg shadow-sm transition flex items-center shrink-0">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> 다시하기
                 </button>
             </div>
 
             <!-- Step 3 Canvas & Sidebar Container -->
-            <div class="relative w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[500px]">
+            <div class="flex-1 min-h-0 relative bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden flex flex-col md:flex-row">
                 
-                <div class="relative flex-grow h-[420px] md:h-[520px] bg-slate-50 cursor-pointer overflow-hidden touch-board select-none" id="step3-board">
+                <div class="relative flex-1 min-h-0 bg-slate-50 cursor-pointer overflow-hidden touch-board select-none" id="step3-board">
                     <!-- Grid Pattern -->
                     <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" width="100%" height="100%">
                         <defs>
@@ -313,55 +307,53 @@
                     <svg id="svg-step3" class="absolute inset-0 w-full h-full touch-board"></svg>
 
                     <!-- Top Floating Toast -->
-                    <div id="step3-toast" class="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900/85 text-white px-5 py-2.5 rounded-full text-xs sm:text-sm font-medium shadow-xl pointer-events-none transition-all duration-300 flex items-center gap-2">
+                    <div id="step3-toast" class="absolute top-2.5 left-1/2 -translate-x-1/2 bg-slate-900/85 text-white px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-medium shadow-md pointer-events-none transition-all duration-300 flex items-center gap-1.5">
                         <i class="fa-solid fa-hand-pointer text-yellow-400"></i>
                         <span id="step3-toast-text">두 변을 차례로 클릭하여 각의 이등분선을 그려보세요!</span>
                     </div>
                 </div>
 
                 <!-- Sidebar for Step 3 -->
-                <div class="w-full md:w-80 border-t md:border-t-0 md:border-l border-slate-200 bg-slate-50 p-4 flex flex-col justify-between gap-4">
-                    <div>
-                        <h3 class="font-bold text-slate-800 text-base mb-3 flex items-center border-b pb-2">
+                <div class="w-full md:w-72 lg:w-80 border-t md:border-t-0 md:border-l border-slate-200 bg-slate-50 p-2.5 sm:p-3.5 flex flex-col justify-between gap-2 shrink-0 max-h-[38%] md:max-h-none overflow-y-auto">
+                    <div class="space-y-2">
+                        <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center border-b pb-1.5">
                             <i class="fa-solid fa-list-check text-purple-600 mr-2"></i>각의 이등분선 완성 현황
                         </h3>
 
                         <!-- Progress checklist -->
-                        <div class="space-y-2 text-sm mb-4">
-                            <div id="check-b" class="flex justify-between items-center p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500">
-                                <span class="font-semibold flex items-center"><i class="fa-regular fa-square mr-2 text-slate-400"></i>변 AB와 변 BC의 이등분선</span>
-                                <span class="text-xs font-bold font-mono">미완성</span>
+                        <div class="space-y-1.5 text-xs">
+                            <div id="check-b" class="flex justify-between items-center p-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500">
+                                <span class="font-semibold flex items-center text-[11px] sm:text-xs"><i class="fa-regular fa-square mr-1.5 text-slate-400"></i>변 AB & 변 BC</span>
+                                <span class="text-[10px] font-bold font-mono">미완성</span>
                             </div>
-                            <div id="check-c" class="flex justify-between items-center p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500">
-                                <span class="font-semibold flex items-center"><i class="fa-regular fa-square mr-2 text-slate-400"></i>변 BC와 변 CA의 이등분선</span>
-                                <span class="text-xs font-bold font-mono">미완성</span>
+                            <div id="check-c" class="flex justify-between items-center p-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500">
+                                <span class="font-semibold flex items-center text-[11px] sm:text-xs"><i class="fa-regular fa-square mr-1.5 text-slate-400"></i>변 BC & 변 CA</span>
+                                <span class="text-[10px] font-bold font-mono">미완성</span>
                             </div>
-                            <div id="check-a" class="flex justify-between items-center p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500">
-                                <span class="font-semibold flex items-center"><i class="fa-regular fa-square mr-2 text-slate-400"></i>변 CA와 변 AB의 이등분선</span>
-                                <span class="text-xs font-bold font-mono">미완성</span>
+                            <div id="check-a" class="flex justify-between items-center p-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500">
+                                <span class="font-semibold flex items-center text-[11px] sm:text-xs"><i class="fa-regular fa-square mr-1.5 text-slate-400"></i>변 CA & 변 AB</span>
+                                <span class="text-[10px] font-bold font-mono">미완성</span>
                             </div>
                         </div>
 
                         <!-- Distance Result Card (when point P clicked) -->
-                        <div id="step3-distance-card" class="hidden p-3 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-900 space-y-2">
-                            <div class="font-bold text-purple-900 border-b border-purple-200 pb-1 flex items-center justify-between">
-                                <span><i class="fa-solid fa-star text-amber-500 mr-1"></i>교점에서 각 변까지의 거리</span>
-                                <span class="text-xs text-emerald-600 font-bold">모두 일치!</span>
+                        <div id="step3-distance-card" class="hidden p-2 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-900 space-y-1">
+                            <div class="font-bold text-purple-900 border-b border-purple-200 pb-1 flex items-center justify-between text-[11px] sm:text-xs">
+                                <span><i class="fa-solid fa-star text-amber-500 mr-1"></i>교점에서 각 변까지 거리</span>
+                                <span class="text-[10px] text-emerald-600 font-bold">일치!</span>
                             </div>
-                            <div class="flex justify-between text-xs font-mono">
-                                <span>변 AB: <strong id="step3-d1" class="text-rose-600">-</strong></span>
-                                <span>변 BC: <strong id="step3-d2" class="text-emerald-600">-</strong></span>
-                                <span>변 CA: <strong id="step3-d3" class="text-blue-600">-</strong></span>
+                            <div class="flex justify-between text-[11px] font-mono">
+                                <span>AB: <strong id="step3-d1" class="text-rose-600">-</strong></span>
+                                <span>BC: <strong id="step3-d2" class="text-emerald-600">-</strong></span>
+                                <span>CA: <strong id="step3-d3" class="text-blue-600">-</strong></span>
                             </div>
                         </div>
                     </div>
 
                     <!-- Navigation Action -->
-                    <div class="flex flex-col gap-2">
-                        <button onclick="switchStep(1)" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-sm shadow-md transition duration-200 flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-rotate-left"></i> 1단계로 돌아가기
-                        </button>
-                    </div>
+                    <button onclick="switchStep(1)" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs sm:text-sm shadow-md transition duration-200 flex items-center justify-center gap-1.5 shrink-0">
+                        <i class="fa-solid fa-rotate-left"></i> 1단계로 돌아가기
+                    </button>
                 </div>
 
             </div>
@@ -369,7 +361,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-slate-200 border-t border-slate-300 py-3 text-center text-xs text-slate-600">
+    <footer class="bg-slate-200 border-t border-slate-300 py-1 sm:py-1.5 text-center text-[10px] sm:text-xs text-slate-600 shrink-0">
         <p>© 2026 김효경│수학 수업용 인터랙티브 콘텐츠</p>
     </footer>
 
@@ -426,15 +418,15 @@
             C: { x: 500, y: 400, label: 'C' }
         };
 
-        // Calculates responsive triangle coordinates matching the board container size
+        // Calculates responsive triangle coordinates matching the active board container size
         function setupResponsiveCoordinates() {
             const board = document.getElementById('step1-board') || document.getElementById('step2-board') || document.getElementById('step3-board');
             if (!board) return;
             const rect = board.getBoundingClientRect();
             const w = rect.width > 0 ? rect.width : 600;
-            const h = rect.height > 0 ? rect.height : 480;
+            const h = rect.height > 0 ? rect.height : 400;
 
-            triangleABC.A = { x: w * 0.5, y: h * 0.18, label: 'A' };
+            triangleABC.A = { x: w * 0.5, y: h * 0.16, label: 'A' };
             triangleABC.B = { x: w * 0.15, y: h * 0.82, label: 'B' };
             triangleABC.C = { x: w * 0.85, y: h * 0.82, label: 'C' };
         }
@@ -532,8 +524,8 @@
             document.getElementById('step3-container').classList.toggle('hidden', step !== 3);
             
             // Update active tab styles
-            const activeTabClass = "px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all duration-200 bg-white text-indigo-700 shadow-md";
-            const inactiveTabClass = "px-3 sm:px-4 py-2 rounded-lg font-semibold transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50";
+            const activeTabClass = "px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 bg-white text-indigo-700 shadow-md";
+            const inactiveTabClass = "px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50";
             
             document.getElementById('tab-step1').className = step === 1 ? activeTabClass : inactiveTabClass;
             document.getElementById('tab-step2').className = step === 2 ? activeTabClass : inactiveTabClass;
@@ -548,7 +540,7 @@
 
         // Step 1 State
         const step1State = {
-            userPoint: null, // {x, y}
+            userPoint: null,
             draggingPoint: false
         };
 
@@ -564,8 +556,8 @@
 
         // Step 3 State
         const step3State = {
-            selectedSide: null, // index 0 (AB), 1 (BC), 2 (CA)
-            drawnBisectors: new Set(), // Set of 'B', 'C', 'A' (vertex key for bisector)
+            selectedSide: null,
+            drawnBisectors: new Set(),
             userPointP: null,
             circleRevealed: false
         };
@@ -573,7 +565,7 @@
         function preventTouchScroll(element) {
             element.addEventListener('touchstart', (e) => {
                 if (e.touches.length === 1) {
-                    // Prevent page scrolling on drag
+                    // Prevent page scrolling on canvas drag
                 }
             }, { passive: false });
             element.addEventListener('touchmove', (e) => {
@@ -640,7 +632,7 @@
             triPath.setAttribute("stroke-dasharray", "6 4");
             svg.appendChild(triPath);
 
-            // Draw elongated benches aligned along triangle sides
+            // Draw benches aligned along triangle sides
             renderBenchIcons(svg, [
                 { p1: A, p2: B, label: '변 AB 벤치' },
                 { p1: B, p2: C, label: '변 BC 벤치' },
@@ -666,10 +658,10 @@
                 const statusText = document.getElementById('step1-status-text');
 
                 if (maxDiff < 8) {
-                    statusBox.className = "mt-4 p-3 rounded-xl bg-emerald-100 border border-emerald-300 text-xs text-emerald-900 flex items-start gap-2 shadow-sm animate-pulse-subtle";
-                    statusText.innerHTML = `세 변까지의 수선 거리가 거의 같습니다! (${formatDistance(proj1.dist)}) 점 P를 조금씩 움직여 명당 위치를 더 정밀하게 확인해보세요.`;
+                    statusBox.className = "p-2 sm:p-2.5 rounded-xl bg-emerald-100 border border-emerald-300 text-[11px] sm:text-xs text-emerald-900 flex items-start gap-1.5 shadow-sm animate-pulse-subtle";
+                    statusText.innerHTML = `세 변까지의 수선 거리가 거의 같습니다! (${formatDistance(proj1.dist)}) 점 P를 조금씩 움직여 명당 위치를 정밀하게 확인해보세요.`;
                 } else {
-                    statusBox.className = "mt-4 p-3 rounded-xl bg-indigo-50 border border-indigo-200 text-xs text-indigo-900 flex items-start gap-2";
+                    statusBox.className = "p-2 sm:p-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-[11px] sm:text-xs text-indigo-900 flex items-start gap-1.5";
                     statusText.innerHTML = `현재 세 수선의 최대 길이 차이가 약 <strong>${formatDistance(maxDiff)}</strong> 입니다. 점 P를 드래그하여 세 거리가 같아지도록 이동해보세요!`;
                 }
 
@@ -681,7 +673,6 @@
                 ];
 
                 perpendiculars.forEach(item => {
-                    // Line
                     const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
                     line.setAttribute("x1", userPoint.x);
                     line.setAttribute("y1", userPoint.y);
@@ -692,10 +683,8 @@
                     line.setAttribute("stroke-dasharray", "4 3");
                     svg.appendChild(line);
 
-                    // Right angle marker at foot
                     svg.appendChild(createRightAngleSymbol(userPoint, item.foot, item.lineStart, item.color));
 
-                    // Distance tag
                     const midX = (userPoint.x + item.foot.x) / 2;
                     const midY = (userPoint.y + item.foot.y) / 2;
                     svg.appendChild(createDistanceTag(midX, midY, formatDistance(item.dist), item.color));
@@ -708,21 +697,21 @@
                 const circlePOuter = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                 circlePOuter.setAttribute("cx", userPoint.x);
                 circlePOuter.setAttribute("cy", userPoint.y);
-                circlePOuter.setAttribute("r", "14");
+                circlePOuter.setAttribute("r", "13");
                 circlePOuter.setAttribute("fill", "rgba(99, 102, 241, 0.25)");
 
                 const circleP = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                 circleP.setAttribute("cx", userPoint.x);
                 circleP.setAttribute("cy", userPoint.y);
-                circleP.setAttribute("r", "9");
+                circleP.setAttribute("r", "8");
                 circleP.setAttribute("fill", "#4f46e5");
                 circleP.setAttribute("stroke", "white");
-                circleP.setAttribute("stroke-width", "3");
+                circleP.setAttribute("stroke-width", "2.5");
 
                 const labelP = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                labelP.setAttribute("x", userPoint.x + 14);
-                labelP.setAttribute("y", userPoint.y - 10);
-                labelP.setAttribute("font-size", "14");
+                labelP.setAttribute("x", userPoint.x + 12);
+                labelP.setAttribute("y", userPoint.y - 8);
+                labelP.setAttribute("font-size", "13");
                 labelP.setAttribute("font-weight", "bold");
                 labelP.setAttribute("fill", "#312e81");
                 labelP.textContent = "점 P";
@@ -756,7 +745,6 @@
                 if (step2State.lineDrawn) return;
 
                 const { A, B, C } = triangleABC;
-                // Snap click point to the angle bisector of angle B (between BA and BC)
                 const projPt = projectToAngleBisector(clickPt, B, A, C);
                 projPt.id = Date.now();
                 step2State.userPoints.push(projPt);
@@ -768,7 +756,7 @@
                 const dragPrompt = document.getElementById('step2-drag-prompt');
 
                 if (count >= 1) {
-                    guideText.textContent = "점이 찍혔어요! 두 변으로 내려진 수선의 길이가 같은 것을 확인해보세요. 점을 더 찍어보세요!";
+                    guideText.textContent = "점이 찍혔어요! 두 변으로 내려진 수선의 길이가 같음을 확인해보세요.";
                 }
                 if (count >= 2) {
                     dragPrompt.classList.remove('hidden');
@@ -819,12 +807,11 @@
             document.getElementById('step2-drag-prompt').classList.add('hidden');
             document.getElementById('btn-reveal-secret-container').classList.add('hidden');
 
-            // Lock Step 3 tab icon back to lock
             const lockIcon = document.getElementById('tab-step3-icon');
             if (lockIcon) lockIcon.className = "fa-solid fa-lock mr-1 text-amber-300";
             
             const guideBox = document.getElementById('step2-guide-box');
-            guideBox.className = "absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900/85 text-white px-5 py-2.5 rounded-full text-xs sm:text-sm font-medium shadow-xl pointer-events-none transition-all duration-300 flex items-center gap-2";
+            guideBox.className = "absolute top-2.5 left-1/2 -translate-x-1/2 bg-slate-900/85 text-white px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-medium shadow-md pointer-events-none transition-all duration-300 flex items-center gap-1.5";
             document.getElementById('step2-guide-text').textContent = "두 변에서 같은 거리에 있을 만한 위치를 클릭해보세요!";
             
             renderStep2();
@@ -838,7 +825,7 @@
             document.getElementById('btn-reveal-secret-container').classList.remove('hidden');
 
             const guideBox = document.getElementById('step2-guide-box');
-            guideBox.className = "absolute top-4 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold shadow-xl pointer-events-none transition-all duration-300 flex items-center gap-2 animate-bounce";
+            guideBox.className = "absolute top-2.5 left-1/2 -translate-x-1/2 bg-indigo-600 text-white px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold shadow-md pointer-events-none transition-all duration-300 flex items-center gap-1.5 animate-bounce";
             document.getElementById('step2-guide-text').textContent = "✨ 선의 이름을 맞춰보세요! '정답 입력하기' 버튼을 눌러보세요.";
 
             renderStep2();
@@ -851,7 +838,7 @@
             const feedback = document.getElementById('step2-answer-feedback');
             
             input.value = '';
-            feedback.className = "hidden text-xs font-semibold px-3 py-2 rounded-lg";
+            feedback.className = "hidden text-xs font-semibold px-2.5 py-1.5 rounded-lg";
             modal.classList.remove('hidden');
             setTimeout(() => input.focus(), 100);
         }
@@ -870,7 +857,6 @@
                 closeAnswerModal();
                 step2State.secretRevealed = true;
 
-                // Unlock Step 3 tab icon
                 const lockIcon = document.getElementById('tab-step3-icon');
                 if (lockIcon) lockIcon.className = "fa-solid fa-compass-drafting mr-1 text-yellow-300";
 
@@ -880,7 +866,7 @@
                 showGlobalToast("🔓 축하합니다! 3단계 잠금이 해제되었습니다.", "fa-solid fa-unlock text-emerald-400");
             } else {
                 playSound('click');
-                feedback.className = "text-xs font-semibold px-3 py-2 rounded-lg bg-rose-100 text-rose-800 border border-rose-300 block";
+                feedback.className = "text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-rose-100 text-rose-800 border border-rose-300 block";
                 feedback.textContent = "아쉽네요! 힌트: '각'을 두 개로 똑같이 '이등분'하는 선이에요.";
             }
         }
@@ -893,34 +879,29 @@
             const { A, B, C } = triangleABC;
             const { userPoints, lineDrawn, isDraggingLine, dragStartPoint, dragCurrentPos } = step2State;
 
-            // Render Two Sides forming angle B (Side BA and Side BC)
+            // Render Two Sides forming angle B
             const rayBA = createLine(B, A, "#334155", "3.5");
             const rayBC = createLine(B, C, "#334155", "3.5");
             svg.appendChild(rayBA);
             svg.appendChild(rayBC);
 
-            // Labels for sides and vertex B
-            renderText(svg, B.x - 18, B.y + 22, "꼭짓점 B", "14", "#0f172a", "bold");
-            renderText(svg, (A.x + B.x)/2 - 22, (A.y + B.y)/2, "변 AB", "13", "#475569", "bold");
-            renderText(svg, (B.x + C.x)/2, (B.y + C.y)/2 + 25, "변 BC", "13", "#475569", "bold");
+            renderText(svg, B.x - 18, B.y + 20, "꼭짓점 B", "13", "#0f172a", "bold");
+            renderText(svg, (A.x + B.x)/2 - 20, (A.y + B.y)/2, "변 AB", "12", "#475569", "bold");
+            renderText(svg, (B.x + C.x)/2, (B.y + C.y)/2 + 22, "변 BC", "12", "#475569", "bold");
 
             if (!lineDrawn) {
-                // BEFORE LINE DRAWN: Show points with perpendicular lines & lengths
                 userPoints.forEach((pt) => {
                     const proj1 = projectToLineSegment(pt, B, A);
                     const proj2 = projectToLineSegment(pt, B, C);
 
-                    // Perpendiculars
                     const line1 = createLine(pt, proj1.foot, "#f43f5e", "2", "4 3");
                     const line2 = createLine(pt, proj2.foot, "#10b981", "2", "4 3");
                     svg.appendChild(line1);
                     svg.appendChild(line2);
 
-                    // Right angle markers
                     svg.appendChild(createRightAngleSymbol(pt, proj1.foot, A, "#f43f5e"));
                     svg.appendChild(createRightAngleSymbol(pt, proj2.foot, C, "#10b981"));
 
-                    // Tags
                     const mid1X = (pt.x + proj1.foot.x) / 2;
                     const mid1Y = (pt.y + proj1.foot.y) / 2;
                     svg.appendChild(createDistanceTag(mid1X, mid1Y, formatDistance(proj1.dist), "#f43f5e"));
@@ -929,35 +910,32 @@
                     const mid2Y = (pt.y + proj2.foot.y) / 2;
                     svg.appendChild(createDistanceTag(mid2X, mid2Y, formatDistance(proj2.dist), "#10b981"));
 
-                    // Point Circle
                     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                     circle.setAttribute("cx", pt.x);
                     circle.setAttribute("cy", pt.y);
-                    circle.setAttribute("r", "8");
+                    circle.setAttribute("r", "7");
                     circle.setAttribute("fill", "#6366f1");
                     circle.setAttribute("stroke", "white");
-                    circle.setAttribute("stroke-width", "2.5");
+                    circle.setAttribute("stroke-width", "2");
                     circle.setAttribute("class", "hover:scale-125 transition-transform cursor-pointer");
                     svg.appendChild(circle);
                 });
 
                 if (isDraggingLine && dragStartPoint && dragCurrentPos) {
-                    const dragLine = createLine(dragStartPoint, dragCurrentPos, "#f59e0b", "4");
+                    const dragLine = createLine(dragStartPoint, dragCurrentPos, "#f59e0b", "3.5");
                     dragLine.setAttribute("stroke-linecap", "round");
                     svg.appendChild(dragLine);
                 }
 
             } else {
-                // AFTER LINE DRAWN: Perpendiculars/distances erased! Angle Bisector & Arc angles displayed!
                 const dir = getAngleBisectorRay(B, A, C);
                 const maxLen = 500;
                 const endPt = { x: B.x + dir.x * maxLen, y: B.y + dir.y * maxLen };
 
-                const bisector = createLine(B, endPt, "#059669", "4", "8 4");
+                const bisector = createLine(B, endPt, "#059669", "3.5", "8 4");
                 bisector.setAttribute("class", "reveal-line");
                 svg.appendChild(bisector);
 
-                // Calculate split angle in degrees
                 const vecBA = { x: A.x - B.x, y: A.y - B.y };
                 const vecBC = { x: C.x - B.x, y: C.y - B.y };
                 const angleBA = Math.atan2(vecBA.y, vecBA.x);
@@ -970,26 +948,23 @@
                 if (degHalf2 > 180) degHalf2 = 360 - degHalf2;
                 const angleDisplayStr = `${degHalf1.toFixed(1)}°`;
 
-                // Draw Angle Arcs at Vertex B
-                svg.appendChild(createAngleArc(B, angleBA, angleBisector, 45, "#10b981"));
-                svg.appendChild(createAngleArc(B, angleBisector, angleBC, 45, "#3b82f6"));
+                svg.appendChild(createAngleArc(B, angleBA, angleBisector, 40, "#10b981"));
+                svg.appendChild(createAngleArc(B, angleBisector, angleBC, 40, "#3b82f6"));
 
-                // Angle degree labels
                 const label1Angle = (angleBA + angleBisector) / 2;
                 const label2Angle = (angleBisector + angleBC) / 2;
 
-                const tag1 = { x: B.x + 65 * Math.cos(label1Angle), y: B.y + 65 * Math.sin(label1Angle) };
-                const tag2 = { x: B.x + 65 * Math.cos(label2Angle), y: B.y + 65 * Math.sin(label2Angle) };
+                const tag1 = { x: B.x + 58 * Math.cos(label1Angle), y: B.y + 58 * Math.sin(label1Angle) };
+                const tag2 = { x: B.x + 58 * Math.cos(label2Angle), y: B.y + 58 * Math.sin(label2Angle) };
 
                 svg.appendChild(createDistanceTag(tag1.x, tag1.y, angleDisplayStr, "#10b981"));
                 svg.appendChild(createDistanceTag(tag2.x, tag2.y, angleDisplayStr, "#3b82f6"));
 
-                // Render placed points along the bisector line
                 userPoints.forEach(pt => {
                     const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                     circle.setAttribute("cx", pt.x);
                     circle.setAttribute("cy", pt.y);
-                    circle.setAttribute("r", "7");
+                    circle.setAttribute("r", "6");
                     circle.setAttribute("fill", "#10b981");
                     circle.setAttribute("stroke", "white");
                     circle.setAttribute("stroke-width", "2");
@@ -1010,14 +985,12 @@
                 const { A, B, C } = triangleABC;
                 const { drawnBisectors, userPointP, circleRevealed } = step3State;
 
-                // Sides definitions: 0 (AB), 1 (BC), 2 (CA)
                 const sides = [
                     { id: 0, p1: A, p2: B, label: 'AB' },
                     { id: 1, p1: B, p2: C, label: 'BC' },
                     { id: 2, p1: C, p2: A, label: 'CA' }
                 ];
 
-                // Check side click
                 const clickedSide = sides.find(s => {
                     const proj = projectToLineSegment(clickPt, s.p1, s.p2);
                     return proj.dist < 25 && proj.t >= 0 && proj.t <= 1;
@@ -1029,7 +1002,6 @@
                     if (step3State.selectedSide === null) {
                         step3State.selectedSide = clickedSide.id;
                     } else if (step3State.selectedSide !== clickedSide.id) {
-                        // Pair of sides determines vertex: AB & BC -> B, BC & CA -> C, CA & AB -> A
                         const s1 = Math.min(step3State.selectedSide, clickedSide.id);
                         const s2 = Math.max(step3State.selectedSide, clickedSide.id);
 
@@ -1049,17 +1021,15 @@
                     return;
                 }
 
-                // If 2 or 3 bisectors drawn, check click on intersection point
                 if (drawnBisectors.size >= 2) {
                     const incenter = calculateIncenter(A, B, C);
                     if (getDistance(clickPt, incenter) < 40) {
                         if (!userPointP) {
-                            // First click: place point P and show distances to all 3 sides
                             step3State.userPointP = incenter;
                             playSound('success');
 
                             const toastText = document.getElementById('step3-toast-text');
-                            toastText.innerHTML = "🎉 각의 이등분선들의 교점은 세 변까지의 거리가 모두 같습니다! (교점을 한 번 더 클릭해보세요)";
+                            toastText.innerHTML = "🎉 각의 이등분선의 교점은 세 변까지 거리가 같나요? (한 번 더 클릭!)";
                             
                             const distCard = document.getElementById('step3-distance-card');
                             distCard.classList.remove('hidden');
@@ -1070,7 +1040,6 @@
                             document.getElementById('step3-d3').textContent = distVal;
 
                         } else if (!circleRevealed) {
-                            // Second click: reveal Incircle, write 내심 and 내접원, remove bisector lines
                             step3State.circleRevealed = true;
                             playSound('reveal');
 
@@ -1107,15 +1076,15 @@
             list.forEach(item => {
                 const checkEl = document.getElementById(item.id);
                 if (step3State.drawnBisectors.has(item.key)) {
-                    checkEl.className = "flex justify-between items-center p-2.5 bg-purple-100 border border-purple-300 rounded-xl text-purple-900 font-bold";
-                    checkEl.querySelector('i').className = "fa-solid fa-square-check mr-2 text-purple-600";
+                    checkEl.className = "flex justify-between items-center p-2 bg-purple-100 border border-purple-300 rounded-lg text-purple-900 font-bold";
+                    checkEl.querySelector('i').className = "fa-solid fa-square-check mr-1.5 text-purple-600";
                     checkEl.querySelector('span:last-child').textContent = "완성";
-                    checkEl.querySelector('span:last-child').className = "text-xs font-bold text-purple-700";
+                    checkEl.querySelector('span:last-child').className = "text-[10px] font-bold text-purple-700";
                 } else {
-                    checkEl.className = "flex justify-between items-center p-2.5 bg-slate-100 border border-slate-200 rounded-xl text-slate-500";
-                    checkEl.querySelector('i').className = "fa-regular fa-square mr-2 text-slate-400";
+                    checkEl.className = "flex justify-between items-center p-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500";
+                    checkEl.querySelector('i').className = "fa-regular fa-square mr-1.5 text-slate-400";
                     checkEl.querySelector('span:last-child').textContent = "미완성";
-                    checkEl.querySelector('span:last-child').className = "text-xs font-bold font-mono text-slate-400";
+                    checkEl.querySelector('span:last-child').className = "text-[10px] font-bold font-mono text-slate-400";
                 }
             });
 
@@ -1137,18 +1106,16 @@
             triPath.setAttribute("points", `${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`);
             triPath.setAttribute("fill", circleRevealed ? "rgba(168, 85, 247, 0.05)" : "rgba(238, 242, 255, 0.5)");
             triPath.setAttribute("stroke", "#475569");
-            triPath.setAttribute("stroke-width", "3");
+            triPath.setAttribute("stroke-width", "2.5");
             svg.appendChild(triPath);
 
-            // Highlight selected side if any
             if (selectedSide !== null) {
                 const sidePairs = [[A, B], [B, C], [C, A]];
                 const pair = sidePairs[selectedSide];
-                const activeSide = createLine(pair[0], pair[1], "#a855f7", "5");
+                const activeSide = createLine(pair[0], pair[1], "#a855f7", "4.5");
                 svg.appendChild(activeSide);
             }
 
-            // Draw Angle Bisectors ONLY IF circle is NOT revealed
             if (!circleRevealed) {
                 drawnBisectors.forEach(vKey => {
                     let V, P1, P2;
@@ -1163,28 +1130,24 @@
                 });
             }
 
-            // When at least 2 bisectors are drawn, locate incenter
             if (drawnBisectors.size >= 2) {
                 const incenter = calculateIncenter(A, B, C);
 
                 if (!userPointP) {
-                    // Pulsing guide on intersection point
                     const hintCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                     hintCircle.setAttribute("cx", incenter.x);
                     hintCircle.setAttribute("cy", incenter.y);
-                    hintCircle.setAttribute("r", "12");
+                    hintCircle.setAttribute("r", "11");
                     hintCircle.setAttribute("fill", "rgba(147, 51, 234, 0.25)");
                     hintCircle.setAttribute("stroke", "#9333ea");
                     hintCircle.setAttribute("stroke-width", "2");
                     hintCircle.setAttribute("class", "animate-ping");
                     svg.appendChild(hintCircle);
                 } else {
-                    // Point P placed at Incenter
                     const proj1 = projectToLineSegment(incenter, A, B);
                     const proj2 = projectToLineSegment(incenter, B, C);
                     const proj3 = projectToLineSegment(incenter, C, A);
 
-                    // Render perpendiculars & right-angle marks
                     const perpendiculars = [
                         { foot: proj1.foot, color: '#f43f5e', lineStart: A },
                         { foot: proj2.foot, color: '#10b981', lineStart: B },
@@ -1192,7 +1155,7 @@
                     ];
 
                     perpendiculars.forEach(item => {
-                        const line = createLine(incenter, item.foot, item.color, "2.5", "4 3");
+                        const line = createLine(incenter, item.foot, item.color, "2", "4 3");
                         svg.appendChild(line);
                         svg.appendChild(createRightAngleSymbol(incenter, item.foot, item.lineStart, item.color));
 
@@ -1201,45 +1164,40 @@
                         svg.appendChild(createDistanceTag(midX, midY, formatDistance(incenter.r), item.color));
                     });
 
-                    // ON SECOND CLICK: Reveal Incircle & Labels "내심", "내접원"
                     if (circleRevealed) {
-                        // Incircle
                         const incircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                         incircle.setAttribute("cx", incenter.x);
                         incircle.setAttribute("cy", incenter.y);
                         incircle.setAttribute("r", incenter.r);
                         incircle.setAttribute("fill", "rgba(168, 85, 247, 0.1)");
                         incircle.setAttribute("stroke", "#a855f7");
-                        incircle.setAttribute("stroke-width", "3.5");
+                        incircle.setAttribute("stroke-width", "3");
                         incircle.setAttribute("class", "reveal-line");
                         svg.appendChild(incircle);
 
-                        // Label: 내접원 (placed near upper tangent of circle)
                         const labelCircle = document.createElementNS("http://www.w3.org/2000/svg", "text");
                         labelCircle.setAttribute("x", incenter.x + incenter.r * 0.7);
-                        labelCircle.setAttribute("y", incenter.y - incenter.r * 0.7 - 8);
-                        labelCircle.setAttribute("font-size", "16");
+                        labelCircle.setAttribute("y", incenter.y - incenter.r * 0.7 - 6);
+                        labelCircle.setAttribute("font-size", "14");
                         labelCircle.setAttribute("font-weight", "900");
                         labelCircle.setAttribute("fill", "#7e22ce");
                         labelCircle.textContent = "내접원";
                         svg.appendChild(labelCircle);
                     }
 
-                    // Point Marker
                     const pMarker = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                     pMarker.setAttribute("cx", incenter.x);
                     pMarker.setAttribute("cy", incenter.y);
-                    pMarker.setAttribute("r", "9");
+                    pMarker.setAttribute("r", "8");
                     pMarker.setAttribute("fill", "#7e22ce");
                     pMarker.setAttribute("stroke", "white");
-                    pMarker.setAttribute("stroke-width", "3");
+                    pMarker.setAttribute("stroke-width", "2.5");
                     svg.appendChild(pMarker);
 
-                    // Label: Point P or 내심
                     const labelP = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    labelP.setAttribute("x", incenter.x + 14);
-                    labelP.setAttribute("y", incenter.y - 10);
-                    labelP.setAttribute("font-size", "16");
+                    labelP.setAttribute("x", incenter.x + 12);
+                    labelP.setAttribute("y", incenter.y - 8);
+                    labelP.setAttribute("font-size", "14");
                     labelP.setAttribute("font-weight", "900");
                     labelP.setAttribute("fill", "#581c87");
                     labelP.textContent = circleRevealed ? "내심" : "점 P";
@@ -1247,10 +1205,9 @@
                 }
             }
 
-            // Render Vertex labels A, B, C
-            renderText(svg, A.x, A.y - 12, "A", "16", "#0f172a", "bold", "middle");
-            renderText(svg, B.x - 16, B.y + 18, "B", "16", "#0f172a", "bold", "middle");
-            renderText(svg, C.x + 16, C.y + 18, "C", "16", "#0f172a", "bold", "middle");
+            renderText(svg, A.x, A.y - 10, "A", "15", "#0f172a", "bold", "middle");
+            renderText(svg, B.x - 14, B.y + 16, "B", "15", "#0f172a", "bold", "middle");
+            renderText(svg, C.x + 14, C.y + 16, "C", "15", "#0f172a", "bold", "middle");
         }
 
         function createLine(p1, p2, color, strokeWidth = "2", dashArray = null) {
@@ -1266,7 +1223,7 @@
         }
 
         function createRightAngleSymbol(pointP, foot, lineStart, color) {
-            const size = 12;
+            const size = 10;
             const vPF = { x: pointP.x - foot.x, y: pointP.y - foot.y };
             const vFS = { x: lineStart.x - foot.x, y: lineStart.y - foot.y };
 
@@ -1286,7 +1243,7 @@
             path.setAttribute("d", `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y} L ${p3.x} ${p3.y}`);
             path.setAttribute("fill", "none");
             path.setAttribute("stroke", color);
-            path.setAttribute("stroke-width", "1.8");
+            path.setAttribute("stroke-width", "1.5");
 
             return path;
         }
@@ -1305,7 +1262,7 @@
             path.setAttribute("d", `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`);
             path.setAttribute("fill", "none");
             path.setAttribute("stroke", color);
-            path.setAttribute("stroke-width", "2.5");
+            path.setAttribute("stroke-width", "2");
 
             return path;
         }
@@ -1314,20 +1271,20 @@
             const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
 
             const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-            rect.setAttribute("x", x - 26);
-            rect.setAttribute("y", y - 10);
-            rect.setAttribute("width", "52");
-            rect.setAttribute("height", "20");
-            rect.setAttribute("rx", "5");
+            rect.setAttribute("x", x - 23);
+            rect.setAttribute("y", y - 9);
+            rect.setAttribute("width", "46");
+            rect.setAttribute("height", "18");
+            rect.setAttribute("rx", "4");
             rect.setAttribute("fill", "white");
             rect.setAttribute("stroke", color);
-            rect.setAttribute("stroke-width", "1.5");
+            rect.setAttribute("stroke-width", "1.2");
 
             const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
             text.setAttribute("x", x);
-            text.setAttribute("y", y + 4);
+            text.setAttribute("y", y + 3.5);
             text.setAttribute("text-anchor", "middle");
-            text.setAttribute("font-size", "10");
+            text.setAttribute("font-size", "9.5");
             text.setAttribute("font-weight", "bold");
             text.setAttribute("fill", "#1e293b");
             text.textContent = textVal;
@@ -1354,62 +1311,57 @@
                 const p1 = b.p1 || b.pos;
                 const p2 = b.p2 || b.pos;
 
-                // Calculate midpoint, slope angle along side segment
                 const midX = (p1.x + p2.x) / 2;
                 const midY = (p1.y + p2.y) / 2;
                 const angleRad = Math.atan2(p2.y - p1.y, p2.x - p1.x);
                 const angleDeg = angleRad * (180 / Math.PI);
 
-                // Elongated bench dimensions aligned along side
-                const benchLen = 140; // Extended bench length
-                const benchWidth = 14;
+                const benchLen = 110;
+                const benchWidth = 12;
 
                 const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
                 g.setAttribute("transform", `translate(${midX}, ${midY}) rotate(${angleDeg})`);
 
-                // Main wooden bench plank
                 const benchBase = document.createElementNS("http://www.w3.org/2000/svg", "rect");
                 benchBase.setAttribute("x", -benchLen / 2);
                 benchBase.setAttribute("y", -benchWidth / 2);
                 benchBase.setAttribute("width", benchLen);
                 benchBase.setAttribute("height", benchWidth);
-                benchBase.setAttribute("rx", "4");
+                benchBase.setAttribute("rx", "3");
                 benchBase.setAttribute("fill", "#d97706");
                 benchBase.setAttribute("stroke", "#78350f");
-                benchBase.setAttribute("stroke-width", "2");
+                benchBase.setAttribute("stroke-width", "1.5");
 
-                // Wooden slat lines detail
                 const slat1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                slat1.setAttribute("x1", -benchLen / 2 + 8);
-                slat1.setAttribute("y1", -2);
-                slat1.setAttribute("x2", benchLen / 2 - 8);
-                slat1.setAttribute("y2", -2);
+                slat1.setAttribute("x1", -benchLen / 2 + 6);
+                slat1.setAttribute("y1", -1.5);
+                slat1.setAttribute("x2", benchLen / 2 - 6);
+                slat1.setAttribute("y2", -1.5);
                 slat1.setAttribute("stroke", "#92400e");
-                slat1.setAttribute("stroke-width", "1.5");
+                slat1.setAttribute("stroke-width", "1.2");
 
                 const slat2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                slat2.setAttribute("x1", -benchLen / 2 + 8);
-                slat2.setAttribute("y1", 2);
-                slat2.setAttribute("x2", benchLen / 2 - 8);
-                slat2.setAttribute("y2", 2);
+                slat2.setAttribute("x1", -benchLen / 2 + 6);
+                slat2.setAttribute("y1", 1.5);
+                slat2.setAttribute("x2", benchLen / 2 - 6);
+                slat2.setAttribute("y2", 1.5);
                 slat2.setAttribute("stroke", "#92400e");
-                slat2.setAttribute("stroke-width", "1.5");
+                slat2.setAttribute("stroke-width", "1.2");
 
-                // Metal frame leg supports at bench ends
                 const leg1 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                leg1.setAttribute("x", -benchLen / 2 + 10);
-                leg1.setAttribute("y", -benchWidth / 2 - 2);
-                leg1.setAttribute("width", "6");
-                leg1.setAttribute("height", benchWidth + 4);
-                leg1.setAttribute("rx", "2");
+                leg1.setAttribute("x", -benchLen / 2 + 8);
+                leg1.setAttribute("y", -benchWidth / 2 - 1.5);
+                leg1.setAttribute("width", "5");
+                leg1.setAttribute("height", benchWidth + 3);
+                leg1.setAttribute("rx", "1.5");
                 leg1.setAttribute("fill", "#334155");
 
                 const leg2 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                leg2.setAttribute("x", benchLen / 2 - 16);
-                leg2.setAttribute("y", -benchWidth / 2 - 2);
-                leg2.setAttribute("width", "6");
-                leg2.setAttribute("height", benchWidth + 4);
-                leg2.setAttribute("rx", "2");
+                leg2.setAttribute("x", benchLen / 2 - 13);
+                leg2.setAttribute("y", -benchWidth / 2 - 1.5);
+                leg2.setAttribute("width", "5");
+                leg2.setAttribute("height", benchWidth + 3);
+                leg2.setAttribute("rx", "1.5");
                 leg2.setAttribute("fill", "#334155");
 
                 g.appendChild(benchBase);
@@ -1419,8 +1371,7 @@
                 g.appendChild(leg2);
                 svg.appendChild(g);
 
-                // Bench label offset
-                const perpOffset = 22;
+                const perpOffset = 18;
                 const labelX = midX + Math.sin(angleRad) * perpOffset;
                 const labelY = midY - Math.cos(angleRad) * perpOffset;
 
@@ -1428,7 +1379,7 @@
                 textLabel.setAttribute("x", labelX);
                 textLabel.setAttribute("y", labelY);
                 textLabel.setAttribute("text-anchor", "middle");
-                textLabel.setAttribute("font-size", "12");
+                textLabel.setAttribute("font-size", "11");
                 textLabel.setAttribute("font-weight", "bold");
                 textLabel.setAttribute("fill", "#1e293b");
                 textLabel.textContent = b.label;
