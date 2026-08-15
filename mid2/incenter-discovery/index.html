@@ -277,7 +277,7 @@
         <!-- ==================== STEP 3 SECTION ==================== -->
         <section id="step3-container" class="hidden flex-1 min-h-0 flex flex-col gap-2 overflow-hidden">
             <!-- Instruction Banner -->
-            <div class="bg-purple-50 border-l-4 border-purple-500 px-3 py-1.5 sm:py-2 rounded-r-xl shadow-sm flex items-center justify-between shrink-0 gap-2">
+            <div class="bg-purple-50 border-l-4 border-purple-500 px-3 py-2 rounded-r-xl shadow-sm flex items-center justify-between shrink-0 gap-2">
                 <div class="flex items-center space-x-2 text-xs sm:text-sm min-w-0">
                     <i class="fa-solid fa-compass-drafting text-purple-600 text-base sm:text-lg shrink-0"></i>
                     <p class="text-purple-900 font-medium truncate sm:whitespace-normal">
@@ -313,36 +313,36 @@
                     </div>
                 </div>
 
-                <!-- Sidebar for Step 3 (Horizontal 3-column grid on mobile matching Step 1) -->
-                <div class="w-full md:w-72 lg:w-80 border-t md:border-t-0 md:border-l border-slate-200 bg-slate-50 p-2 sm:p-3 flex flex-col justify-between gap-1.5 shrink-0 max-h-[38%] md:max-h-none overflow-y-auto">
-                    <div class="space-y-1.5">
-                        <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center border-b pb-1">
-                            <i class="fa-solid fa-list-check text-purple-600 mr-1.5"></i>각의 이등분선 완성 현황
+                <!-- Sidebar for Step 3 -->
+                <div class="w-full md:w-72 lg:w-80 border-t md:border-t-0 md:border-l border-slate-200 bg-slate-50 p-2.5 sm:p-3.5 flex flex-col justify-between gap-2 shrink-0 max-h-[38%] md:max-h-none overflow-y-auto">
+                    <div class="space-y-2">
+                        <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center border-b pb-1.5">
+                            <i class="fa-solid fa-list-check text-purple-600 mr-2"></i>각의 이등분선 완성 현황
                         </h3>
 
-                        <!-- Progress checklist: 3 columns on mobile -->
-                        <div class="grid grid-cols-3 md:grid-cols-1 gap-1 text-xs">
-                            <div id="check-b" class="flex flex-col md:flex-row justify-between items-center p-1.5 sm:p-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 text-center md:text-left">
-                                <span class="font-semibold text-[10px] sm:text-xs truncate"><i class="fa-regular fa-square mr-1 text-slate-400 hidden sm:inline"></i>변 AB & BC</span>
-                                <span class="text-[9px] sm:text-[10px] font-bold font-mono text-slate-400">미완성</span>
+                        <!-- Progress checklist -->
+                        <div class="space-y-1.5 text-xs">
+                            <div id="check-b" class="flex justify-between items-center p-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500">
+                                <span class="font-semibold flex items-center text-[11px] sm:text-xs"><i class="fa-regular fa-square mr-1.5 text-slate-400"></i>변 AB & 변 BC</span>
+                                <span class="text-[10px] font-bold font-mono">미완성</span>
                             </div>
-                            <div id="check-c" class="flex flex-col md:flex-row justify-between items-center p-1.5 sm:p-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 text-center md:text-left">
-                                <span class="font-semibold text-[10px] sm:text-xs truncate"><i class="fa-regular fa-square mr-1 text-slate-400 hidden sm:inline"></i>변 BC & CA</span>
-                                <span class="text-[9px] sm:text-[10px] font-bold font-mono text-slate-400">미완성</span>
+                            <div id="check-c" class="flex justify-between items-center p-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500">
+                                <span class="font-semibold flex items-center text-[11px] sm:text-xs"><i class="fa-regular fa-square mr-1.5 text-slate-400"></i>변 BC & 변 CA</span>
+                                <span class="text-[10px] font-bold font-mono">미완성</span>
                             </div>
-                            <div id="check-a" class="flex flex-col md:flex-row justify-between items-center p-1.5 sm:p-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 text-center md:text-left">
-                                <span class="font-semibold text-[10px] sm:text-xs truncate"><i class="fa-regular fa-square mr-1 text-slate-400 hidden sm:inline"></i>변 CA & AB</span>
-                                <span class="text-[9px] sm:text-[10px] font-bold font-mono text-slate-400">미완성</span>
+                            <div id="check-a" class="flex justify-between items-center p-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500">
+                                <span class="font-semibold flex items-center text-[11px] sm:text-xs"><i class="fa-regular fa-square mr-1.5 text-slate-400"></i>변 CA & 변 AB</span>
+                                <span class="text-[10px] font-bold font-mono">미완성</span>
                             </div>
                         </div>
 
                         <!-- Distance Result Card (when point P clicked) -->
-                        <div id="step3-distance-card" class="hidden p-1.5 sm:p-2 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-900 space-y-1">
-                            <div class="font-bold text-purple-900 border-b border-purple-200 pb-0.5 flex items-center justify-between text-[10px] sm:text-xs">
+                        <div id="step3-distance-card" class="hidden p-2 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-900 space-y-1">
+                            <div class="font-bold text-purple-900 border-b border-purple-200 pb-1 flex items-center justify-between text-[11px] sm:text-xs">
                                 <span><i class="fa-solid fa-star text-amber-500 mr-1"></i>교점에서 각 변까지 거리</span>
                                 <span class="text-[10px] text-emerald-600 font-bold">일치!</span>
                             </div>
-                            <div class="flex justify-between text-[10px] sm:text-[11px] font-mono">
+                            <div class="flex justify-between text-[11px] font-mono">
                                 <span>AB: <strong id="step3-d1" class="text-rose-600">-</strong></span>
                                 <span>BC: <strong id="step3-d2" class="text-emerald-600">-</strong></span>
                                 <span>CA: <strong id="step3-d3" class="text-blue-600">-</strong></span>
@@ -351,7 +351,7 @@
                     </div>
 
                     <!-- Navigation Action -->
-                    <button onclick="switchStep(1)" class="w-full py-1.5 sm:py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs sm:text-sm shadow-md transition duration-200 flex items-center justify-center gap-1.5 shrink-0 mt-1">
+                    <button onclick="switchStep(1)" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs sm:text-sm shadow-md transition duration-200 flex items-center justify-center gap-1.5 shrink-0">
                         <i class="fa-solid fa-rotate-left"></i> 1단계로 돌아가기
                     </button>
                 </div>
@@ -419,21 +419,16 @@
         };
 
         // Calculates responsive triangle coordinates matching the active board container size
-        function setupResponsiveCoordinates(step = currentStep) {
-            const board = document.getElementById(`step${step}-board`);
+        function setupResponsiveCoordinates() {
+            const board = document.getElementById('step1-board') || document.getElementById('step2-board') || document.getElementById('step3-board');
             if (!board) return;
             const rect = board.getBoundingClientRect();
-            const w = rect.width > 0 ? rect.width : (window.innerWidth || 360);
-            const h = rect.height > 0 ? rect.height : 300;
+            const w = rect.width > 0 ? rect.width : 600;
+            const h = rect.height > 0 ? rect.height : 400;
 
-            // 스마트폰 등 작은 화면에서도 잘리지 않도록 안전 여백 설정
-            const paddingX = Math.max(25, w * 0.16);
-            const paddingTop = Math.max(30, h * 0.16);
-            const paddingBottom = Math.max(30, h * 0.18);
-
-            triangleABC.A = { x: w * 0.5, y: paddingTop, label: 'A' };
-            triangleABC.B = { x: paddingX, y: h - paddingBottom, label: 'B' };
-            triangleABC.C = { x: w - paddingX, y: h - paddingBottom, label: 'C' };
+            triangleABC.A = { x: w * 0.5, y: h * 0.16, label: 'A' };
+            triangleABC.B = { x: w * 0.15, y: h * 0.82, label: 'B' };
+            triangleABC.C = { x: w * 0.85, y: h * 0.82, label: 'C' };
         }
 
         // Distance between two points
@@ -523,7 +518,7 @@
 
             currentStep = step;
             
-            // Toggle step containers FIRST so target container becomes visible in DOM
+            // Toggle step containers
             document.getElementById('step1-container').classList.toggle('hidden', step !== 1);
             document.getElementById('step2-container').classList.toggle('hidden', step !== 2);
             document.getElementById('step3-container').classList.toggle('hidden', step !== 3);
@@ -536,8 +531,8 @@
             document.getElementById('tab-step2').className = step === 2 ? activeTabClass : inactiveTabClass;
             document.getElementById('tab-step3').className = step === 3 ? activeTabClass : inactiveTabClass;
 
-            // Recalculate coordinates and render current step AFTER visibility toggle
-            setupResponsiveCoordinates(step);
+            // Recalculate coordinates and render current step
+            setupResponsiveCoordinates();
             if (step === 1) renderStep1();
             if (step === 2) renderStep2();
             if (step === 3) renderStep3();
@@ -1081,15 +1076,15 @@
             list.forEach(item => {
                 const checkEl = document.getElementById(item.id);
                 if (step3State.drawnBisectors.has(item.key)) {
-                    checkEl.className = "flex flex-col md:flex-row justify-between items-center p-1.5 sm:p-2 bg-purple-100 border border-purple-300 rounded-lg text-purple-900 font-bold text-center md:text-left";
-                    checkEl.querySelector('span:first-child').innerHTML = `<i class="fa-solid fa-square-check mr-1 text-purple-600 hidden sm:inline"></i>변 ${item.key === 'B' ? 'AB & BC' : item.key === 'C' ? 'BC & CA' : 'CA & AB'}`;
+                    checkEl.className = "flex justify-between items-center p-2 bg-purple-100 border border-purple-300 rounded-lg text-purple-900 font-bold";
+                    checkEl.querySelector('i').className = "fa-solid fa-square-check mr-1.5 text-purple-600";
                     checkEl.querySelector('span:last-child').textContent = "완성";
-                    checkEl.querySelector('span:last-child').className = "text-[9px] sm:text-[10px] font-bold text-purple-700";
+                    checkEl.querySelector('span:last-child').className = "text-[10px] font-bold text-purple-700";
                 } else {
-                    checkEl.className = "flex flex-col md:flex-row justify-between items-center p-1.5 sm:p-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500 text-center md:text-left";
-                    checkEl.querySelector('span:first-child').innerHTML = `<i class="fa-regular fa-square mr-1 text-slate-400 hidden sm:inline"></i>변 ${item.key === 'B' ? 'AB & BC' : item.key === 'C' ? 'BC & CA' : 'CA & AB'}`;
+                    checkEl.className = "flex justify-between items-center p-2 bg-slate-100 border border-slate-200 rounded-lg text-slate-500";
+                    checkEl.querySelector('i').className = "fa-regular fa-square mr-1.5 text-slate-400";
                     checkEl.querySelector('span:last-child').textContent = "미완성";
-                    checkEl.querySelector('span:last-child').className = "text-[9px] sm:text-[10px] font-bold font-mono text-slate-400";
+                    checkEl.querySelector('span:last-child').className = "text-[10px] font-bold font-mono text-slate-400";
                 }
             });
 
@@ -1312,13 +1307,6 @@
         }
 
         function renderBenchIcons(svg, benches) {
-            const board = document.getElementById(`step${currentStep}-board`);
-            const w = board ? board.getBoundingClientRect().width : 360;
-            
-            // 화면 너비에 맞춘 비례적 벤치 크기 조절 (모바일에서 화면 밖으로 넘침 방지)
-            const benchLen = Math.min(100, Math.max(45, w * 0.20));
-            const benchWidth = Math.min(12, Math.max(7, benchLen * 0.12));
-
             benches.forEach(b => {
                 const p1 = b.p1 || b.pos;
                 const p2 = b.p2 || b.pos;
@@ -1327,6 +1315,9 @@
                 const midY = (p1.y + p2.y) / 2;
                 const angleRad = Math.atan2(p2.y - p1.y, p2.x - p1.x);
                 const angleDeg = angleRad * (180 / Math.PI);
+
+                const benchLen = 110;
+                const benchWidth = 12;
 
                 const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
                 g.setAttribute("transform", `translate(${midX}, ${midY}) rotate(${angleDeg})`);
@@ -1342,35 +1333,35 @@
                 benchBase.setAttribute("stroke-width", "1.5");
 
                 const slat1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                slat1.setAttribute("x1", -benchLen / 2 + 4);
+                slat1.setAttribute("x1", -benchLen / 2 + 6);
                 slat1.setAttribute("y1", -1.5);
-                slat1.setAttribute("x2", benchLen / 2 - 4);
+                slat1.setAttribute("x2", benchLen / 2 - 6);
                 slat1.setAttribute("y2", -1.5);
                 slat1.setAttribute("stroke", "#92400e");
                 slat1.setAttribute("stroke-width", "1.2");
 
                 const slat2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                slat2.setAttribute("x1", -benchLen / 2 + 4);
+                slat2.setAttribute("x1", -benchLen / 2 + 6);
                 slat2.setAttribute("y1", 1.5);
-                slat2.setAttribute("x2", benchLen / 2 - 4);
+                slat2.setAttribute("x2", benchLen / 2 - 6);
                 slat2.setAttribute("y2", 1.5);
                 slat2.setAttribute("stroke", "#92400e");
                 slat2.setAttribute("stroke-width", "1.2");
 
                 const leg1 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                leg1.setAttribute("x", -benchLen / 2 + 6);
-                leg1.setAttribute("y", -benchWidth / 2 - 1);
-                leg1.setAttribute("width", "4");
-                leg1.setAttribute("height", benchWidth + 2);
-                leg1.setAttribute("rx", "1");
+                leg1.setAttribute("x", -benchLen / 2 + 8);
+                leg1.setAttribute("y", -benchWidth / 2 - 1.5);
+                leg1.setAttribute("width", "5");
+                leg1.setAttribute("height", benchWidth + 3);
+                leg1.setAttribute("rx", "1.5");
                 leg1.setAttribute("fill", "#334155");
 
                 const leg2 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                leg2.setAttribute("x", benchLen / 2 - 10);
-                leg2.setAttribute("y", -benchWidth / 2 - 1);
-                leg2.setAttribute("width", "4");
-                leg2.setAttribute("height", benchWidth + 2);
-                leg2.setAttribute("rx", "1");
+                leg2.setAttribute("x", benchLen / 2 - 13);
+                leg2.setAttribute("y", -benchWidth / 2 - 1.5);
+                leg2.setAttribute("width", "5");
+                leg2.setAttribute("height", benchWidth + 3);
+                leg2.setAttribute("rx", "1.5");
                 leg2.setAttribute("fill", "#334155");
 
                 g.appendChild(benchBase);
@@ -1380,16 +1371,15 @@
                 g.appendChild(leg2);
                 svg.appendChild(g);
 
-                const perpOffset = Math.min(18, benchWidth + 8);
+                const perpOffset = 18;
                 const labelX = midX + Math.sin(angleRad) * perpOffset;
                 const labelY = midY - Math.cos(angleRad) * perpOffset;
 
-                const fontSize = Math.min(11, Math.max(9, benchLen * 0.12));
                 const textLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 textLabel.setAttribute("x", labelX);
                 textLabel.setAttribute("y", labelY);
                 textLabel.setAttribute("text-anchor", "middle");
-                textLabel.setAttribute("font-size", fontSize);
+                textLabel.setAttribute("font-size", "11");
                 textLabel.setAttribute("font-weight", "bold");
                 textLabel.setAttribute("fill", "#1e293b");
                 textLabel.textContent = b.label;
@@ -1406,7 +1396,7 @@
         });
 
         window.addEventListener('resize', () => {
-            setupResponsiveCoordinates(currentStep);
+            setupResponsiveCoordinates();
             if (currentStep === 1) renderStep1();
             if (currentStep === 2) renderStep2();
             if (currentStep === 3) renderStep3();
