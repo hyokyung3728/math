@@ -1,0 +1,551 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>타르초 라틴방진</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background: #f4ece1;
+            background-image: radial-gradient(#d8ccbe 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: #2c2825;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .font-serif-kr {
+            font-family: 'Gowun Batang', serif;
+        }
+
+        /* 3x3 Memo Subgrid layout inside cell */
+        .memo-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            width: 100%;
+            height: 100%;
+            padding: 2px;
+        }
+
+        .memo-cell {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            line-height: 1;
+            font-weight: 700;
+            color: #6b7280; /* Gray-500 */
+        }
+
+        /* Smooth pulse for selection */
+        .selected-cell {
+            box-shadow: inset 0 0 0 3px #3b82f6, 0 0 12px rgba(59, 130, 246, 0.5);
+            background-color: #eff6ff !important;
+        }
+
+        .flag-hover:hover {
+            transform: translateY(-3px);
+            filter: drop-shadow(0 6px 8px rgba(0,0,0,0.15));
+        }
+
+        /* Prayer Flag Garland Animation */
+        .garland-flag {
+            animation: sway 3s ease-in-out infinite alternate;
+            transform-origin: top center;
+        }
+
+        @keyframes sway {
+            0% { transform: rotate(-2deg); }
+            100% { transform: rotate(2deg); }
+        }
+
+        /* Wooden frame shadow */
+        .wood-board {
+            background: #ffffff;
+            border: 8px solid #6e4e37;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.15), inset 0 0 10px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-3 sm:p-6">
+
+    <!-- Header Section -->
+    <header class="w-full max-w-lg flex flex-col items-center mb-2">
+        <!-- Hanging Bunting Garland -->
+        <div class="w-full flex justify-between items-center px-4 mb-2 overflow-hidden h-10 border-b border-amber-900/10">
+            <div class="garland-flag w-6 h-7 bg-blue-600 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-white font-bold opacity-90">༄</div>
+            <div class="garland-flag w-6 h-7 bg-slate-100 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-slate-800 font-bold opacity-90" style="animation-delay: 0.4s;">༅</div>
+            <div class="garland-flag w-6 h-7 bg-red-600 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-white font-bold opacity-90" style="animation-delay: 0.8s;">༆</div>
+            <div class="garland-flag w-6 h-7 bg-green-600 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-white font-bold opacity-90" style="animation-delay: 1.2s;">ༀ</div>
+            <div class="garland-flag w-6 h-7 bg-amber-400 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-amber-950 font-bold opacity-90" style="animation-delay: 1.6s;">མ</div>
+        </div>
+
+        <h1 class="text-2xl sm:text-3xl font-bold font-serif-kr text-amber-950 tracking-tight flex items-center gap-2">
+            <span>타르초 라틴방진</span>
+        </h1>
+        <p class="text-xs sm:text-sm text-stone-600 mt-1 text-center">
+            가로, 세로 모든 줄에 5가지 색상의 깃발이 중복 없이 하나씩 들어가도록 채워보세요.
+        </p>
+    </header>
+
+    <!-- Main Puzzle Container -->
+    <main class="w-full max-w-md flex flex-col items-center">
+        <!-- 5x5 Puzzle Board -->
+        <div class="wood-board rounded-xl p-2 sm:p-3 w-full aspect-square mb-4">
+            <div id="board" class="grid grid-cols-5 grid-rows-5 gap-1.5 w-full h-full bg-stone-900 p-1 rounded-lg">
+                <!-- Cells rendered dynamically via JS -->
+            </div>
+        </div>
+
+        <!-- Action Control Buttons -->
+        <div class="grid grid-cols-4 gap-2 w-full mb-4">
+            <button id="btn-undo" onclick="handleUndo()" class="flex flex-col items-center justify-center py-2 px-1 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl border-2 border-stone-300 shadow-sm active:scale-95 transition-all">
+                <i class="fa-solid font-bold fa-rotate-left text-base sm:text-lg mb-1 text-amber-800"></i>
+                <span class="text-xs sm:text-sm font-bold">실행취소</span>
+            </button>
+
+            <button id="btn-erase" onclick="handleErase()" class="flex flex-col items-center justify-center py-2 px-1 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl border-2 border-stone-300 shadow-sm active:scale-95 transition-all">
+                <i class="fa-solid font-bold fa-eraser text-base sm:text-lg mb-1 text-rose-600"></i>
+                <span class="text-xs sm:text-sm font-bold">지우기</span>
+            </button>
+
+            <button id="btn-memo" onclick="toggleMemoMode()" class="flex flex-col items-center justify-center py-2 px-1 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl border-2 border-stone-300 shadow-sm active:scale-95 transition-all relative overflow-hidden">
+                <div id="memo-indicator" class="absolute top-1 right-1 w-2 h-2 rounded-full bg-slate-400"></div>
+                <i class="fa-solid font-bold fa-pen-to-square text-base sm:text-lg mb-1 text-blue-600"></i>
+                <span class="text-xs sm:text-sm font-bold flex items-center gap-1">
+                    메모 <span id="memo-status-text" class="text-[10px] px-1 bg-stone-300 text-stone-700 rounded font-normal">OFF</span>
+                </span>
+            </button>
+
+            <button id="btn-reset" onclick="handleReset()" class="flex flex-col items-center justify-center py-2 px-1 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl border-2 border-stone-300 shadow-sm active:scale-95 transition-all">
+                <i class="fa-solid font-bold fa-arrows-rotate text-base sm:text-lg mb-1 text-emerald-600"></i>
+                <span class="text-xs sm:text-sm font-bold">다시하기</span>
+            </button>
+        </div>
+
+        <!-- Flag Selection Palette -->
+        <div class="w-full bg-amber-950/5 border-2 border-amber-900/20 p-2.5 sm:p-3 rounded-2xl shadow-inner">
+            <div class="text-xs text-center font-bold text-stone-600 mb-2">
+                깃발 선택 (<span id="palette-mode-desc" class="text-blue-700">원래 크기 채우기</span>)
+            </div>
+            <div class="grid grid-cols-5 gap-2 sm:gap-3">
+                <!-- Blue Flag -->
+                <button onclick="handleFlagSelect('blue')" class="flag-hover flex flex-col items-center p-1.5 bg-white rounded-xl border-2 border-stone-200 shadow hover:border-blue-500 transition-all active:scale-90">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+                        <svg class="w-full h-full" viewBox="0 0 100 100" id="svg-flag-blue"></svg>
+                    </div>
+                    <span class="text-xs font-bold text-stone-700 mt-1">파랑</span>
+                </button>
+
+                <!-- White Flag -->
+                <button onclick="handleFlagSelect('white')" class="flag-hover flex flex-col items-center p-1.5 bg-white rounded-xl border-2 border-stone-200 shadow hover:border-slate-400 transition-all active:scale-90">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+                        <svg class="w-full h-full" viewBox="0 0 100 100" id="svg-flag-white"></svg>
+                    </div>
+                    <span class="text-xs font-bold text-stone-700 mt-1">하양</span>
+                </button>
+
+                <!-- Red Flag -->
+                <button onclick="handleFlagSelect('red')" class="flag-hover flex flex-col items-center p-1.5 bg-white rounded-xl border-2 border-stone-200 shadow hover:border-red-500 transition-all active:scale-90">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+                        <svg class="w-full h-full" viewBox="0 0 100 100" id="svg-flag-red"></svg>
+                    </div>
+                    <span class="text-xs font-bold text-stone-700 mt-1">빨강</span>
+                </button>
+
+                <!-- Green Flag -->
+                <button onclick="handleFlagSelect('green')" class="flag-hover flex flex-col items-center p-1.5 bg-white rounded-xl border-2 border-stone-200 shadow hover:border-green-500 transition-all active:scale-90">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+                        <svg class="w-full h-full" viewBox="0 0 100 100" id="svg-flag-green"></svg>
+                    </div>
+                    <span class="text-xs font-bold text-stone-700 mt-1">초록</span>
+                </button>
+
+                <!-- Yellow Flag -->
+                <button onclick="handleFlagSelect('yellow')" class="flag-hover flex flex-col items-center p-1.5 bg-white rounded-xl border-2 border-stone-200 shadow hover:border-yellow-500 transition-all active:scale-90">
+                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
+                        <svg class="w-full h-full" viewBox="0 0 100 100" id="svg-flag-yellow"></svg>
+                    </div>
+                    <span class="text-xs font-bold text-stone-700 mt-1">노랑</span>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- SUCCESS Modal -->
+    <div id="success-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden transition-opacity duration-300">
+        <div class="bg-amber-50 rounded-3xl border-4 border-amber-800 p-6 sm:p-8 max-w-sm w-full text-center shadow-2xl transform scale-95 transition-transform duration-300" id="modal-card">
+            <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-amber-300 text-amber-800 text-3xl shadow-inner">
+                <i class="fa-solid fa-crown text-yellow-600 animate-bounce"></i>
+            </div>
+            <h2 class="text-3xl font-extrabold text-amber-950 font-serif-kr tracking-wider mb-2">SUCCESS!</h2>
+            <p class="text-stone-700 text-sm mb-6 leading-relaxed">
+                축하합니다! 타르초 라틴방진의 모든 칸을 완벽하게 완성하셨습니다.
+            </p>
+            <button onclick="closeSuccessModal()" class="w-full py-3 bg-amber-800 hover:bg-amber-900 text-amber-50 font-bold rounded-2xl shadow-lg active:scale-95 transition-all text-base">
+                확인 및 다시하기
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /*
+         * Tarcho Prayer Flag Latin Square Logic
+         * Colors: blue (파), white (하), red (빨), green (초), yellow (노)
+         */
+
+        // Color Key mappings & labels
+        const COLORS = ['blue', 'white', 'red', 'green', 'yellow'];
+        const COLOR_LABELS = {
+            blue: '파',
+            white: '하',
+            red: '빨',
+            green: '초',
+            yellow: '노'
+        };
+
+        // Note positions inside 3x3 grid (row, col)
+        // 파랑: 가장 윗줄 첫번째 칸 (0,0)
+        // 하양: 가장 윗줄 세번째 칸 (0,2)
+        // 빨강: 가장 아랫줄 첫번째 칸 (2,0)
+        // 초록: 가장 아랫줄 두번째 칸 (2,1)
+        // 노랑: 가장 아랫줄 세번째 칸 (2,2)
+        const MEMO_POSITIONS = {
+            blue: { r: 0, c: 0 },
+            white: { r: 0, c: 2 },
+            red: { r: 2, c: 0 },
+            green: { r: 2, c: 1 },
+            yellow: { r: 2, c: 2 }
+        };
+
+        // Initial fixed puzzle board from user image
+        // null = empty space
+        const INITIAL_BOARD = [
+            ['blue', 'white', null, null, null],
+            [null, null, 'blue', 'yellow', null],
+            [null, 'yellow', null, null, 'blue'],
+            ['green', null, null, 'red', null],
+            [null, 'red', 'white', null, null]
+        ];
+
+        // State variables
+        let gridState = []; // 5x5 array containing cell objects
+        let selectedCell = null; // { r, c }
+        let memoMode = false; // ON/OFF state
+        let historyStack = []; // for Undo functionality
+
+        // Generate authentic Prayer Flag SVG HTML
+        function getFlagSVG(color) {
+            const colorPalettes = {
+                blue: { bg: '#1d4ed8', border: '#1e3a8a', string: '#1e3a8a', text: '#bfdbfe' },
+                white: { bg: '#f8fafc', border: '#cbd5e1', string: '#475569', text: '#334155' },
+                red: { bg: '#dc2626', border: '#991b1b', string: '#7f1d1d', text: '#fca5a5' },
+                green: { bg: '#15803d', border: '#166534', string: '#14532d', text: '#bbf7d0' },
+                yellow: { bg: '#eab308', border: '#ca8a04', string: '#713f12', text: '#713f12' }
+            };
+
+            const pal = colorPalettes[color] || colorPalettes.blue;
+
+            return `
+            <svg viewBox="0 0 100 100" class="w-full h-full drop-shadow-md">
+                <!-- Top Hanging Rope / Wood Stick -->
+                <line x1="2" y1="12" x2="98" y2="12" stroke="${pal.string}" stroke-width="4" stroke-linecap="round"/>
+                <circle cx="6" cy="12" r="3" fill="#78350f" />
+                <circle cx="94" cy="12" r="3" fill="#78350f" />
+
+                <!-- Flag Cloth -->
+                <path d="M 12 14 L 88 14 C 88 14 86 52 88 90 L 12 90 C 14 52 12 14 12 14 Z" 
+                      fill="${pal.bg}" stroke="${pal.border}" stroke-width="2.5" stroke-linejoin="round"/>
+
+                <!-- Inner Mantra / Deity Graphics (Tibetan Prayer Flag style outline) -->
+                <rect x="22" y="24" width="56" height="54" fill="none" stroke="${pal.text}" stroke-width="1" stroke-dasharray="2,2" opacity="0.6"/>
+                
+                <!-- Center Horse Symbol / Mantra Silhouette -->
+                <g fill="${pal.text}" opacity="0.8" transform="translate(34, 34) scale(0.32)">
+                    <path d="M50 10 C30 10 20 30 20 50 C20 70 30 90 50 90 C70 90 80 70 80 50 C80 30 70 10 50 10 Z M50 25 C60 25 65 35 65 50 C65 65 60 75 50 75 C40 75 35 65 35 50 C35 35 40 25 50 25 Z"/>
+                    <!-- Decorative Mantra lines -->
+                    <line x1="10" y1="30" x2="90" y2="30" stroke="${pal.text}" stroke-width="4"/>
+                    <line x1="10" y1="70" x2="90" y2="70" stroke="${pal.text}" stroke-width="4"/>
+                    <circle cx="50" cy="50" r="12" />
+                </g>
+
+                <!-- Corner Ties -->
+                <path d="M 10 14 L 4 20" stroke="${pal.string}" stroke-width="2"/>
+                <path d="M 90 14 L 96 20" stroke="${pal.string}" stroke-width="2"/>
+            </svg>`;
+        }
+
+        function initApp() {
+            // Render palette SVGs
+            COLORS.forEach(c => {
+                const el = document.getElementById(`svg-flag-${c}`);
+                if (el) el.innerHTML = getFlagSVG(c);
+            });
+
+            // Initialize Grid State
+            gridState = [];
+            for (let r = 0; r < 5; r++) {
+                const row = [];
+                for (let c = 0; c < 5; c++) {
+                    const fixedColor = INITIAL_BOARD[r][c];
+                    row.push({
+                        r,
+                        c,
+                        isFixed: fixedColor !== null,
+                        color: fixedColor,
+                        memos: {
+                            blue: false,
+                            white: false,
+                            red: false,
+                            green: false,
+                            yellow: false
+                        }
+                    });
+                }
+                gridState.push(row);
+            }
+
+            selectedCell = null;
+            historyStack = [];
+            renderBoard();
+        }
+
+        // Render the 5x5 Grid UI
+        function renderBoard() {
+            const boardEl = document.getElementById('board');
+            boardEl.innerHTML = '';
+
+            for (let r = 0; r < 5; r++) {
+                for (let c = 0; c < 5; c++) {
+                    const cellData = gridState[r][c];
+                    const cellEl = document.createElement('div');
+                    
+                    cellEl.className = `relative flex items-center justify-center rounded-lg cursor-pointer transition-all duration-150 select-none overflow-hidden ${
+                        cellData.isFixed ? 'bg-amber-50/90' : 'bg-white hover:bg-amber-50'
+                    }`;
+
+                    // Check if selected
+                    if (selectedCell && selectedCell.r === r && selectedCell.c === c) {
+                        cellEl.classList.add('selected-cell');
+                    }
+
+                    // Click Handler
+                    cellEl.onclick = () => handleCellClick(r, c);
+
+                    if (cellData.color) {
+                        // Main Flag Display
+                        cellEl.innerHTML = `<div class="w-full h-full p-1 flex items-center justify-center">${getFlagSVG(cellData.color)}</div>`;
+                    } else {
+                        // Render 3x3 Memo Grid
+                        const memoGridEl = document.createElement('div');
+                        memoGridEl.className = 'memo-grid';
+
+                        // Create 3x3 cells
+                        for (let mr = 0; mr < 3; mr++) {
+                            for (let mc = 0; mc < 3; mc++) {
+                                const subCell = document.createElement('div');
+                                subCell.className = 'memo-cell';
+
+                                // Find if any color belongs to this subcell
+                                Object.keys(MEMO_POSITIONS).forEach(colKey => {
+                                    const pos = MEMO_POSITIONS[colKey];
+                                    if (pos.r === mr && pos.c === mc && cellData.memos[colKey]) {
+                                        subCell.textContent = COLOR_LABELS[colKey];
+                                    }
+                                });
+
+                                memoGridEl.appendChild(subCell);
+                            }
+                        }
+                        cellEl.appendChild(memoGridEl);
+                    }
+
+                    boardEl.appendChild(cellEl);
+                }
+            }
+        }
+
+        function handleCellClick(r, c) {
+            // Select cell
+            selectedCell = { r, c };
+            renderBoard();
+        }
+
+        // Save snapshot for Undo
+        function pushHistory() {
+            const snapshot = JSON.parse(JSON.stringify(gridState));
+            historyStack.push(snapshot);
+            if (historyStack.length > 30) historyStack.shift(); // Limit undo steps
+        }
+
+        function handleFlagSelect(color) {
+            if (!selectedCell) {
+                return;
+            }
+
+            const { r, c } = selectedCell;
+            const targetCell = gridState[r][c];
+
+            // Pre-filled fixed flags cannot be changed
+            if (targetCell.isFixed) {
+                return;
+            }
+
+            pushHistory();
+
+            if (memoMode) {
+                // MEMO ON MODE
+                // If a full flag was already placed, clear it when adding memos
+                if (targetCell.color) {
+                    targetCell.color = null;
+                }
+                // Toggle memo
+                targetCell.memos[color] = !targetCell.memos[color];
+            } else {
+                // MEMO OFF MODE
+                // Place flag. If clicking same color, remove it (toggle feature)
+                if (targetCell.color === color) {
+                    targetCell.color = null;
+                } else {
+                    targetCell.color = color;
+                    // Clear memos when flag is placed
+                    Object.keys(targetCell.memos).forEach(k => targetCell.memos[k] = false);
+                }
+            }
+
+            renderBoard();
+            checkPuzzleCompletion();
+        }
+
+        function handleUndo() {
+            if (historyStack.length === 0) return;
+            gridState = historyStack.pop();
+            renderBoard();
+        }
+
+        function handleErase() {
+            if (!selectedCell) return;
+            const { r, c } = selectedCell;
+            const cell = gridState[r][c];
+
+            if (cell.isFixed) return;
+
+            if (cell.color !== null || Object.values(cell.memos).some(v => v)) {
+                pushHistory();
+                cell.color = null;
+                Object.keys(cell.memos).forEach(k => cell.memos[k] = false);
+                renderBoard();
+            }
+        }
+
+        function toggleMemoMode() {
+            memoMode = !memoMode;
+            const btnIndicator = document.getElementById('memo-indicator');
+            const statusText = document.getElementById('memo-status-text');
+            const modeDesc = document.getElementById('palette-mode-desc');
+            const btnMemo = document.getElementById('btn-memo');
+
+            if (memoMode) {
+                btnIndicator.className = "absolute top-1 right-1 w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+                statusText.className = "text-[10px] px-1 bg-blue-600 text-white rounded font-bold";
+                statusText.textContent = "ON";
+                modeDesc.textContent = "작은 메모 글씨 넣기";
+                modeDesc.className = "text-amber-800 font-bold";
+                btnMemo.classList.add('bg-blue-50', 'border-blue-400');
+            } else {
+                btnIndicator.className = "absolute top-1 right-1 w-2 h-2 rounded-full bg-slate-400";
+                statusText.className = "text-[10px] px-1 bg-stone-300 text-stone-700 rounded font-normal";
+                statusText.textContent = "OFF";
+                modeDesc.textContent = "원래 크기 채우기";
+                modeDesc.className = "text-blue-700 font-bold";
+                btnMemo.classList.remove('bg-blue-50', 'border-blue-400');
+            }
+        }
+
+        function handleReset() {
+            if (confirm("게임을 초기화하시겠습니까?")) {
+                initApp();
+            }
+        }
+
+        function checkPuzzleCompletion() {
+            // 1. Check if all cells are filled with flags
+            for (let r = 0; r < 5; r++) {
+                for (let c = 0; c < 5; c++) {
+                    if (!gridState[r][c].color) {
+                        return false; // Incomplete
+                    }
+                }
+            }
+
+            // 2. Validate Rows for Latin Square property
+            for (let r = 0; r < 5; r++) {
+                const rowColors = new Set();
+                for (let c = 0; c < 5; c++) {
+                    rowColors.add(gridState[r][c].color);
+                }
+                if (rowColors.size < 5) return false;
+            }
+
+            // 3. Validate Columns for Latin Square property
+            for (let c = 0; c < 5; c++) {
+                const colColors = new Set();
+                for (let r = 0; r < 5; r++) {
+                    colColors.add(gridState[r][c].color);
+                }
+                if (colColors.size < 5) return false;
+            }
+
+            // SUCCESS!
+            showSuccessModal();
+            return true;
+        }
+
+        function showSuccessModal() {
+            // Launch Confetti
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 120,
+                    spread: 80,
+                    origin: { y: 0.6 }
+                });
+            }
+
+            const modal = document.getElementById('success-modal');
+            const card = document.getElementById('modal-card');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                card.classList.remove('scale-95');
+                card.classList.add('scale-100');
+            }, 10);
+        }
+
+        function closeSuccessModal() {
+            const modal = document.getElementById('success-modal');
+            const card = document.getElementById('modal-card');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                initApp();
+            }, 200);
+        }
+
+        // Initialize on page load
+        window.onload = function() {
+            initApp();
+        };
+    </script>
+</body>
+</html>
