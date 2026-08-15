@@ -1,0 +1,1849 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>일차함수 스피드 디펜스 : Linear Speed Defense</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700;800&family=Jua&family=Noto+Sans+KR:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- KaTeX for Math Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+        }
+        .font-jua { font-family: 'Jua', sans-serif; }
+        .font-tech { font-family: 'Chakra Petch', sans-serif; }
+        
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        ::-webkit-scrollbar-thumb { background: #06b6d4; border-radius: 4px; }
+
+        @keyframes laser-glow {
+            0%, 100% { filter: drop-shadow(0 0 6px #06b6d4); }
+            50% { filter: drop-shadow(0 0 18px #22d3ee); }
+        }
+        .glow-laser { animation: laser-glow 1.2s infinite; }
+
+        @keyframes pulse-danger {
+            0%, 100% { border-color: rgba(239, 68, 68, 0.4); box-shadow: 0 0 10px rgba(239,68,68,0.2); }
+            50% { border-color: rgba(239, 68, 68, 0.9); box-shadow: 0 0 25px rgba(239,68,68,0.6); }
+        }
+        .danger-pulse { animation: pulse-danger 0.8s infinite; }
+
+        @keyframes combo-pop {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.25); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-combo { animation: combo-pop 0.3s ease-out forwards; }
+
+        .katex-display { margin: 0.25em 0 !important; }
+        .katex { font-size: 1.15em; }
+    </style>
+</head>
+<body class="h-screen max-h-screen w-screen overflow-hidden flex flex-col justify-between select-none bg-slate-950">
+
+    <!-- 상단 대시보드 헤더 -->
+    <header class="bg-slate-900/95 border-b border-cyan-500/30 px-3 py-2 shrink-0 z-30 backdrop-blur">
+        <div class="w-full flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="bg-gradient-to-tr from-cyan-600 to-blue-500 text-slate-950 p-1.5 rounded-xl shadow-lg shadow-cyan-500/20">
+                    <i class="fa-solid fa-shield-halved text-lg text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-tech font-extrabold text-base md:text-xl text-cyan-400 tracking-wider flex items-center gap-2 leading-none">
+                        <span>일차함수 SPEED DEFENSE</span>
+                        <span id="badge-mode" class="text-[10px] bg-cyan-950 border border-cyan-500/50 text-cyan-300 px-2 py-0.5 rounded-full font-sans font-bold hidden md:inline-block">RANKING</span>
+                    </h1>
+                </div>
+            </div>
+
+            <!-- 상태 및 컨트롤 버튼 -->
+            <div class="flex items-center space-x-1.5 md:space-x-2">
+                <button id="btn-back-main" onclick="quitToMain()" class="hidden bg-rose-600/90 hover:bg-rose-500 text-white px-2.5 py-1 rounded-lg text-xs font-bold shadow transition flex items-center space-x-1 border border-rose-400/40">
+                    <i class="fa-solid fa-house"></i>
+                    <span class="hidden sm:inline">처음으로</span>
+                </button>
+
+                <div id="player-tag" class="hidden bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-full text-xs font-bold text-cyan-300 flex items-center space-x-1">
+                    <i class="fa-solid fa-user-ninja text-cyan-400"></i>
+                    <span id="display-player-name">요원</span>
+                </div>
+
+                <button id="btn-sound" onclick="toggleSound()" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 w-8 h-8 rounded-lg flex items-center justify-center text-cyan-400 transition text-sm">
+                    <i class="fa-solid fa-volume-high"></i>
+                </button>
+                <button onclick="openLeaderboardModal()" class="bg-amber-600/90 hover:bg-amber-500 text-white px-2.5 py-1 rounded-lg text-xs font-bold shadow transition flex items-center space-x-1 border border-amber-400/40">
+                    <i class="fa-solid fa-trophy text-amber-300"></i>
+                    <span class="hidden sm:inline">순위표</span>
+                </button>
+                <button onclick="openRulesModal()" class="bg-indigo-600/90 hover:bg-indigo-500 text-white px-2.5 py-1 rounded-lg text-xs font-bold shadow transition flex items-center space-x-1 border border-indigo-400/40">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span class="hidden sm:inline">작전지침</span>
+                </button>
+                <button onclick="openAdminAuthModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-2.5 py-1 rounded-lg text-xs font-bold shadow transition flex items-center space-x-1" title="교사용 패널">
+                    <i class="fa-solid fa-key text-amber-400"></i>
+                    <span>교사용</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 알림 토스트 -->
+    <div id="game-toast" class="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-slate-900 border border-cyan-400 text-cyan-200 px-4 py-2 rounded-xl shadow-2xl text-xs font-bold transition-all duration-300 transform -translate-y-10 opacity-0 pointer-events-none flex items-center space-x-2">
+        <i id="toast-icon" class="fa-solid fa-circle-info text-cyan-400"></i>
+        <span id="toast-msg">시스템 메시지</span>
+    </div>
+
+    <!-- MAIN CONTAINER -->
+    <main class="w-full flex-grow px-2 md:px-4 py-2 overflow-hidden flex flex-col justify-center relative">
+
+        <!-- [1. 메인 모드 선택 및 플레이어 시작 화면] -->
+        <div id="screen-mode-select" class="space-y-4 my-auto py-2 max-w-2xl mx-auto w-full text-center z-10">
+            <div class="space-y-2">
+                <span class="bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 px-3 py-1 rounded-full text-xs font-tech tracking-wide font-bold">ARCADE SPEED DEFENSE</span>
+                <h2 class="font-tech text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-300 to-indigo-400 tracking-wider">
+                    일차함수 SPEED DEFENSE
+                </h2>
+            </div>
+
+            <!-- 플레이어 식별 정보 & 모드 카드 -->
+            <div class="bg-slate-900/90 border border-cyan-500/30 p-5 md:p-6 rounded-2xl shadow-2xl space-y-4 text-left backdrop-blur">
+                <div>
+                    <label class="block text-xs text-cyan-300 font-bold mb-1.5">
+                        <i class="fa-solid fa-id-badge text-cyan-400 mr-1"></i>방위 요원 이름 (학번이름으로 적을것)
+                    </label>
+                    <input type="text" id="input-player-name" maxlength="12" placeholder="예: 2701김효경" class="w-full bg-slate-950 border border-cyan-500/40 rounded-xl px-4 py-2.5 text-white font-bold text-sm focus:outline-none focus:border-cyan-400 transition shadow-inner">
+                </div>
+
+                <div class="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-2 font-sans">
+                    <p class="text-amber-400 font-bold flex items-center text-xs"><i class="fa-solid fa-bolt mr-1.5"></i>스피드 작전 3대 수칙</p>
+                    <div class="space-y-1 text-[11px] md:text-xs">
+                        <p class="whitespace-nowrap overflow-hidden text-ellipsis">• <b>스피드 문제 풀이:</b> O/X 선택, 기울기, 절편, 함숫값, 그래프 성질을 즉시 판단하여 선택!</p>
+                        <p class="whitespace-nowrap overflow-hidden text-ellipsis">• <b>콤보(Combo) 시스템:</b> 연속 정답 시 콤보가 대폭 누적되며 광역 필살기 게이지가 충전됩니다.</p>
+                        <p class="whitespace-nowrap overflow-hidden text-ellipsis">• <b>귀여운 몬스터 저지:</b> 왼쪽에서 몰려오는 귀여운 몬스터들이 기지에 다가가기 전 요격하세요!</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 pt-1">
+                    <button onclick="initStartPracticeGame()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-jua text-base py-3 rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-graduation-cap text-lg text-emerald-400"></i>
+                        <span>연습 훈련 모드</span>
+                    </button>
+                    <button onclick="initStartGame()" class="bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-jua text-base py-3 rounded-xl shadow-lg shadow-cyan-500/20 transition transform active:scale-95 flex items-center justify-center space-x-2 border border-cyan-300/30">
+                        <i class="fa-solid fa-shield-virus text-lg text-amber-300"></i>
+                        <span>랭킹 방어 작전!</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- [2. 게임 실행 본 화면 (실시간 스피드 아케이드 디펜스)] -->
+        <div id="screen-game" class="hidden h-full w-full flex flex-col justify-between space-y-2 overflow-hidden">
+
+            <!-- 상단 HUD 바 -->
+            <div class="bg-slate-900/90 border border-cyan-500/30 px-3 py-2 rounded-xl flex items-center justify-between text-xs shrink-0 shadow-lg">
+                <!-- WAVE & SCORE -->
+                <div class="flex items-center space-x-3">
+                    <div>
+                        <span class="text-[9px] text-slate-400 font-bold uppercase block">WAVE</span>
+                        <span id="hud-wave" class="font-tech font-extrabold text-sm md:text-base text-cyan-400">WAVE 1 / 5</span>
+                    </div>
+                    <div class="border-l border-slate-800 pl-3">
+                        <span class="text-[9px] text-slate-400 font-bold uppercase block">SCORE</span>
+                        <span id="hud-score" class="font-tech font-extrabold text-sm md:text-base text-amber-400">0</span>
+                    </div>
+                    <!-- COMBO -->
+                    <div class="border-l border-slate-800 pl-3 flex items-center space-x-1">
+                        <div>
+                            <span class="text-[9px] text-slate-400 font-bold uppercase block">COMBO</span>
+                            <span id="hud-combo" class="font-tech font-extrabold text-base md:text-lg text-emerald-400 animate-combo">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 필살기 스킬 게이지 & 요새 HP -->
+                <div class="flex items-center space-x-3">
+                    <!-- SKILL CHARGE BAR -->
+                    <div class="w-24 md:w-36 text-left hidden sm:block">
+                        <div class="flex justify-between text-[10px] font-bold text-cyan-300 mb-0.5">
+                            <span><i class="fa-solid fa-bolt text-amber-400 mr-1"></i>스킬 에너지</span>
+                            <span id="hud-energy-text">0/9</span>
+                        </div>
+                        <div class="w-full bg-slate-950 h-2 rounded-full overflow-hidden border border-slate-800">
+                            <div id="hud-energy-bar" class="bg-gradient-to-r from-amber-500 to-yellow-300 h-full transition-all duration-300" style="width: 0%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- BASE HP -->
+                    <div class="w-28 md:w-36 text-right">
+                        <div class="flex justify-between text-[10px] font-bold text-slate-300 mb-0.5">
+                            <span><i class="fa-solid fa-heart text-rose-500 mr-1"></i>방어 기지 HP</span>
+                            <span id="hud-hp-text">100%</span>
+                        </div>
+                        <div class="w-full bg-slate-950 h-2.5 rounded-full overflow-hidden border border-slate-800">
+                            <div id="hud-hp-bar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full transition-all duration-300" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 메인 게임 영역: LEFT (게임 화면 / 캔버스) | RIGHT (문제 화면 / 질문 콘솔) -->
+            <div class="flex-1 w-full grid grid-cols-1 md:grid-cols-12 gap-3 min-h-0 overflow-hidden">
+                
+                <!-- [LEFT SIDE] 몬스터 진격 디펜스 캔버스 및 필살기 버튼 -->
+                <div class="md:col-span-7 flex flex-col space-y-2 h-full min-h-0">
+                    <div class="flex-1 w-full relative bg-slate-950 rounded-2xl overflow-hidden border border-cyan-500/30 shadow-2xl min-h-[180px]">
+                        <canvas id="defense-canvas" class="w-full h-full object-contain block"></canvas>
+                        
+                        <!-- 비상 경보 오버레이 -->
+                        <div id="warning-overlay" class="absolute inset-0 border-4 border-rose-500/40 pointer-events-none opacity-0 transition-opacity duration-300"></div>
+
+                        <!-- 콤보 이펙트 팝업 오버레이 -->
+                        <div id="combo-popup" class="absolute top-3 left-1/2 -translate-x-1/2 pointer-events-none hidden font-tech font-extrabold text-xl md:text-2xl text-amber-300 drop-shadow-[0_0_10px_rgba(245,158,11,0.8)] tracking-widest animate-combo">
+                            5 COMBO! FEVER MODE!
+                        </div>
+                    </div>
+
+                    <!-- 하단 필살기 광역 버튼 -->
+                    <div class="grid grid-cols-3 gap-2 shrink-0">
+                        <button id="btn-skill-lightning" onclick="triggerUltimateSkill('lightning')" disabled class="bg-slate-900 border border-slate-800 opacity-40 text-cyan-300 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 active:scale-95 shadow">
+                            <i class="fa-solid fa-bolt text-amber-400 text-sm"></i>
+                            <span>⚡전격 (3 Combo)</span>
+                        </button>
+                        <button id="btn-skill-bomb" onclick="triggerUltimateSkill('bomb')" disabled class="bg-slate-900 border border-slate-800 opacity-40 text-amber-300 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 active:scale-95 shadow">
+                            <i class="fa-solid fa-bomb text-rose-400 text-sm"></i>
+                            <span>💣폭격 (6 Combo)</span>
+                        </button>
+                        <button id="btn-skill-laser" onclick="triggerUltimateSkill('laser')" disabled class="bg-slate-900 border border-slate-800 opacity-40 text-emerald-300 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 active:scale-95 shadow">
+                            <i class="fa-solid fa-burst text-emerald-400 text-sm"></i>
+                            <span>💥레이저 (9 Combo)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- [RIGHT SIDE] 스피드 문제 풀이 콘솔 패널 -->
+                <div class="md:col-span-5 bg-slate-900/95 border border-cyan-500/40 rounded-2xl p-3 md:p-4 flex flex-col justify-between shadow-2xl overflow-y-auto">
+                    
+                    <!-- 문제 카테고리 & 타이틀 -->
+                    <div class="space-y-3">
+                        <div class="text-xs text-cyan-400 font-bold uppercase tracking-widest flex items-center justify-center gap-1.5 border-b border-slate-800 pb-2">
+                            <i class="fa-solid fa-crosshair text-rose-400"></i>
+                            <span id="question-category">일차함수 판별 모드</span>
+                        </div>
+
+                        <!-- 문제 제시 영역 (KaTeX 랜더링 지원) -->
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-center min-h-[110px] flex flex-col items-center justify-center shadow-inner space-y-2">
+                            <div id="question-prompt" class="text-xs md:text-sm text-slate-300 leading-relaxed">
+                                다음 식은 일차함수인가요?
+                            </div>
+                            <div id="question-math-display" class="font-tech text-lg md:text-xl font-extrabold text-cyan-300 py-1">
+                                <!-- KaTeX rendered string -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 답변 인터페이스 -->
+                    <div id="answer-container" class="w-full mt-3">
+                        <!-- JS Dynamic rendering (OX / Choice) -->
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- [3. 라운드 오버 / 미션 성패 모달] -->
+        <div id="modal-result" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-900 border border-cyan-500/40 w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl text-center">
+                <div id="result-icon-bg" class="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center text-3xl mx-auto border border-emerald-500/30">
+                    <i id="result-icon" class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                    <h3 id="result-title" class="font-tech font-extrabold text-2xl text-white">WAVE 클리어!</h3>
+                    <p id="result-subtitle" class="text-xs text-slate-400 mt-1">방어 기지를 성공적으로 방어했습니다.</p>
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-2 text-left font-sans">
+                    <div class="flex justify-between items-center text-slate-300">
+                        <span>현재 종합 점수:</span>
+                        <span id="res-score-gain" class="font-tech text-emerald-400 font-extrabold text-base">0 PTS</span>
+                    </div>
+                    <div class="flex justify-between items-center text-slate-300">
+                        <span>최고 콤보 기록:</span>
+                        <span id="res-max-combo" class="font-tech text-amber-300 font-extrabold text-base">0 COMBO</span>
+                    </div>
+                </div>
+
+                <button id="btn-modal-next" onclick="closeResultModal()" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-jua py-3 rounded-xl transition text-base border border-cyan-300/30 shadow-lg">
+                    다음 WAVE 진격하기
+                </button>
+            </div>
+        </div>
+
+        <!-- [4. 최종 게임 종료 / 작전 보고서 스크린] -->
+        <div id="screen-game-over" class="hidden max-w-md mx-auto w-full bg-slate-900/90 border border-cyan-500/40 p-6 rounded-2xl shadow-2xl text-center space-y-4 my-auto backdrop-blur z-20">
+            <div id="final-icon-box" class="w-20 h-20 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-4xl mx-auto border border-amber-500/30 glow-laser">
+                <i class="fa-solid fa-trophy"></i>
+            </div>
+
+            <div>
+                <span id="final-badge" class="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-3 py-1 rounded-full text-xs font-tech font-bold">🏆 일차함수 수호자</span>
+                <h2 id="final-title" class="font-tech font-extrabold text-2xl md:text-3xl text-white mt-2">방어 작전 완료!</h2>
+            </div>
+
+            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs space-y-2.5 font-sans">
+                <div class="flex justify-between items-center">
+                    <span class="text-slate-400">요원 이름:</span>
+                    <span id="final-player-name" class="font-bold text-white">학생</span>
+                </div>
+                <div class="flex justify-between items-center border-t border-slate-800 pt-2">
+                    <span class="text-slate-400">최종 종합 점수:</span>
+                    <span id="final-score" class="font-tech font-extrabold text-xl text-amber-300">12,500 PTS</span>
+                </div>
+                <div class="flex justify-between items-center border-t border-slate-800 pt-2">
+                    <span class="text-slate-400">작전 소요 시간:</span>
+                    <span id="final-time" class="font-tech text-cyan-300 font-bold">45초</span>
+                </div>
+            </div>
+
+            <button onclick="quitToMain()" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-jua py-3 rounded-xl transition text-sm border border-cyan-300/30">
+                메인 본부로 복귀
+            </button>
+        </div>
+
+        <!-- [5. 명예의 전당 / 순위표 모달] -->
+        <div id="modal-leaderboard" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-900 border border-cyan-500/40 w-full max-w-md rounded-2xl p-5 space-y-3.5 shadow-2xl relative text-slate-200">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <h3 class="font-tech font-bold text-lg text-amber-400 flex items-center space-x-2">
+                        <i class="fa-solid fa-trophy text-amber-300"></i>
+                        <span>명예의 전당 (TOP 10 랭킹)</span>
+                    </h3>
+                    <button onclick="closeLeaderboardModal()" class="text-slate-400 hover:text-white text-lg px-2">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <div class="max-h-60 overflow-y-auto pr-1">
+                    <table class="w-full text-left text-xs font-sans">
+                        <thead class="text-[11px] text-slate-400 border-b border-slate-800">
+                            <tr>
+                                <th class="py-1.5 px-1">순위</th>
+                                <th class="py-1.5 px-1">요원 이름</th>
+                                <th class="py-1.5 px-1 text-right">점수</th>
+                                <th class="py-1.5 px-1 text-right">소요시간</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-leaderboard-body" class="divide-y divide-slate-800">
+                            <!-- JS Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <button onclick="closeLeaderboardModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-jua py-2 rounded-xl transition text-sm border border-slate-700">
+                    닫기
+                </button>
+            </div>
+        </div>
+
+        <!-- [6. 교사용 관리자 비밀번호 입력 모달 (일차함수 블랙잭 스타일)] -->
+        <div id="modal-admin-auth" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-900 border border-amber-500/40 w-full max-w-xs rounded-2xl p-5 space-y-4 shadow-2xl text-center relative">
+                <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-xl mx-auto border border-amber-500/30">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <div>
+                    <h3 class="font-tech font-bold text-lg text-amber-300">교사용 인증 패널</h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">교사용 보안 비밀번호를 입력하세요. (초기: 1234)</p>
+                </div>
+
+                <div class="space-y-2">
+                    <input type="password" id="input-admin-pin" readonly placeholder="비밀번호 입력" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-center text-amber-300 font-tech font-bold tracking-widest text-lg focus:outline-none focus:border-amber-400">
+                    <p id="admin-auth-err" class="text-[10px] text-rose-400 hidden">비밀번호가 일치하지 않습니다.</p>
+                </div>
+
+                <!-- 키패드 스타일 버튼 (블랙잭 동일 디자인) -->
+                <div class="grid grid-cols-3 gap-1.5 text-xs font-tech font-bold">
+                    <button onclick="appendAdminPin('1')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">1</button>
+                    <button onclick="appendAdminPin('2')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">2</button>
+                    <button onclick="appendAdminPin('3')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">3</button>
+                    <button onclick="appendAdminPin('4')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">4</button>
+                    <button onclick="appendAdminPin('5')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">5</button>
+                    <button onclick="appendAdminPin('6')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">6</button>
+                    <button onclick="appendAdminPin('7')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">7</button>
+                    <button onclick="appendAdminPin('8')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">8</button>
+                    <button onclick="appendAdminPin('9')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">9</button>
+                    <button onclick="clearAdminPin()" class="bg-rose-900/60 hover:bg-rose-800 text-rose-300 py-2.5 rounded-lg">C</button>
+                    <button onclick="appendAdminPin('0')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">0</button>
+                    <button onclick="submitAdminPin()" class="bg-amber-600 hover:bg-amber-500 text-slate-950 py-2.5 rounded-lg font-bold">확인</button>
+                </div>
+
+                <button onclick="closeAdminAuthModal()" class="w-full text-xs text-slate-400 hover:text-white pt-1">
+                    취소
+                </button>
+            </div>
+        </div>
+
+        <!-- [7. 교사용 관리자 패널 모달 (일차함수 블랙잭 스타일 완벽 반영)] -->
+        <div id="modal-admin-panel" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-3 md:p-4 hidden overflow-y-auto">
+            <div class="bg-slate-900 border border-cyan-500/40 w-full max-w-2xl rounded-2xl p-4 md:p-5 space-y-4 shadow-2xl text-slate-200 my-auto">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+                    <div class="flex items-center space-x-2">
+                        <div class="p-2 bg-cyan-500/20 text-cyan-400 rounded-xl border border-cyan-500/30">
+                            <i class="fa-solid fa-sliders text-base"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-tech font-bold text-base md:text-lg text-cyan-400 leading-tight">교사용 디펜스 종합 관리자 패널</h3>
+                            <p class="text-[10px] text-slate-400">학생들의 작전 성적 관리 및 게임 환경 제어</p>
+                        </div>
+                    </div>
+                    <button onclick="closeAdminPanelModal()" class="text-slate-400 hover:text-white text-lg px-2">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- 전체 학생 성적 랭킹 테이블 (검색 및 개별 삭제 지원) -->
+                <div class="bg-slate-950/90 border border-slate-800 p-3.5 rounded-xl space-y-2.5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <span class="text-xs text-amber-400 font-bold flex items-center">
+                            <i class="fa-solid fa-users mr-1.5"></i>전체 학생 작전 성적 기록 (<span id="admin-student-count">0</span>명)
+                        </span>
+                        <div class="flex items-center space-x-2">
+                            <div class="relative">
+                                <input type="text" id="input-admin-search" oninput="renderAdminLeaderboard()" placeholder="학생 이름 검색..." class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg pl-7 pr-2 py-1 w-36 focus:outline-none focus:border-cyan-400">
+                                <i class="fa-solid fa-magnifying-glass text-[10px] text-slate-500 absolute left-2.5 top-2"></i>
+                            </div>
+                            <button onclick="renderAdminLeaderboard()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-cyan-300 px-2 py-1 rounded-lg border border-slate-700 flex items-center space-x-1">
+                                <i class="fa-solid fa-rotate-right"></i>
+                                <span>새로고침</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="max-h-48 overflow-y-auto pr-1">
+                        <table class="w-full text-left text-xs font-sans">
+                            <thead class="text-[10px] text-slate-400 border-b border-slate-800 uppercase bg-slate-900/50 sticky top-0">
+                                <tr>
+                                    <th class="py-1.5 px-2">순위</th>
+                                    <th class="py-1.5 px-2">학번/이름</th>
+                                    <th class="py-1.5 px-2 text-right">최고 점수</th>
+                                    <th class="py-1.5 px-2 text-right">소요시간</th>
+                                    <th class="py-1.5 px-2 text-center">기록일자</th>
+                                    <th class="py-1.5 px-1 text-center">관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-leaderboard-body" class="divide-y divide-slate-800">
+                                <!-- JS Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 설정 변경 및 PIN 변경 그리드 -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-sans">
+                    <!-- 작전 환경 설정 -->
+                    <div class="bg-slate-950/60 border border-slate-800 p-3 rounded-xl space-y-2">
+                        <div class="font-bold text-slate-300 flex items-center"><i class="fa-solid fa-gear mr-1.5 text-cyan-400"></i>작전 난이도 설정</div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-[10px] text-slate-400 mb-1">총 WAVE 수</label>
+                                <input type="number" id="admin-set-waves" min="1" max="10" value="5" onchange="updateAdminSettings()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-white font-tech focus:outline-none focus:border-cyan-400">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 mb-1">몬스터 진격 속도</label>
+                                <select id="admin-set-speed" onchange="updateAdminSettings()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-white font-sans">
+                                    <option value="0.7">느림 (기초 학습)</option>
+                                    <option value="1.0" selected>보통 (기본)</option>
+                                    <option value="1.4">빠름 (챌린지)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 관리자 PIN 변경 -->
+                    <div class="bg-slate-950/60 border border-slate-800 p-3 rounded-xl space-y-2">
+                        <div class="font-bold text-amber-300 flex items-center"><i class="fa-solid fa-key mr-1.5"></i>교사용 비밀번호 변경</div>
+                        <div class="flex space-x-2">
+                            <input type="password" id="input-new-pin" maxlength="6" placeholder="새 비밀번호 (4~6자리)" class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-white font-tech">
+                            <button onclick="changeAdminPin()" class="bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold px-3 py-1 rounded-lg transition whitespace-nowrap">
+                                변경
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 성적 복사 & 데이터 초기화 -->
+                <div class="grid grid-cols-2 gap-2 text-xs font-sans">
+                    <button onclick="exportLeaderboardData()" class="bg-emerald-700 hover:bg-emerald-600 text-white font-bold py-2.5 rounded-xl transition flex items-center justify-center space-x-1.5 shadow">
+                        <i class="fa-solid fa-copy"></i>
+                        <span>성적 데이터 복사 (클립보드)</span>
+                    </button>
+                    <button onclick="resetLeaderboardData()" class="bg-rose-800 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl transition flex items-center justify-center space-x-1.5 shadow">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>기록 전체 초기화</span>
+                    </button>
+                </div>
+
+                <button onclick="closeAdminPanelModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-jua py-2 rounded-xl transition text-sm border border-slate-700">
+                    닫기
+                </button>
+            </div>
+        </div>
+
+        <!-- [8. 작전 지침 / 규칙 모달] -->
+        <div id="modal-rules" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-900 border border-cyan-500/40 w-full max-w-md rounded-2xl p-5 space-y-3.5 shadow-2xl relative text-slate-200">
+                <h3 class="font-tech font-bold text-lg text-cyan-400 flex items-center space-x-2">
+                    <i class="fa-solid fa-shield-halved text-amber-400"></i>
+                    <span>디펜스 작전 지침 (수학 규칙)</span>
+                </h3>
+                <ul class="text-xs space-y-2 text-slate-300 list-disc pl-4 leading-relaxed font-sans">
+                    <li><b>목표:</b> 왼쪽에서 오른쪽으로 몰려오는 귀여운 몬스터들을 스피드 문제 풀이로 요격하세요.</li>
+                    <li><b>스피드 문제:</b> "일차함수 판별", "기울기 a", "y절편 / x절편", "함숫값 f(x)", "그래프의 성질" 문제가 출제됩니다.</li>
+                    <li><b>연속 콤보:</b> 연속 정답 시 콤보가 쌓이며 필살기 스킬 에너지가 급속 충전됩니다!</li>
+                    <li><b>광역 필살기:</b> ⚡전격 마비, 💣융단 폭격, 💥하이퍼 레이저 버튼을 터치해 몬스터를 소탕하세요!</li>
+                </ul>
+                <button onclick="closeRulesModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-jua py-2 rounded-xl transition text-sm border border-slate-700">
+                    닫기
+                </button>
+            </div>
+        </div>
+
+        <!-- [9. 전체 기록 초기화 경고 모달 (이미지 2)] -->
+        <div id="modal-reset-warning" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-900 border border-rose-500/40 w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl text-center relative">
+                <div class="w-14 h-14 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center text-2xl mx-auto border border-rose-500/30">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <h3 class="font-tech font-extrabold text-xl text-rose-400">⚠️ 경고: 전체 기록 초기화</h3>
+                    <p class="text-xs text-slate-400 mt-1">저장된 모든 학생의 성적 데이터를 삭제합니다.</p>
+                </div>
+
+                <div class="bg-slate-950 p-3.5 rounded-xl border border-rose-500/30 text-xs text-left space-y-2 font-sans">
+                    <p class="text-rose-400 font-bold flex items-center"><i class="fa-solid fa-circle-exclamation mr-1.5"></i>주의사항</p>
+                    <div class="space-y-1 text-slate-300 text-[11px]">
+                        <p>• 모든 학생의 성적 및 랭킹 데이터가 삭제됩니다.</p>
+                        <p>• 초기화된 데이터는 절대로 복구할 수 없습니다.</p>
+                        <p>• 계속 진행하려면 교사용 비밀번호 인증이 필요합니다.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 pt-1 font-jua">
+                    <button onclick="closeResetWarningModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl transition text-sm border border-slate-700">
+                        취소
+                    </button>
+                    <button onclick="proceedToResetAuth()" class="bg-rose-600 hover:bg-rose-500 text-white py-2.5 rounded-xl transition text-sm border border-rose-400/40 flex items-center justify-center gap-1 shadow-lg">
+                        <span>다음 (비번 인증)</span>
+                        <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- [10. 전체 기록 초기화 비번 인증 모달 (이미지 1)] -->
+        <div id="modal-reset-auth" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-900 border border-amber-500/40 w-full max-w-xs rounded-2xl p-5 space-y-4 shadow-2xl text-center relative">
+                <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-xl mx-auto border border-amber-500/30">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <div>
+                    <h3 class="font-tech font-bold text-lg text-amber-300">교사용 비밀번호 인증</h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">초기화를 진행하려면 교사용 비밀번호를 입력하세요.</p>
+                </div>
+
+                <div class="space-y-2">
+                    <input type="password" id="input-reset-pin" readonly placeholder="비밀번호 입력" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-center text-amber-300 font-tech font-bold tracking-widest text-lg focus:outline-none focus:border-amber-400">
+                    <p id="reset-auth-err" class="text-[10px] text-rose-400 hidden">비밀번호가 일치하지 않습니다.</p>
+                </div>
+
+                <!-- 키패드 스타일 버튼 -->
+                <div class="grid grid-cols-3 gap-1.5 text-xs font-tech font-bold">
+                    <button onclick="appendResetPin('1')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">1</button>
+                    <button onclick="appendResetPin('2')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">2</button>
+                    <button onclick="appendResetPin('3')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">3</button>
+                    <button onclick="appendResetPin('4')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">4</button>
+                    <button onclick="appendResetPin('5')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">5</button>
+                    <button onclick="appendResetPin('6')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">6</button>
+                    <button onclick="appendResetPin('7')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">7</button>
+                    <button onclick="appendResetPin('8')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">8</button>
+                    <button onclick="appendResetPin('9')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">9</button>
+                    <button onclick="clearResetPin()" class="bg-rose-900/60 hover:bg-rose-800 text-rose-300 py-2.5 rounded-lg">C</button>
+                    <button onclick="appendResetPin('0')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">0</button>
+                    <button onclick="submitResetPin()" class="bg-rose-600 hover:bg-rose-500 text-white py-2.5 rounded-lg font-bold">확인</button>
+                </div>
+
+                <button onclick="closeResetAuthModal()" class="w-full text-xs text-slate-400 hover:text-white pt-1">
+                    취소
+                </button>
+            </div>
+        </div>
+
+        <!-- [11. 전체 기록 초기화 완료 모달 (이미지 3)] -->
+        <div id="modal-reset-success" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-900 border border-emerald-500/40 w-full max-w-xs rounded-2xl p-5 space-y-4 shadow-2xl text-center relative">
+                <div class="w-14 h-14 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center text-3xl mx-auto border border-emerald-500/30">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                    <h3 class="font-tech font-extrabold text-xl text-emerald-400">초기화 완료</h3>
+                    <p class="text-xs text-slate-300 mt-2 leading-relaxed">모든 학생의 성적 및 랭킹 데이터가 성공적으로 삭제 되었습니다.</p>
+                </div>
+
+                <button onclick="closeResetSuccessModal()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-jua py-2.5 rounded-xl transition text-sm border border-emerald-400/40 shadow-lg">
+                    확인
+                </button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="bg-slate-950 border-t border-slate-800/80 py-1 px-4 text-center text-[10px] md:text-[11px] text-slate-500 font-sans shrink-0">
+        © 2026 김효경│수학 수업용 인터랙티브 콘텐츠
+    </footer>
+
+    <script>
+        let audioCtx = null;
+        let soundEnabled = true;
+        let adminPin = localStorage.getItem('speed_def_admin_pin') || '1234';
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'laser') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(800, now);
+                    osc.frequency.exponentialRampToValueAtTime(150, now + 0.15);
+                    gain.gain.setValueAtTime(0.25, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.15);
+                    osc.start(now);
+                    osc.stop(now + 0.15);
+                } else if (type === 'explosion') {
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.exponentialRampToValueAtTime(30, now + 0.3);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'hit') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(130, now);
+                    osc.frequency.setValueAtTime(65, now + 0.1);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+                    osc.start(now);
+                    osc.stop(now + 0.2);
+                } else if (type === 'skill') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.linearRampToValueAtTime(950, now + 0.35);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'combo') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, now);
+                    osc.frequency.setValueAtTime(659.25, now + 0.08);
+                    osc.frequency.setValueAtTime(783.99, now + 0.16);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                    osc.start(now);
+                    osc.stop(now + 0.25);
+                }
+            } catch (e) {
+                console.log('Audio error:', e);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('btn-sound');
+            if (btn) {
+                btn.innerHTML = soundEnabled ? '<i class="fa-solid fa-volume-high"></i>' : '<i class="fa-solid fa-volume-xmark text-rose-400"></i>';
+            }
+            showToast(soundEnabled ? '음향 효과 켜짐' : '음향 효과 꺼짐');
+        }
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('game-toast');
+            const icon = document.getElementById('toast-icon');
+            const msgEl = document.getElementById('toast-msg');
+            if (!toast || !msgEl) return;
+
+            msgEl.textContent = msg;
+            if (isError) {
+                toast.className = "fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-rose-950 border border-rose-500 text-rose-200 px-4 py-2 rounded-xl shadow-2xl text-xs font-bold transition-all duration-300 transform translate-y-0 opacity-100 flex items-center space-x-2";
+                if (icon) icon.className = "fa-solid fa-triangle-exclamation text-rose-400";
+            } else {
+                toast.className = "fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-slate-900 border border-cyan-400 text-cyan-200 px-4 py-2 rounded-xl shadow-2xl text-xs font-bold transition-all duration-300 transform translate-y-0 opacity-100 flex items-center space-x-2";
+                if (icon) icon.className = "fa-solid fa-circle-info text-cyan-400";
+            }
+
+            setTimeout(() => {
+                toast.className = "fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-slate-900 border border-cyan-400 text-cyan-200 px-4 py-2 rounded-xl shadow-2xl text-xs font-bold transition-all duration-300 transform -translate-y-10 opacity-0 pointer-events-none flex items-center space-x-2";
+            }, 2200);
+        }
+
+        let playerName = '요원';
+        let isPracticeMode = false;
+        let currentWave = 1;
+        let maxWaves = 5;
+        let baseHp = 100;
+        let score = 0;
+        let combo = 0;
+        let maxComboInWave = 0;
+        let speedFactor = 1.0;
+        let isGameOver = false;
+
+        let startTime = 0;
+        let totalElapsedSeconds = 0;
+        let timerInterval = null;
+        let animFrameId = null;
+
+        let monsters = [];
+        let laserEffects = [];
+        let explosionParticles = [];
+        let currentQuestion = null;
+        let totalWaveMonstersToSpawn = 8;
+        let spawnedMonstersCount = 0;
+        let spawnTimer = 0;
+        let monsterIdCounter = 0;
+
+        function katexRender(texStr) {
+            try {
+                return katex.renderToString(texStr, { throwOnError: false });
+            } catch (e) {
+                return texStr;
+            }
+        }
+
+        /* 
+         * 수학 수식 깔끔한 포맷팅 함수 (1x -> x, -1x -> -x, +0 -> 생략)
+         */
+        function formatLinearEq(a, b, isFunctionNotation = false) {
+            const prefix = isFunctionNotation ? 'f(x) = ' : 'y = ';
+            
+            let aStr = '';
+            if (a === 1) aStr = 'x';
+            else if (a === -1) aStr = '-x';
+            else if (a !== 0) aStr = `${a}x`;
+
+            let bStr = '';
+            if (b > 0) {
+                bStr = aStr !== '' ? ` + ${b}` : `${b}`;
+            } else if (b < 0) {
+                bStr = aStr !== '' ? ` - ${Math.abs(b)}` : `-${Math.abs(b)}`;
+            } else { // b === 0
+                if (aStr === '') bStr = '0';
+            }
+
+            return `${prefix}${aStr}${bStr}`;
+        }
+
+        function generateSpeedQuestion() {
+            const types = ['IS_LINEAR', 'SLOPE', 'Y_INTERCEPT', 'X_INTERCEPT', 'FUNCTION_VALUE', 'GRAPH_PROPERTY'];
+            const chosenType = types[Math.floor(Math.random() * types.length)];
+
+            if (chosenType === 'IS_LINEAR') {
+                const linearTemplates = [
+                    { tex: 'y = 2x - 3', isLinear: true },
+                    { tex: 'y = -x + 5', isLinear: true },
+                    { tex: 'y = \\frac{1}{2}x', isLinear: true },
+                    { tex: 'y = 4 - 3x', isLinear: true },
+                    { tex: 'y = x^2 + 1', isLinear: false },
+                    { tex: 'y = \\frac{2}{x}', isLinear: false },
+                    { tex: 'y = 5', isLinear: false },
+                    { tex: 'y = x^2 - x', isLinear: false }
+                ];
+                const item = linearTemplates[Math.floor(Math.random() * linearTemplates.length)];
+                return {
+                    type: 'OX',
+                    category: '일차함수 판별 모드',
+                    prompt: '다음 식은 일차함수인가요?',
+                    mathTex: item.tex,
+                    correctAnswer: item.isLinear ? 'O' : 'X',
+                    options: ['O', 'X']
+                };
+            }
+
+            if (chosenType === 'SLOPE') {
+                const a = (Math.floor(Math.random() * 8) + 1) * (Math.random() > 0.5 ? 1 : -1);
+                const b = Math.floor(Math.random() * 9) * (Math.random() > 0.5 ? 1 : -1);
+                const eqTex = formatLinearEq(a, b);
+
+                const distractors = new Set([a]);
+                while (distractors.size < 4) {
+                    const candidate = a + (Math.floor(Math.random() * 7) - 3);
+                    if (candidate !== a) distractors.add(candidate);
+                }
+                const options = Array.from(distractors).sort(() => Math.random() - 0.5);
+
+                return {
+                    type: 'CHOICE_4',
+                    category: '기울기 도출 모드',
+                    prompt: '다음 일차함수의 기울기 a 의 값은?',
+                    mathTex: eqTex,
+                    correctAnswer: a,
+                    options: options
+                };
+            }
+
+            if (chosenType === 'Y_INTERCEPT') {
+                const a = (Math.floor(Math.random() * 5) + 1) * (Math.random() > 0.5 ? 1 : -1);
+                const b = Math.floor(Math.random() * 9) * (Math.random() > 0.5 ? 1 : -1);
+                const eqTex = formatLinearEq(a, b);
+
+                const distractors = new Set([b]);
+                distractors.add(a);
+                while (distractors.size < 4) {
+                    const candidate = b + (Math.floor(Math.random() * 7) - 3);
+                    distractors.add(candidate);
+                }
+                const options = Array.from(distractors).sort(() => Math.random() - 0.5);
+
+                return {
+                    type: 'CHOICE_4',
+                    category: 'y절편 도출 모드',
+                    prompt: '다음 일차함수의 y절편의 값은?',
+                    mathTex: eqTex,
+                    correctAnswer: b,
+                    options: options
+                };
+            }
+
+            if (chosenType === 'X_INTERCEPT') {
+                const xInt = (Math.floor(Math.random() * 6) + 1) * (Math.random() > 0.5 ? 1 : -1);
+                const a = Math.random() > 0.5 ? 1 : -1;
+                const b = -a * xInt;
+                const eqTex = formatLinearEq(a, b);
+
+                const distractors = new Set([xInt]);
+                distractors.add(b);
+                while (distractors.size < 4) {
+                    const candidate = xInt + (Math.floor(Math.random() * 7) - 3);
+                    distractors.add(candidate);
+                }
+                const options = Array.from(distractors).sort(() => Math.random() - 0.5);
+
+                return {
+                    type: 'CHOICE_4',
+                    category: 'x절편 도출 모드',
+                    prompt: '다음 일차함수의 x절편의 값은?',
+                    mathTex: eqTex,
+                    correctAnswer: xInt,
+                    options: options
+                };
+            }
+
+            if (chosenType === 'FUNCTION_VALUE') {
+                const a = Math.floor(Math.random() * 4) + 1;
+                const b = Math.floor(Math.random() * 5) - 2;
+                const inputX = Math.floor(Math.random() * 4) + 1;
+                const ans = a * inputX + b;
+                const eqTex = formatLinearEq(a, b, true);
+
+                const distractors = new Set([ans]);
+                while (distractors.size < 4) {
+                    const candidate = ans + (Math.floor(Math.random() * 7) - 3);
+                    distractors.add(candidate);
+                }
+                const options = Array.from(distractors).sort(() => Math.random() - 0.5);
+
+                return {
+                    type: 'CHOICE_4',
+                    category: '함숫값 연산 모드',
+                    prompt: `일 때, f(${inputX}) 의 값은?`,
+                    mathTex: eqTex,
+                    correctAnswer: ans,
+                    options: options
+                };
+            }
+
+            if (chosenType === 'GRAPH_PROPERTY') {
+                const subProps = ['DIRECTION', 'X_INCREASE', 'QUADRANT', 'PARALLEL'];
+                const sub = subProps[Math.floor(Math.random() * subProps.length)];
+
+                if (sub === 'DIRECTION') {
+                    const a = (Math.floor(Math.random() * 5) + 1) * (Math.random() > 0.5 ? 1 : -1);
+                    const b = Math.floor(Math.random() * 7) - 3;
+                    const eqTex = formatLinearEq(a, b);
+
+                    const isUpRight = a > 0;
+                    return {
+                        type: 'CHOICE_TEXT_2',
+                        category: '그래프 성질 - 방향 모드',
+                        prompt: '다음 일차함수의 그래프가 향하는 방향은?',
+                        mathTex: eqTex,
+                        correctAnswer: isUpRight ? '오른쪽 위' : '오른쪽 아래',
+                        options: ['오른쪽 위', '오른쪽 아래']
+                    };
+                }
+
+                if (sub === 'X_INCREASE') {
+                    const a = (Math.floor(Math.random() * 5) + 1) * (Math.random() > 0.5 ? 1 : -1);
+                    const b = Math.floor(Math.random() * 7) - 3;
+                    const eqTex = formatLinearEq(a, b);
+
+                    const isInc = a > 0;
+                    return {
+                        type: 'OX',
+                        category: '그래프 성질 - 증감 모드',
+                        prompt: '다음 일차함수는 x의 값이 증가할 때 y의 값도 증가하나요?',
+                        mathTex: eqTex,
+                        correctAnswer: isInc ? 'O' : 'X',
+                        options: ['O', 'X']
+                    };
+                }
+
+                if (sub === 'QUADRANT') {
+                    const a = Math.random() > 0.5 ? 2 : -2;
+                    const b = Math.random() > 0.5 ? 4 : -4;
+                    const eqTex = formatLinearEq(a, b);
+
+                    let notPass = '제4사분면';
+                    if (a > 0 && b > 0) notPass = '제4사분면';
+                    else if (a > 0 && b < 0) notPass = '제2사분면';
+                    else if (a < 0 && b > 0) notPass = '제3사분면';
+                    else if (a < 0 && b < 0) notPass = '제1사분면';
+
+                    return {
+                        type: 'CHOICE_TEXT_4',
+                        category: '그래프 성질 - 사분면 모드',
+                        prompt: '다음 그래프가 지나지 않는 사분면은?',
+                        mathTex: eqTex,
+                        correctAnswer: notPass,
+                        options: ['제1사분면', '제2사분면', '제3사분면', '제4사분면']
+                    };
+                }
+
+                if (sub === 'PARALLEL') {
+                    const targetA = Math.random() > 0.5 ? 3 : -2;
+                    const targetB = 5;
+                    const eqTex = formatLinearEq(targetA, targetB);
+
+                    const correctEq = formatLinearEq(targetA, -1);
+                    const dist1 = formatLinearEq(-targetA, 5);
+                    const dist2 = formatLinearEq(targetA === 3 ? 2 : -3, -4);
+                    const dist3 = formatLinearEq(targetA === 3 ? -1 : 1, 2);
+
+                    const options = [correctEq, dist1, dist2, dist3].sort(() => Math.random() - 0.5);
+
+                    return {
+                        type: 'CHOICE_MATH_4',
+                        category: '그래프 성질 - 평행 모드',
+                        prompt: '다음 중 주어진 그래프와 평행한 직선은?',
+                        mathTex: eqTex,
+                        correctAnswer: correctEq,
+                        options: options
+                    };
+                }
+            }
+        }
+
+        function renderQuestionUI() {
+            currentQuestion = generateSpeedQuestion();
+            document.getElementById('question-category').textContent = currentQuestion.category;
+            document.getElementById('question-prompt').textContent = currentQuestion.prompt;
+            document.getElementById('question-math-display').innerHTML = katexRender(currentQuestion.mathTex);
+
+            const container = document.getElementById('answer-container');
+            container.innerHTML = '';
+
+            if (currentQuestion.type === 'OX') {
+                const div = document.createElement('div');
+                div.className = "grid grid-cols-2 gap-3";
+                div.innerHTML = `
+                    <button onclick="submitAnswer('O')" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-jua text-xl md:text-2xl py-3.5 rounded-2xl shadow-xl border border-emerald-300/40 transform active:scale-95 transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-circle-check text-2xl"></i>
+                        <span>O (맞음)</span>
+                    </button>
+                    <button onclick="submitAnswer('X')" class="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-jua text-xl md:text-2xl py-3.5 rounded-2xl shadow-xl border border-rose-300/40 transform active:scale-95 transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-circle-xmark text-2xl"></i>
+                        <span>X (아님)</span>
+                    </button>
+                `;
+                container.appendChild(div);
+            } else if (currentQuestion.type === 'CHOICE_TEXT_2') {
+                const div = document.createElement('div');
+                div.className = "grid grid-cols-2 gap-3";
+                currentQuestion.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = "bg-gradient-to-r from-cyan-700 to-blue-700 hover:from-cyan-600 hover:to-blue-600 text-white font-jua text-lg py-3.5 rounded-2xl shadow-xl border border-cyan-300/30 transform active:scale-95 transition flex items-center justify-center";
+                    btn.textContent = opt;
+                    btn.onclick = () => submitAnswer(opt);
+                    div.appendChild(btn);
+                });
+                container.appendChild(div);
+            } else if (currentQuestion.type === 'CHOICE_TEXT_4') {
+                const div = document.createElement('div');
+                div.className = "grid grid-cols-2 gap-2.5";
+                currentQuestion.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = "bg-slate-950 hover:bg-slate-800 text-cyan-300 font-jua text-base md:text-lg py-2.5 rounded-xl border border-cyan-500/30 active:scale-95 transition shadow shadow-cyan-500/10";
+                    btn.textContent = opt;
+                    btn.onclick = () => submitAnswer(opt);
+                    div.appendChild(btn);
+                });
+                container.appendChild(div);
+            } else if (currentQuestion.type === 'CHOICE_MATH_4') {
+                const div = document.createElement('div');
+                div.className = "grid grid-cols-2 gap-2.5";
+                currentQuestion.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = "bg-slate-950 hover:bg-slate-800 text-cyan-300 font-tech font-bold text-sm md:text-base py-2.5 rounded-xl border border-cyan-500/30 active:scale-95 transition shadow shadow-cyan-500/10";
+                    btn.innerHTML = katexRender(opt);
+                    btn.onclick = () => submitAnswer(opt);
+                    div.appendChild(btn);
+                });
+                container.appendChild(div);
+            } else {
+                const div = document.createElement('div');
+                div.className = "grid grid-cols-2 gap-2.5";
+                currentQuestion.options.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.className = "bg-slate-950 hover:bg-slate-800 text-cyan-300 font-tech font-extrabold text-xl py-3 rounded-xl border border-cyan-500/30 active:scale-95 transition shadow shadow-cyan-500/10";
+                    btn.textContent = opt;
+                    btn.onclick = () => submitAnswer(opt);
+                    div.appendChild(btn);
+                });
+                container.appendChild(div);
+            }
+        }
+
+        function submitAnswer(userAns) {
+            if (isGameOver) return;
+            const isCorrect = (userAns === currentQuestion.correctAnswer);
+
+            if (isCorrect) {
+                playSound('laser');
+                combo++;
+                if (combo > maxComboInWave) maxComboInWave = combo;
+
+                const basePts = 100;
+                const comboBonus = combo * 30;
+                score += basePts + comboBonus;
+
+                if (monsters.length > 0) {
+                    monsters.sort((a, b) => b.x - a.x);
+                    const target = monsters[0];
+                    target.hp -= 1;
+
+                    laserEffects.push({
+                        startX: 0.95, startY: 0.5,
+                        endX: target.x, endY: target.y,
+                        alpha: 1.0, color: '#38bdf8'
+                    });
+
+                    if (target.hp <= 0) {
+                        createExplosion(target.x, target.y);
+                        monsters.shift();
+                    }
+                }
+
+                updateHUD();
+                
+                if (combo % 3 === 0) {
+                    playSound('combo');
+                    const popup = document.getElementById('combo-popup');
+                    popup.textContent = `${combo} COMBO! FEVER OVERLOAD!`;
+                    popup.classList.remove('hidden');
+                    setTimeout(() => popup.classList.add('hidden'), 1200);
+                }
+
+                renderQuestionUI();
+            } else {
+                playSound('hit');
+                combo = 0;
+                baseHp -= 10;
+                updateHUD();
+                showToast('오답입니다! 방어막 손상 (-10 HP)', true);
+
+                if (baseHp <= 0) {
+                    endGame(false);
+                } else {
+                    renderQuestionUI();
+                }
+            }
+        }
+
+        function triggerUltimateSkill(type) {
+            if (isGameOver) return;
+            if (type === 'lightning' && combo >= 3) {
+                playSound('skill');
+                monsters.forEach(m => {
+                    m.hp -= 1;
+                    m.speed *= 0.3;
+                });
+                combo -= 3;
+                showToast('⚡전격 마비 발동! 모든 몬스터 속도 저하 및 데미지!');
+            } else if (type === 'bomb' && combo >= 6) {
+                playSound('explosion');
+                for (let i = 0; i < 3 && monsters.length > 0; i++) {
+                    const m = monsters.pop();
+                    createExplosion(m.x, m.y);
+                }
+                combo -= 6;
+                showToast('💣융단 폭격 발동! 선두 몬스터 소탕!');
+            } else if (type === 'laser' && combo >= 9) {
+                playSound('explosion');
+                monsters.forEach(m => createExplosion(m.x, m.y));
+                monsters = [];
+                combo -= 9;
+                showToast('💥하이퍼 레이저 발동! 화면 전체 몬스터 소탕!');
+            }
+            updateHUD();
+        }
+
+        function createExplosion(normX, normY) {
+            playSound('explosion');
+            for (let i = 0; i < 18; i++) {
+                explosionParticles.push({
+                    x: normX, y: normY,
+                    vx: (Math.random() - 0.5) * 0.02,
+                    vy: (Math.random() - 0.5) * 0.02,
+                    life: 1.0,
+                    color: Math.random() > 0.5 ? '#f59e0b' : '#38bdf8'
+                });
+            }
+        }
+
+        function initStartPracticeGame() {
+            isPracticeMode = true;
+            playerName = '연습 요원';
+            document.getElementById('display-player-name').textContent = '연습 모드';
+            document.getElementById('player-tag').classList.remove('hidden');
+            document.getElementById('badge-mode').textContent = 'PRACTICE';
+            startGame();
+        }
+
+        function initStartGame() {
+            const inputName = document.getElementById('input-player-name').value.trim();
+            if (!inputName) {
+                showToast('방위 요원 이름을 입력해 주세요!', true);
+                return;
+            }
+            isPracticeMode = false;
+            playerName = inputName;
+            document.getElementById('display-player-name').textContent = playerName;
+            document.getElementById('player-tag').classList.remove('hidden');
+            document.getElementById('badge-mode').textContent = 'RANKING';
+            startGame();
+        }
+
+        function startGame() {
+            isGameOver = false;
+            currentWave = 1;
+            baseHp = 100;
+            score = 0;
+            combo = 0;
+            maxComboInWave = 0;
+            totalElapsedSeconds = 0;
+
+            if (timerInterval) clearInterval(timerInterval);
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                totalElapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
+            }, 1000);
+
+            document.getElementById('screen-mode-select').classList.add('hidden');
+            document.getElementById('screen-game-over').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('hidden');
+            document.getElementById('btn-back-main').classList.remove('hidden');
+
+            startWave(currentWave);
+            startAnimationLoop();
+        }
+
+        function startWave(waveNum) {
+            monsters = [];
+            spawnedMonstersCount = 0;
+            totalWaveMonstersToSpawn = 6 + waveNum * 3;
+            updateHUD();
+            renderQuestionUI();
+        }
+
+        function quitToMain() {
+            isGameOver = true;
+            if (timerInterval) clearInterval(timerInterval);
+            if (animFrameId) cancelAnimationFrame(animFrameId);
+
+            document.getElementById('modal-result').classList.add('hidden');
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-game-over').classList.add('hidden');
+            document.getElementById('screen-mode-select').classList.remove('hidden');
+            document.getElementById('btn-back-main').classList.add('hidden');
+            document.getElementById('player-tag').classList.add('hidden');
+
+            showToast('메인 본부로 돌아왔습니다.');
+        }
+
+        function updateHUD() {
+            document.getElementById('hud-wave').textContent = `WAVE ${currentWave} / ${maxWaves}`;
+            document.getElementById('hud-score').textContent = score.toLocaleString();
+            document.getElementById('hud-combo').textContent = combo;
+            document.getElementById('hud-hp-text').textContent = `${Math.max(0, Math.floor(baseHp))}%`;
+
+            const hpBar = document.getElementById('hud-hp-bar');
+            hpBar.style.width = `${Math.max(0, baseHp)}%`;
+
+            const energyPct = Math.min(100, (combo / 9) * 100);
+            document.getElementById('hud-energy-bar').style.width = `${energyPct}%`;
+            document.getElementById('hud-energy-text').textContent = `${combo}/9`;
+
+            const btnLightning = document.getElementById('btn-skill-lightning');
+            const btnBomb = document.getElementById('btn-skill-bomb');
+            const btnLaser = document.getElementById('btn-skill-laser');
+
+            btnLightning.disabled = combo < 3;
+            btnLightning.className = combo >= 3 
+                ? "bg-cyan-950 border border-cyan-400 text-cyan-200 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 active:scale-95 shadow glow-laser"
+                : "bg-slate-900 border border-slate-800 opacity-40 text-cyan-300 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1";
+
+            btnBomb.disabled = combo < 6;
+            btnBomb.className = combo >= 6 
+                ? "bg-amber-950 border border-amber-400 text-amber-200 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 active:scale-95 shadow glow-laser"
+                : "bg-slate-900 border border-slate-800 opacity-40 text-amber-300 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1";
+
+            btnLaser.disabled = combo < 9;
+            btnLaser.className = combo >= 9 
+                ? "bg-emerald-950 border border-emerald-400 text-emerald-200 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 active:scale-95 shadow glow-laser animate-bounce"
+                : "bg-slate-900 border border-slate-800 opacity-40 text-emerald-300 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1";
+
+            const warning = document.getElementById('warning-overlay');
+            if (baseHp <= 30 && baseHp > 0) {
+                warning.classList.remove('opacity-0');
+                warning.classList.add('opacity-100', 'danger-pulse');
+            } else {
+                warning.classList.add('opacity-0');
+                warning.classList.remove('danger-pulse');
+            }
+        }
+
+        function checkWaveProgress() {
+            if (isGameOver) return;
+            if (spawnedMonstersCount >= totalWaveMonstersToSpawn && monsters.length === 0) {
+                showResultModal();
+            }
+        }
+
+        function showResultModal() {
+            if (isGameOver) return;
+            const modal = document.getElementById('modal-result');
+            const btnNext = document.getElementById('btn-modal-next');
+            const titleEl = document.getElementById('result-title');
+            const subtitleEl = document.getElementById('result-subtitle');
+
+            document.getElementById('res-score-gain').textContent = `${score.toLocaleString()} PTS`;
+            document.getElementById('res-max-combo').textContent = `${maxComboInWave} COMBO`;
+
+            if (currentWave >= maxWaves) {
+                titleEl.textContent = "최종 WAVE 클리어!";
+                subtitleEl.textContent = "모든 방어 작전을 완벽하게 수행했습니다!";
+                btnNext.innerHTML = '<i class="fa-solid fa-square-poll-vertical mr-1"></i>결과 확인';
+                btnNext.className = "w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-jua py-3 rounded-xl transition text-base border border-amber-300 shadow-lg font-bold";
+            } else {
+                titleEl.textContent = `WAVE ${currentWave} 클리어!`;
+                subtitleEl.textContent = "방어 기지를 성공적으로 방어했습니다.";
+                btnNext.innerHTML = '다음 WAVE 진격하기';
+                btnNext.className = "w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-jua py-3 rounded-xl transition text-base border border-cyan-300/30 shadow-lg";
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeResultModal() {
+            document.getElementById('modal-result').classList.add('hidden');
+
+            if (currentWave >= maxWaves) {
+                endGame(true);
+            } else {
+                currentWave++;
+                startWave(currentWave);
+            }
+        }
+
+        function endGame(isVictory) {
+            isGameOver = true;
+            if (timerInterval) clearInterval(timerInterval);
+
+            document.getElementById('modal-result').classList.add('hidden');
+            document.getElementById('screen-game').classList.add('hidden');
+            const screenOver = document.getElementById('screen-game-over');
+            screenOver.classList.remove('hidden');
+
+            document.getElementById('final-player-name').textContent = playerName;
+            document.getElementById('final-score').textContent = `${score.toLocaleString()} PTS`;
+            document.getElementById('final-time').textContent = `${totalElapsedSeconds}초`;
+
+            const badge = document.getElementById('final-badge');
+            const title = document.getElementById('final-title');
+            const iconBox = document.getElementById('final-icon-box');
+
+            if (isVictory) {
+                title.textContent = "방어 작전 완벽 성공!";
+                badge.textContent = "🏆 일차함수 수호자";
+                iconBox.className = "w-20 h-20 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-4xl mx-auto border border-amber-500/30 glow-laser";
+                iconBox.innerHTML = '<i class="fa-solid fa-trophy"></i>';
+            } else {
+                title.textContent = "방어 기지 파괴됨!";
+                badge.textContent = "💥 작전 재도전 필요";
+                iconBox.className = "w-20 h-20 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center text-4xl mx-auto border border-rose-500/30";
+                iconBox.innerHTML = '<i class="fa-solid fa-skull-crossbones"></i>';
+            }
+
+            if (!isPracticeMode) {
+                saveScoreToLeaderboard(playerName, score, totalElapsedSeconds);
+            }
+        }
+
+        /* 
+         * 동일 인물 중복 도배 방지:
+         * 학생 이름(학번이름) 기준으로 이미 존재 시, 더 높은 점수(동점일 경우 최단 시간)일 때만 업데이트
+         */
+        function saveScoreToLeaderboard(name, pts, timeSec) {
+            let leaderboard = JSON.parse(localStorage.getItem('speed_def_leaderboard') || '[]');
+            const nowStr = new Date().toLocaleDateString('ko-KR');
+
+            const existingIndex = leaderboard.findIndex(item => item.name === name);
+
+            if (existingIndex !== -1) {
+                const existing = leaderboard[existingIndex];
+                if (pts > existing.score || (pts === existing.score && timeSec < existing.timeSec)) {
+                    leaderboard[existingIndex] = { name, score: pts, timeSec, date: nowStr };
+                }
+            } else {
+                leaderboard.push({ name, score: pts, timeSec, date: nowStr });
+            }
+
+            leaderboard.sort((x, y) => {
+                if (y.score !== x.score) return y.score - x.score;
+                return (x.timeSec || 999) - (y.timeSec || 999);
+            });
+
+            leaderboard = leaderboard.slice(0, 50);
+            localStorage.setItem('speed_def_leaderboard', JSON.stringify(leaderboard));
+        }
+
+        /* 
+         * 정제된 랭킹 리스트 반환 (기존 중복 데이터도 최고기록 1개로 필터링)
+         */
+        function getCleanLeaderboard() {
+            let rawData = JSON.parse(localStorage.getItem('speed_def_leaderboard') || '[]');
+            const map = new Map();
+
+            rawData.forEach(item => {
+                if (!map.has(item.name)) {
+                    map.set(item.name, item);
+                } else {
+                    const existing = map.get(item.name);
+                    if (item.score > existing.score || (item.score === existing.score && item.timeSec < existing.timeSec)) {
+                        map.set(item.name, item);
+                    }
+                }
+            });
+
+            const cleanList = Array.from(map.values());
+            cleanList.sort((x, y) => {
+                if (y.score !== x.score) return y.score - x.score;
+                return (x.timeSec || 999) - (y.timeSec || 999);
+            });
+
+            // 정제된 데이터로 localStorage 자동 갱신
+            localStorage.setItem('speed_def_leaderboard', JSON.stringify(cleanList));
+            return cleanList;
+        }
+
+        function openLeaderboardModal() {
+            renderUserLeaderboard();
+            document.getElementById('modal-leaderboard').classList.remove('hidden');
+        }
+
+        function closeLeaderboardModal() {
+            document.getElementById('modal-leaderboard').classList.add('hidden');
+        }
+
+        function renderUserLeaderboard() {
+            const tbody = document.getElementById('user-leaderboard-body');
+            tbody.innerHTML = '';
+            let leaderboard = getCleanLeaderboard();
+
+            if (leaderboard.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-slate-500">등록된 순위가 없습니다.</td></tr>`;
+            } else {
+                leaderboard.slice(0, 10).forEach((item, idx) => {
+                    let rankBadge = `${idx + 1}위`;
+                    if (idx === 0) rankBadge = '🥇';
+                    else if (idx === 1) rankBadge = '🥈';
+                    else if (idx === 2) rankBadge = '🥉';
+
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-slate-800/50";
+                    row.innerHTML = `
+                        <td class="py-1.5 px-1 font-bold ${idx < 3 ? 'text-amber-300' : 'text-slate-300'}">${rankBadge}</td>
+                        <td class="py-1.5 px-1 font-bold text-slate-100">${item.name}</td>
+                        <td class="py-1.5 px-1 font-tech font-bold text-amber-400 text-right">${item.score.toLocaleString()}</td>
+                        <td class="py-1.5 px-1 font-tech text-cyan-300 text-right">${item.timeSec}초</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        function openAdminAuthModal() {
+            document.getElementById('input-admin-pin').value = '';
+            document.getElementById('admin-auth-err').classList.add('hidden');
+            document.getElementById('modal-admin-auth').classList.remove('hidden');
+        }
+
+        function closeAdminAuthModal() {
+            document.getElementById('modal-admin-auth').classList.add('hidden');
+        }
+
+        function appendAdminPin(num) {
+            const input = document.getElementById('input-admin-pin');
+            input.value += num;
+        }
+
+        function clearAdminPin() {
+            document.getElementById('input-admin-pin').value = '';
+            document.getElementById('admin-auth-err').classList.add('hidden');
+        }
+
+        function submitAdminPin() {
+            const inputPin = document.getElementById('input-admin-pin').value;
+            if (inputPin === adminPin) {
+                closeAdminAuthModal();
+                renderAdminLeaderboard();
+                document.getElementById('modal-admin-panel').classList.remove('hidden');
+            } else {
+                document.getElementById('admin-auth-err').classList.remove('hidden');
+                playSound('hit');
+            }
+        }
+
+        function closeAdminPanelModal() {
+            document.getElementById('modal-admin-panel').classList.add('hidden');
+        }
+
+        function renderAdminLeaderboard() {
+            const tbody = document.getElementById('admin-leaderboard-body');
+            tbody.innerHTML = '';
+            let leaderboard = getCleanLeaderboard();
+
+            const searchKey = (document.getElementById('input-admin-search')?.value || '').trim().toLowerCase();
+            if (searchKey) {
+                leaderboard = leaderboard.filter(item => item.name.toLowerCase().includes(searchKey));
+            }
+
+            document.getElementById('admin-student-count').textContent = leaderboard.length;
+
+            if (leaderboard.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-500">등록되거나 검색된 기록이 없습니다.</td></tr>`;
+            } else {
+                leaderboard.forEach((item, idx) => {
+                    const row = document.createElement('tr');
+                    row.className = "hover:bg-slate-800/50 transition border-b border-slate-800/40";
+                    row.innerHTML = `
+                        <td class="py-1.5 px-2 font-bold text-slate-300">${idx + 1}</td>
+                        <td class="py-1.5 px-2 font-bold text-slate-100">${item.name}</td>
+                        <td class="py-1.5 px-2 font-tech font-bold text-amber-400 text-right">${item.score.toLocaleString()}</td>
+                        <td class="py-1.5 px-2 font-tech text-cyan-300 text-right">${item.timeSec}초</td>
+                        <td class="py-1.5 px-2 text-slate-400 text-center text-[10px]">${item.date || '-'}</td>
+                        <td class="py-1.5 px-1 text-center">
+                            <button onclick="deleteLeaderboardItem('${item.name}')" class="bg-rose-950 hover:bg-rose-800 text-rose-300 px-1.5 py-0.5 rounded text-[10px] transition border border-rose-800/50">
+                                삭제
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+        }
+
+        function deleteLeaderboardItem(nameToDelete) {
+            let leaderboard = JSON.parse(localStorage.getItem('speed_def_leaderboard') || '[]');
+            leaderboard = leaderboard.filter(item => item.name !== nameToDelete);
+            localStorage.setItem('speed_def_leaderboard', JSON.stringify(leaderboard));
+            renderAdminLeaderboard();
+            showToast(`${nameToDelete} 요원의 기록이 삭제되었습니다.`);
+        }
+
+        function updateAdminSettings() {
+            const wavesVal = parseInt(document.getElementById('admin-set-waves').value);
+            const speedVal = parseFloat(document.getElementById('admin-set-speed').value);
+            if (!isNaN(wavesVal)) maxWaves = wavesVal;
+            if (!isNaN(speedVal)) speedFactor = speedVal;
+            showToast('작전 설정이 변경되었습니다.');
+        }
+
+        function changeAdminPin() {
+            const newPin = document.getElementById('input-new-pin').value.trim();
+            if (newPin.length < 4) {
+                showToast('비밀번호는 최소 4자리 이상이어야 합니다.', true);
+                return;
+            }
+            adminPin = newPin;
+            localStorage.setItem('speed_def_admin_pin', adminPin);
+            document.getElementById('input-new-pin').value = '';
+            showToast('🔑 교사용 비밀번호가 변경되었습니다!');
+        }
+
+        function exportLeaderboardData() {
+            let leaderboard = getCleanLeaderboard();
+            if (leaderboard.length === 0) {
+                showToast('내보낼 데이터가 없습니다.', true);
+                return;
+            }
+            let text = "순위\t학번이름\t최고점수\t소요시간\t달성일자\n";
+            leaderboard.forEach((item, idx) => {
+                text += `${idx + 1}\t${item.name}\t${item.score}\t${item.timeSec}\t${item.date || '-'}\n`;
+            });
+            const area = document.createElement('textarea');
+            area.value = text;
+            document.body.appendChild(area);
+            area.select();
+            document.execCommand('copy');
+            document.body.removeChild(area);
+            showToast('📋 성적 데이터가 클립보드에 복사되었습니다!');
+        }
+
+        function resetLeaderboardData() {
+            document.getElementById('modal-reset-warning').classList.remove('hidden');
+        }
+
+        function closeResetWarningModal() {
+            document.getElementById('modal-reset-warning').classList.add('hidden');
+        }
+
+        function proceedToResetAuth() {
+            closeResetWarningModal();
+            document.getElementById('input-reset-pin').value = '';
+            document.getElementById('reset-auth-err').classList.add('hidden');
+            document.getElementById('modal-reset-auth').classList.remove('hidden');
+        }
+
+        function closeResetAuthModal() {
+            document.getElementById('modal-reset-auth').classList.add('hidden');
+        }
+
+        function appendResetPin(num) {
+            const input = document.getElementById('input-reset-pin');
+            input.value += num;
+        }
+
+        function clearResetPin() {
+            document.getElementById('input-reset-pin').value = '';
+            document.getElementById('reset-auth-err').classList.add('hidden');
+        }
+
+        function submitResetPin() {
+            const inputPin = document.getElementById('input-reset-pin').value;
+            if (inputPin === adminPin) {
+                closeResetAuthModal();
+                localStorage.removeItem('speed_def_leaderboard');
+                renderAdminLeaderboard();
+                document.getElementById('modal-reset-success').classList.remove('hidden');
+            } else {
+                document.getElementById('reset-auth-err').classList.remove('hidden');
+                playSound('hit');
+            }
+        }
+
+        function closeResetSuccessModal() {
+            document.getElementById('modal-reset-success').classList.add('hidden');
+        }
+
+        function openRulesModal() { document.getElementById('modal-rules').classList.remove('hidden'); }
+        function closeRulesModal() { document.getElementById('modal-rules').classList.add('hidden'); }
+
+        function drawCuteMonster(ctx, x, y, radius, monster) {
+            const time = Date.now() * 0.005;
+            const bounce = Math.sin(time * 3 + monster.id) * 2;
+            const my = y + bounce;
+
+            ctx.save();
+            ctx.translate(x, my);
+
+            // Body Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+            ctx.beginPath();
+            ctx.ellipse(0, radius + 4, radius * 0.7, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = monster.color;
+            ctx.shadowColor = monster.color;
+            ctx.shadowBlur = 8;
+
+            if (monster.type === 0) {
+                // Slime monster shape
+                ctx.beginPath();
+                ctx.arc(0, 0, radius, Math.PI, 0, false);
+                ctx.bezierCurveTo(radius, radius * 0.8, -radius, radius * 0.8, -radius, 0);
+                ctx.fill();
+
+                // Antenna / horn
+                ctx.beginPath();
+                ctx.arc(0, -radius - 2, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = monster.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, -radius);
+                ctx.lineTo(0, -radius - 2);
+                ctx.stroke();
+            } else if (monster.type === 1) {
+                // Round monster with cat ears
+                ctx.beginPath();
+                ctx.arc(0, 0, radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Ears
+                ctx.beginPath();
+                ctx.moveTo(-radius * 0.6, -radius * 0.5);
+                ctx.lineTo(-radius * 0.9, -radius * 1.2);
+                ctx.lineTo(-radius * 0.2, -radius * 0.8);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(radius * 0.6, -radius * 0.5);
+                ctx.lineTo(radius * 0.9, -radius * 1.2);
+                ctx.lineTo(radius * 0.2, -radius * 0.8);
+                ctx.fill();
+            } else {
+                // Chubby monster with feet
+                ctx.beginPath();
+                ctx.arc(0, 0, radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Feet
+                ctx.beginPath();
+                ctx.arc(-radius * 0.4, radius * 0.7, 4, 0, Math.PI * 2);
+                ctx.arc(radius * 0.4, radius * 0.7, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.shadowBlur = 0;
+
+            // Rosy Cheeks
+            ctx.fillStyle = 'rgba(255, 150, 180, 0.7)';
+            ctx.beginPath();
+            ctx.arc(-radius * 0.5, radius * 0.15, radius * 0.25, 0, Math.PI * 2);
+            ctx.arc(radius * 0.5, radius * 0.15, radius * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Big expressive eyes
+            const eyeOffsetX = 2.5;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(-radius * 0.3 + eyeOffsetX, -radius * 0.15, radius * 0.32, 0, Math.PI * 2);
+            ctx.arc(radius * 0.3 + eyeOffsetX, -radius * 0.15, radius * 0.32, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Pupils
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(-radius * 0.25 + eyeOffsetX + 1, -radius * 0.15, radius * 0.16, 0, Math.PI * 2);
+            ctx.arc(radius * 0.35 + eyeOffsetX + 1, -radius * 0.15, radius * 0.16, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Eye shine
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(-radius * 0.3 + eyeOffsetX + 2, -radius * 0.22, radius * 0.08, 0, Math.PI * 2);
+            ctx.arc(radius * 0.3 + eyeOffsetX + 2, -radius * 0.22, radius * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Mouth
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            if (monster.hp > 1) {
+                ctx.arc(0, radius * 0.2, radius * 0.2, 0.1, Math.PI - 0.1, false);
+                ctx.stroke();
+            } else {
+                ctx.arc(0, radius * 0.2, radius * 0.15, 0, Math.PI * 2);
+                ctx.fillStyle = '#f43f5e';
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        function startAnimationLoop() {
+            const canvas = document.getElementById('defense-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+
+            function render() {
+                const container = canvas.parentElement;
+                const width = container.clientWidth || 300;
+                const height = container.clientHeight || 200;
+                const dpr = window.devicePixelRatio || 1;
+
+                if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+                    canvas.width = width * dpr;
+                    canvas.height = height * dpr;
+                }
+
+                ctx.save();
+                ctx.scale(dpr, dpr);
+                ctx.clearRect(0, 0, width, height);
+
+                // Grid background
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, width, height);
+
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 1;
+                for (let x = 0; x < width; x += 30) {
+                    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
+                }
+                for (let y = 0; y < height; y += 30) {
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
+                }
+
+                // Defense Wall on Right Edge
+                const wallX = width - 25;
+                ctx.fillStyle = '#1e293b';
+                ctx.fillRect(wallX, 0, 25, height);
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(wallX, 0); ctx.lineTo(wallX, height); ctx.stroke();
+
+                // Core pulse
+                ctx.fillStyle = '#0284c7';
+                ctx.beginPath(); ctx.arc(wallX + 12, height / 2, 16, 0, Math.PI * 2); ctx.fill();
+
+                if (!isGameOver) {
+                    // Monster Spawning
+                    spawnTimer++;
+                    if (spawnTimer > (120 / speedFactor) && spawnedMonstersCount < totalWaveMonstersToSpawn) {
+                        spawnTimer = 0;
+                        spawnedMonstersCount++;
+                        const colors = ['#f43f5e', '#a855f7', '#06b6d4', '#10b981', '#f59e0b'];
+                        monsters.push({
+                            id: ++monsterIdCounter,
+                            x: 0,
+                            y: 0.2 + Math.random() * 0.6,
+                            speed: (0.0015 + currentWave * 0.0004) * speedFactor,
+                            hp: 1,
+                            type: Math.floor(Math.random() * 3),
+                            color: colors[Math.floor(Math.random() * colors.length)]
+                        });
+                    }
+
+                    // Update & Draw Monsters
+                    for (let i = monsters.length - 1; i >= 0; i--) {
+                        const m = monsters[i];
+                        m.x += m.speed;
+
+                        if (m.x >= 0.92) {
+                            playSound('hit');
+                            baseHp -= 15;
+                            combo = 0;
+                            updateHUD();
+                            monsters.splice(i, 1);
+                            showToast('경고! 몬스터가 기지에 침투하였습니다! (-15 HP)', true);
+
+                            if (baseHp <= 0) {
+                                endGame(false);
+                                break;
+                            }
+                            continue;
+                        }
+
+                        const px = m.x * (width - 30);
+                        const py = m.y * height;
+
+                        // Draw cute monster
+                        drawCuteMonster(ctx, px, py, 14, m);
+                    }
+                }
+
+                // Render Lasers
+                for (let i = laserEffects.length - 1; i >= 0; i--) {
+                    const l = laserEffects[i];
+                    ctx.strokeStyle = l.color;
+                    ctx.shadowColor = l.color;
+                    ctx.shadowBlur = 15;
+                    ctx.lineWidth = 4;
+                    ctx.globalAlpha = l.alpha;
+
+                    ctx.beginPath();
+                    ctx.moveTo(l.startX * width, l.startY * height);
+                    ctx.lineTo(l.endX * (width - 30), l.endY * height);
+                    ctx.stroke();
+
+                    ctx.globalAlpha = 1.0;
+                    l.alpha -= 0.1;
+                    if (l.alpha <= 0) laserEffects.splice(i, 1);
+                }
+
+                // Render Explosions
+                for (let i = explosionParticles.length - 1; i >= 0; i--) {
+                    const p = explosionParticles[i];
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.life -= 0.04;
+
+                    if (p.life <= 0) {
+                        explosionParticles.splice(i, 1);
+                        continue;
+                    }
+
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = p.life;
+                    ctx.beginPath();
+                    ctx.arc(p.x * (width - 30), p.y * height, 3.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.globalAlpha = 1.0;
+                }
+
+                if (!isGameOver) {
+                    checkWaveProgress();
+                }
+
+                ctx.restore();
+                animFrameId = requestAnimationFrame(render);
+            }
+
+            if (animFrameId) cancelAnimationFrame(animFrameId);
+            render();
+        }
+    </script>
+</body>
+</html>
