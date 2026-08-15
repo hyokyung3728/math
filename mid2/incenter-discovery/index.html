@@ -419,16 +419,21 @@
         };
 
         // Calculates responsive triangle coordinates matching the active board container size
-        function setupResponsiveCoordinates() {
-            const board = document.getElementById('step1-board') || document.getElementById('step2-board') || document.getElementById('step3-board');
+        function setupResponsiveCoordinates(step = currentStep) {
+            const board = document.getElementById(`step${step}-board`);
             if (!board) return;
             const rect = board.getBoundingClientRect();
-            const w = rect.width > 0 ? rect.width : 600;
-            const h = rect.height > 0 ? rect.height : 400;
+            const w = rect.width > 0 ? rect.width : (window.innerWidth || 360);
+            const h = rect.height > 0 ? rect.height : 300;
 
-            triangleABC.A = { x: w * 0.5, y: h * 0.16, label: 'A' };
-            triangleABC.B = { x: w * 0.15, y: h * 0.82, label: 'B' };
-            triangleABC.C = { x: w * 0.85, y: h * 0.82, label: 'C' };
+            // 스마트폰 등 작은 화면에서도 잘리지 않도록 안전 여백 설정
+            const paddingX = Math.max(30, w * 0.18);
+            const paddingTop = Math.max(35, h * 0.18);
+            const paddingBottom = Math.max(35, h * 0.20);
+
+            triangleABC.A = { x: w * 0.5, y: paddingTop, label: 'A' };
+            triangleABC.B = { x: paddingX, y: h - paddingBottom, label: 'B' };
+            triangleABC.C = { x: w - paddingX, y: h - paddingBottom, label: 'C' };
         }
 
         // Distance between two points
@@ -518,7 +523,7 @@
 
             currentStep = step;
             
-            // Toggle step containers
+            // Toggle step containers FIRST so target container becomes visible in DOM
             document.getElementById('step1-container').classList.toggle('hidden', step !== 1);
             document.getElementById('step2-container').classList.toggle('hidden', step !== 2);
             document.getElementById('step3-container').classList.toggle('hidden', step !== 3);
@@ -531,8 +536,8 @@
             document.getElementById('tab-step2').className = step === 2 ? activeTabClass : inactiveTabClass;
             document.getElementById('tab-step3').className = step === 3 ? activeTabClass : inactiveTabClass;
 
-            // Recalculate coordinates and render current step
-            setupResponsiveCoordinates();
+            // Recalculate coordinates and render current step AFTER visibility toggle
+            setupResponsiveCoordinates(step);
             if (step === 1) renderStep1();
             if (step === 2) renderStep2();
             if (step === 3) renderStep3();
@@ -1307,6 +1312,13 @@
         }
 
         function renderBenchIcons(svg, benches) {
+            const board = document.getElementById(`step${currentStep}-board`);
+            const w = board ? board.getBoundingClientRect().width : 360;
+            
+            // 화면 너비에 맞춘 비례적 벤치 크기 조절 (모바일에서 화면 밖으로 넘침 방지)
+            const benchLen = Math.min(100, Math.max(45, w * 0.20));
+            const benchWidth = Math.min(12, Math.max(7, benchLen * 0.12));
+
             benches.forEach(b => {
                 const p1 = b.p1 || b.pos;
                 const p2 = b.p2 || b.pos;
@@ -1315,9 +1327,6 @@
                 const midY = (p1.y + p2.y) / 2;
                 const angleRad = Math.atan2(p2.y - p1.y, p2.x - p1.x);
                 const angleDeg = angleRad * (180 / Math.PI);
-
-                const benchLen = 110;
-                const benchWidth = 12;
 
                 const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
                 g.setAttribute("transform", `translate(${midX}, ${midY}) rotate(${angleDeg})`);
@@ -1333,35 +1342,35 @@
                 benchBase.setAttribute("stroke-width", "1.5");
 
                 const slat1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                slat1.setAttribute("x1", -benchLen / 2 + 6);
+                slat1.setAttribute("x1", -benchLen / 2 + 4);
                 slat1.setAttribute("y1", -1.5);
-                slat1.setAttribute("x2", benchLen / 2 - 6);
+                slat1.setAttribute("x2", benchLen / 2 - 4);
                 slat1.setAttribute("y2", -1.5);
                 slat1.setAttribute("stroke", "#92400e");
                 slat1.setAttribute("stroke-width", "1.2");
 
                 const slat2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
-                slat2.setAttribute("x1", -benchLen / 2 + 6);
+                slat2.setAttribute("x1", -benchLen / 2 + 4);
                 slat2.setAttribute("y1", 1.5);
-                slat2.setAttribute("x2", benchLen / 2 - 6);
+                slat2.setAttribute("x2", benchLen / 2 - 4);
                 slat2.setAttribute("y2", 1.5);
                 slat2.setAttribute("stroke", "#92400e");
                 slat2.setAttribute("stroke-width", "1.2");
 
                 const leg1 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                leg1.setAttribute("x", -benchLen / 2 + 8);
-                leg1.setAttribute("y", -benchWidth / 2 - 1.5);
-                leg1.setAttribute("width", "5");
-                leg1.setAttribute("height", benchWidth + 3);
-                leg1.setAttribute("rx", "1.5");
+                leg1.setAttribute("x", -benchLen / 2 + 6);
+                leg1.setAttribute("y", -benchWidth / 2 - 1);
+                leg1.setAttribute("width", "4");
+                leg1.setAttribute("height", benchWidth + 2);
+                leg1.setAttribute("rx", "1");
                 leg1.setAttribute("fill", "#334155");
 
                 const leg2 = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-                leg2.setAttribute("x", benchLen / 2 - 13);
-                leg2.setAttribute("y", -benchWidth / 2 - 1.5);
-                leg2.setAttribute("width", "5");
-                leg2.setAttribute("height", benchWidth + 3);
-                leg2.setAttribute("rx", "1.5");
+                leg2.setAttribute("x", benchLen / 2 - 10);
+                leg2.setAttribute("y", -benchWidth / 2 - 1);
+                leg2.setAttribute("width", "4");
+                leg2.setAttribute("height", benchWidth + 2);
+                leg2.setAttribute("rx", "1");
                 leg2.setAttribute("fill", "#334155");
 
                 g.appendChild(benchBase);
@@ -1371,15 +1380,16 @@
                 g.appendChild(leg2);
                 svg.appendChild(g);
 
-                const perpOffset = 18;
+                const perpOffset = Math.min(18, benchWidth + 8);
                 const labelX = midX + Math.sin(angleRad) * perpOffset;
                 const labelY = midY - Math.cos(angleRad) * perpOffset;
 
+                const fontSize = Math.min(11, Math.max(9, benchLen * 0.12));
                 const textLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
                 textLabel.setAttribute("x", labelX);
                 textLabel.setAttribute("y", labelY);
                 textLabel.setAttribute("text-anchor", "middle");
-                textLabel.setAttribute("font-size", "11");
+                textLabel.setAttribute("font-size", fontSize);
                 textLabel.setAttribute("font-weight", "bold");
                 textLabel.setAttribute("fill", "#1e293b");
                 textLabel.textContent = b.label;
@@ -1396,7 +1406,7 @@
         });
 
         window.addEventListener('resize', () => {
-            setupResponsiveCoordinates();
+            setupResponsiveCoordinates(currentStep);
             if (currentStep === 1) renderStep1();
             if (currentStep === 2) renderStep2();
             if (currentStep === 3) renderStep3();
