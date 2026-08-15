@@ -1,0 +1,924 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>삼각형의 모양에 따른 외심의 위치</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Tone.js for interactive sound effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .font-gowun {
+            font-family: 'Gowun Dodum', sans-serif;
+        }
+        /* Prevent touch scrolling on canvas area for mobile devices */
+        #board-container, #board-container *, #main-svg, #main-svg * {
+            touch-action: none !important;
+            -webkit-touch-callout: none !important;
+            -webkit-user-select: none !important;
+            user-select: none !important;
+        }
+        @keyframes pulse-subtle {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.08); opacity: 0.85; }
+        }
+        .animate-pulse-subtle {
+            animation: pulse-subtle 2s infinite ease-in-out;
+        }
+        @keyframes line-reveal {
+            from { stroke-dashoffset: 1000; }
+            to { stroke-dashoffset: 0; }
+        }
+        .reveal-line {
+            stroke-dasharray: 1000;
+            animation: line-reveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .clickable-edge {
+            cursor: pointer;
+            transition: stroke-width 0.2s, stroke 0.2s;
+        }
+        .clickable-edge:hover {
+            stroke-width: 6;
+            stroke: #4f46e5;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col justify-between overflow-x-hidden">
+
+    <!-- Header -->
+    <header class="bg-indigo-600 text-white shadow-lg sticky top-0 z-30">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="p-2.5 bg-indigo-500 rounded-xl shadow-inner">
+                    <i class="fa-solid fa-shapes text-2xl text-yellow-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold font-gowun tracking-tight">삼각형의 모양에 따른 외심의 위치</h1>
+                    <p class="text-xs text-indigo-200">수학적 탐구: 각의 크기 변화와 수직이등분선의 교점(외심) 탐구</p>
+                </div>
+            </div>
+
+            <!-- Quick Presets -->
+            <div class="flex bg-indigo-800/60 p-1 rounded-xl gap-1 border border-indigo-400/30 text-xs sm:text-sm">
+                <button onclick="applyPreset('acute')" class="px-3 py-1.5 rounded-lg font-semibold transition-all hover:bg-indigo-700/60 text-indigo-100 flex items-center gap-1">
+                    <i class="fa-solid fa-play text-xs text-emerald-400"></i> 예각삼각형
+                </button>
+                <button onclick="applyPreset('right')" class="px-3 py-1.5 rounded-lg font-semibold transition-all hover:bg-indigo-700/60 text-indigo-100 flex items-center gap-1">
+                    <i class="fa-solid fa-play text-xs text-amber-400"></i> 직각삼각형
+                </button>
+                <button onclick="applyPreset('obtuse')" class="px-3 py-1.5 rounded-lg font-semibold transition-all hover:bg-indigo-700/60 text-indigo-100 flex items-center gap-1">
+                    <i class="fa-solid fa-play text-xs text-rose-400"></i> 둔각삼각형
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-6xl mx-auto w-full p-3 sm:p-5 flex-grow flex flex-col gap-4">
+
+        <!-- Instruction Banner -->
+        <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-xl shadow-sm flex items-start justify-between gap-3">
+            <div class="flex items-start space-x-3">
+                <i class="fa-solid fa-lightbulb text-indigo-600 text-2xl mt-0.5 shrink-0"></i>
+                <div class="text-sm text-indigo-900 leading-relaxed">
+                    <h2 class="font-bold text-indigo-950 text-base mb-0.5">활동 안내: 각의 크기와 외심의 위치 관계 탐구</h2>
+                    <p>
+                        1. <strong>각 꼭짓점(A, B, C)을 클릭하여 드래그</strong>하면 각의 크기가 1도 단위로 변합니다 (내각의 합 = 180° 유지).<br>
+                        2. <strong>삼각형의 세 변(AB, BC, CA)을 클릭</strong>하면 각 변의 <strong>수직이등분선</strong>이 그려집니다.<br>
+                        3. 2개 이상의 수직이등분선이 그려지면 교점인 <strong>'외심'</strong>이 나타납니다. 예각, 직각, 둔각에 따라 외심의 위치 변화를 관찰해 보세요!
+                    </p>
+                </div>
+            </div>
+            <button onclick="resetBoard()" class="px-3 py-1.5 bg-white border border-indigo-300 hover:bg-indigo-100 text-indigo-800 font-medium text-xs rounded-lg shadow-sm transition flex items-center shrink-0">
+                <i class="fa-solid fa-rotate-right mr-1"></i> 초기화
+            </button>
+        </div>
+
+        <!-- Interactive Canvas & Sidebar Container -->
+        <div class="relative w-full bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden flex flex-col md:flex-row min-h-[540px]">
+            
+            <!-- SVG Interactive Board -->
+            <div class="relative flex-grow h-[450px] md:h-[550px] bg-slate-50 cursor-crosshair overflow-hidden touch-none" id="board-container">
+                <!-- Background Grid Pattern -->
+                <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" width="100%" height="100%">
+                    <defs>
+                        <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
+                            <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#64748b" stroke-width="0.8"/>
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid)" />
+                </svg>
+
+                <!-- SVG Board -->
+                <svg id="main-svg" class="absolute inset-0 w-full h-full"></svg>
+
+                <!-- Floating Helper Toast -->
+                <div id="hint-toast" class="absolute top-4 left-1/2 -translate-x-1/2 bg-slate-900/85 text-white px-4 py-2 rounded-full text-xs sm:text-sm font-medium shadow-lg pointer-events-none transition-all duration-300 flex items-center gap-2">
+                    <i class="fa-solid fa-hand-pointer text-yellow-400"></i>
+                    <span id="hint-text">삼각형의 변을 클릭하여 수직이등분선을 그려보세요!</span>
+                </div>
+            </div>
+
+            <!-- Sidebar Panel -->
+            <div class="w-full md:w-80 border-t md:border-t-0 md:border-l border-slate-200 bg-slate-50 p-4 flex flex-col justify-between gap-4 shrink-0">
+                <div class="space-y-4">
+                    
+                    <!-- Triangle Classification Card -->
+                    <div id="type-card" class="p-4 rounded-xl bg-indigo-50 border border-indigo-200 transition-all">
+                        <div class="flex justify-between items-center mb-1.5">
+                            <span class="text-xs font-bold text-indigo-600 uppercase tracking-wider">삼각형의 종류</span>
+                            <span id="type-badge" class="px-2.5 py-0.5 rounded-full text-xs font-black bg-indigo-600 text-white">예각삼각형</span>
+                        </div>
+                        <h3 id="type-title" class="text-lg font-extrabold text-indigo-950 font-gowun">모든 각이 예각입니다</h3>
+                        <p id="type-desc" class="text-xs text-indigo-800 mt-1 leading-relaxed">
+                            세 각이 모두 90°보다 작으므로 외심은 삼각형의 <strong>내부</strong>에 위치합니다.
+                        </p>
+                    </div>
+
+                    <!-- Angles Summary List -->
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-sm mb-2 flex items-center justify-between border-b pb-1">
+                            <span class="flex items-center"><i class="fa-solid fa-compass text-indigo-600 mr-1.5"></i>내각의 크기</span>
+                            <span class="text-xs text-slate-500 font-normal">합 = 180°</span>
+                        </h4>
+                        <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                            <div class="p-2 bg-rose-50 border border-rose-200 rounded-xl">
+                                <span class="block text-rose-500 font-bold mb-0.5">∠A</span>
+                                <span id="angle-a-val" class="font-mono text-sm font-black text-slate-800">60°</span>
+                            </div>
+                            <div class="p-2 bg-emerald-50 border border-emerald-200 rounded-xl">
+                                <span class="block text-emerald-600 font-bold mb-0.5">∠B</span>
+                                <span id="angle-b-val" class="font-mono text-sm font-black text-slate-800">70°</span>
+                            </div>
+                            <div class="p-2 bg-blue-50 border border-blue-200 rounded-xl">
+                                <span class="block text-blue-600 font-bold mb-0.5">∠C</span>
+                                <span id="angle-c-val" class="font-mono text-sm font-black text-slate-800">50°</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Perpendicular Bisectors Interactive Checklist -->
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-sm mb-2 flex items-center border-b pb-1">
+                            <i class="fa-solid fa-ruler-combined text-purple-600 mr-1.5"></i>수직이등분선 (변 클릭)
+                        </h4>
+                        <div class="space-y-1.5 text-xs">
+                            <button onclick="toggleSide('AB')" id="btn-side-ab" class="w-full flex justify-between items-center p-2.5 rounded-xl border transition text-left bg-white border-slate-200 hover:bg-slate-100">
+                                <span class="font-semibold text-slate-700 flex items-center">
+                                    <i id="icon-side-ab" class="fa-regular fa-square mr-2 text-slate-400"></i>변 AB 수직이등분선
+                                </span>
+                                <span id="status-side-ab" class="font-bold text-slate-400">미완성</span>
+                            </button>
+                            <button onclick="toggleSide('BC')" id="btn-side-bc" class="w-full flex justify-between items-center p-2.5 rounded-xl border transition text-left bg-white border-slate-200 hover:bg-slate-100">
+                                <span class="font-semibold text-slate-700 flex items-center">
+                                    <i id="icon-side-bc" class="fa-regular fa-square mr-2 text-slate-400"></i>변 BC 수직이등분선
+                                </span>
+                                <span id="status-side-bc" class="font-bold text-slate-400">미완성</span>
+                            </button>
+                            <button onclick="toggleSide('CA')" id="btn-side-ca" class="w-full flex justify-between items-center p-2.5 rounded-xl border transition text-left bg-white border-slate-200 hover:bg-slate-100">
+                                <span class="font-semibold text-slate-700 flex items-center">
+                                    <i id="icon-side-ca" class="fa-regular fa-square mr-2 text-slate-400"></i>변 CA 수직이등분선
+                                </span>
+                                <span id="status-side-ca" class="font-bold text-slate-400">미완성</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Circumcircle Toggle Option -->
+                    <div class="p-3 bg-purple-50 border border-purple-200 rounded-xl flex items-center justify-between">
+                        <label for="toggle-circle" class="text-xs font-bold text-purple-900 flex items-center cursor-pointer">
+                            <i class="fa-solid fa-circle-notch text-purple-600 mr-1.5"></i>외접원 표시하기
+                        </label>
+                        <input type="checkbox" id="toggle-circle" onchange="toggleCircumcircle()" class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500 cursor-pointer">
+                    </div>
+
+                </div>
+
+                <!-- Footer info in sidebar -->
+                <div class="text-[11px] text-slate-400 text-center border-t pt-2">
+                    꼭짓점을 드래그하여 각을 조절하세요.
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-200 border-t border-slate-300 py-3 text-center text-xs text-slate-600">
+        <p>© 2026 김효경│수학 수업용 인터랙티브 콘텐츠</p>
+    </footer>
+
+    <script>
+        /* Audio Synthesizer */
+        let synth = null;
+        function initAudio() {
+            if (!synth && window.Tone) {
+                synth = new Tone.PolySynth(Tone.Synth, {
+                    oscillator: { type: "sine" },
+                    envelope: { attack: 0.005, decay: 0.1, sustain: 0.1, release: 0.3 }
+                }).toDestination();
+                synth.volume.value = -12;
+            }
+        }
+
+        function playSound(type) {
+            initAudio();
+            if (!synth) return;
+            try {
+                if (type === 'click') {
+                    synth.triggerAttackRelease('C5', '8n');
+                } else if (type === 'snap') {
+                    synth.triggerAttackRelease('E5', '8n');
+                } else if (type === 'success') {
+                    synth.triggerAttackRelease(['C5', 'E5', 'G5', 'C6'], '4n');
+                }
+            } catch (e) {}
+        }
+
+        /* State Variables */
+        const state = {
+            A: { x: 260, y: 110, label: 'A' },
+            B: { x: 140, y: 390, label: 'B' },
+            C: { x: 520, y: 390, label: 'C' },
+            activeBisectors: new Set(), // 'AB', 'BC', 'CA'
+            showCircumcircle: false,
+            draggingVertex: null
+        };
+
+        /* Geometry & Angle Math Functions */
+        function getDistance(p1, p2) {
+            const dx = p1.x - p2.x;
+            const dy = p1.y - p2.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // Distance from point P to line segment VW
+        function distToSegmentSquared(p, v, w) {
+            const l2 = (v.x - w.x) * (v.x - w.x) + (v.y - w.y) * (v.y - w.y);
+            if (l2 === 0) return (p.x - v.x) * (p.x - v.x) + (p.y - v.y) * (p.y - v.y);
+            let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+            t = Math.max(0, Math.min(1, t));
+            const projX = v.x + t * (w.x - v.x);
+            const projY = v.y + t * (w.y - v.y);
+            return (p.x - projX) * (p.x - projX) + (p.y - projY) * (p.y - projY);
+        }
+
+        function distToSegment(p, v, w) {
+            return Math.sqrt(distToSegmentSquared(p, v, w));
+        }
+
+        // Calculate interior angles in degrees, rounded to integers summing strictly to 180°
+        function calculateAngles(A, B, C) {
+            const a = getDistance(B, C);
+            const b = getDistance(A, C);
+            const c = getDistance(A, B);
+
+            if (a === 0 || b === 0 || c === 0) return { degA: 60, degB: 60, degC: 60 };
+
+            // Law of Cosines
+            let cosA = (b * b + c * c - a * a) / (2 * b * c);
+            let cosB = (a * a + c * c - b * b) / (2 * a * c);
+
+            cosA = Math.max(-1, Math.min(1, cosA));
+            cosB = Math.max(-1, Math.min(1, cosB));
+
+            const radA = Math.acos(cosA);
+            const radB = Math.acos(cosB);
+
+            let degA = Math.round((radA * 180) / Math.PI);
+            let degB = Math.round((radB * 180) / Math.PI);
+
+            // Clamp angles to prevent degenerate triangles
+            degA = Math.max(10, Math.min(160, degA));
+            degB = Math.max(10, Math.min(160 - degA, degB));
+            let degC = 180 - degA - degB;
+
+            if (degC < 10) {
+                degC = 10;
+                degB = 180 - degA - degC;
+            }
+
+            return { degA, degB, degC };
+        }
+
+        // Compute circumcenter O
+        function calculateCircumcenter(A, B, C) {
+            const D = 2 * (A.x * (B.y - C.y) + B.x * (C.y - A.y) + C.x * (A.y - B.y));
+            if (Math.abs(D) < 0.001) return null;
+
+            const Ux = ((A.x * A.x + A.y * A.y) * (B.y - C.y) + (B.x * B.x + B.y * B.y) * (C.y - A.y) + (C.x * C.x + C.y * C.y) * (A.y - B.y)) / D;
+            const Uy = ((A.x * A.x + A.y * A.y) * (C.x - B.x) + (B.x * B.x + B.y * B.y) * (A.x - C.x) + (C.x * C.x + C.y * C.y) * (B.x - A.x)) / D;
+
+            return { x: Ux, y: Uy };
+        }
+
+        /* Preset Handlers */
+        function applyPreset(type) {
+            playSound('snap');
+            const board = document.getElementById('board-container');
+            const w = board ? board.clientWidth : 600;
+            const h = board ? board.clientHeight : 450;
+
+            if (type === 'acute') {
+                state.A = { x: Math.round(w * 0.45), y: Math.round(h * 0.22), label: 'A' };
+                state.B = { x: Math.round(w * 0.22), y: Math.round(h * 0.78), label: 'B' };
+                state.C = { x: Math.round(w * 0.78), y: Math.round(h * 0.78), label: 'C' };
+            } else if (type === 'right') {
+                state.A = { x: Math.round(w * 0.25), y: Math.round(h * 0.22), label: 'A' };
+                state.B = { x: Math.round(w * 0.25), y: Math.round(h * 0.78), label: 'B' };
+                state.C = { x: Math.round(w * 0.75), y: Math.round(h * 0.78), label: 'C' };
+            } else if (type === 'obtuse') {
+                state.A = { x: Math.round(w * 0.20), y: Math.round(h * 0.38), label: 'A' };
+                state.B = { x: Math.round(w * 0.45), y: Math.round(h * 0.72), label: 'B' };
+                state.C = { x: Math.round(w * 0.85), y: Math.round(h * 0.72), label: 'C' };
+            }
+            render();
+        }
+
+        function resetBoard() {
+            state.activeBisectors.clear();
+            state.showCircumcircle = false;
+            const checkbox = document.getElementById('toggle-circle');
+            if (checkbox) checkbox.checked = false;
+            applyPreset('acute');
+        }
+
+        function toggleSide(key) {
+            playSound('click');
+            if (state.activeBisectors.has(key)) {
+                state.activeBisectors.delete(key);
+            } else {
+                state.activeBisectors.add(key);
+            }
+            render();
+        }
+
+        function toggleCircumcircle() {
+            playSound('click');
+            const checkbox = document.getElementById('toggle-circle');
+            state.showCircumcircle = checkbox ? checkbox.checked : false;
+            render();
+        }
+
+        /* Drag & Touch Setup using Pointer Events */
+        function initInteractions() {
+            const board = document.getElementById('board-container');
+            if (!board) return;
+
+            let activePointerId = null;
+            let dragStartPos = null;
+            let isTapCandidate = false;
+
+            const getPos = (e) => {
+                const rect = board.getBoundingClientRect();
+                return {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+            };
+
+            // Prevent page scrolling on touch start
+            board.addEventListener('touchstart', (e) => {
+                if (e.cancelable) e.preventDefault();
+            }, { passive: false });
+
+            board.addEventListener('pointerdown', (e) => {
+                if (e.pointerType === 'touch' && e.cancelable) {
+                    e.preventDefault();
+                }
+
+                const pos = getPos(e);
+                dragStartPos = { ...pos };
+                isTapCandidate = true;
+
+                // Touch hit test for vertices (45px touch radius)
+                const vertices = [state.A, state.B, state.C];
+                const target = vertices.find(v => getDistance(pos, v) <= 45);
+
+                if (target) {
+                    state.draggingVertex = target.label;
+                    activePointerId = e.pointerId;
+                    try {
+                        board.setPointerCapture(e.pointerId);
+                    } catch (err) {}
+                    playSound('click');
+                    render();
+                } else {
+                    activePointerId = e.pointerId;
+                    try {
+                        board.setPointerCapture(e.pointerId);
+                    } catch (err) {}
+                }
+            });
+
+            board.addEventListener('pointermove', (e) => {
+                if (e.pointerId !== activePointerId) return;
+
+                const pos = getPos(e);
+
+                if (dragStartPos && (Math.abs(pos.x - dragStartPos.x) > 6 || Math.abs(pos.y - dragStartPos.y) > 6)) {
+                    isTapCandidate = false;
+                }
+
+                if (!state.draggingVertex) return;
+
+                if (e.pointerType === 'touch' && e.cancelable) {
+                    e.preventDefault();
+                }
+
+                const margin = 20;
+                const w = board.clientWidth;
+                const h = board.clientHeight;
+
+                // Clamp within canvas boundaries
+                const clampedX = Math.max(margin, Math.min(w - margin, pos.x));
+                const clampedY = Math.max(margin, Math.min(h - margin, pos.y));
+
+                const vertex = state[state.draggingVertex];
+                vertex.x = Math.round(clampedX);
+                vertex.y = Math.round(clampedY);
+
+                render();
+            });
+
+            const onPointerEnd = (e) => {
+                if (e.pointerId !== activePointerId) return;
+
+                if (state.draggingVertex) {
+                    state.draggingVertex = null;
+                    render();
+                } else if (isTapCandidate && dragStartPos) {
+                    const pos = dragStartPos;
+                    const edges = [
+                        { p1: state.A, p2: state.B, key: 'AB' },
+                        { p1: state.B, p2: state.C, key: 'BC' },
+                        { p1: state.C, p2: state.A, key: 'CA' }
+                    ];
+
+                    for (let edge of edges) {
+                        if (distToSegment(pos, edge.p1, edge.p2) < 30) {
+                            toggleSide(edge.key);
+                            break;
+                        }
+                    }
+                }
+
+                try {
+                    board.releasePointerCapture(e.pointerId);
+                } catch (err) {}
+
+                activePointerId = null;
+                dragStartPos = null;
+                isTapCandidate = false;
+            };
+
+            board.addEventListener('pointerup', onPointerEnd);
+            board.addEventListener('pointercancel', onPointerEnd);
+        }
+
+        /* Main Render Function */
+        function render() {
+            const svg = document.getElementById('main-svg');
+            if (!svg) return;
+            svg.innerHTML = '';
+
+            const { A, B, C, activeBisectors, showCircumcircle } = state;
+            const { degA, degB, degC } = calculateAngles(A, B, C);
+
+            // Update UI sidebar numbers
+            document.getElementById('angle-a-val').textContent = `${degA}°`;
+            document.getElementById('angle-b-val').textContent = `${degB}°`;
+            document.getElementById('angle-c-val').textContent = `${degC}°`;
+
+            // Classify triangle type
+            const maxAngle = Math.max(degA, degB, degC);
+            const typeBadge = document.getElementById('type-badge');
+            const typeTitle = document.getElementById('type-title');
+            const typeDesc = document.getElementById('type-desc');
+            const typeCard = document.getElementById('type-card');
+
+            if (maxAngle < 90) {
+                typeBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-black bg-emerald-600 text-white";
+                typeBadge.textContent = "예각삼각형";
+                typeTitle.textContent = "모든 각이 예각입니다";
+                typeDesc.innerHTML = "세 각이 모두 90°보다 작으므로 외심은 삼각형의 <strong>내부</strong>에 위치합니다.";
+                typeCard.className = "p-4 rounded-xl bg-emerald-50 border border-emerald-200 transition-all";
+            } else if (maxAngle === 90) {
+                typeBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-black bg-amber-600 text-white";
+                typeBadge.textContent = "직각삼각형";
+                typeTitle.textContent = "한 각이 직각(90°)입니다";
+                typeDesc.innerHTML = "한 각이 90°이므로 외심은 가장 긴 변(빗변)의 <strong>중점</strong>에 위치합니다!";
+                typeCard.className = "p-4 rounded-xl bg-amber-50 border border-amber-200 transition-all";
+            } else {
+                typeBadge.className = "px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-600 text-white";
+                typeBadge.textContent = "둔각삼각형";
+                typeTitle.textContent = "한 각이 둔각(>90°)입니다";
+                typeDesc.innerHTML = "한 각이 90°보다 크므로 외심은 삼각형의 <strong>외부</strong>에 위치합니다.";
+                typeCard.className = "p-4 rounded-xl bg-rose-50 border border-rose-200 transition-all";
+            }
+
+            // Update Side Bisector Checklist UI
+            ['AB', 'BC', 'CA'].forEach(key => {
+                const btn = document.getElementById(`btn-side-${key.toLowerCase()}`);
+                const icon = document.getElementById(`icon-side-${key.toLowerCase()}`);
+                const status = document.getElementById(`status-side-${key.toLowerCase()}`);
+
+                if (activeBisectors.has(key)) {
+                    btn.className = "w-full flex justify-between items-center p-2.5 rounded-xl border transition text-left bg-purple-100 border-purple-300 font-bold text-purple-900";
+                    icon.className = "fa-solid fa-square-check mr-2 text-purple-600";
+                    status.textContent = "표시됨";
+                    status.className = "font-bold text-purple-700";
+                } else {
+                    btn.className = "w-full flex justify-between items-center p-2.5 rounded-xl border transition text-left bg-white border-slate-200 hover:bg-slate-100";
+                    icon.className = "fa-regular fa-square mr-2 text-slate-400";
+                    status.textContent = "미완성";
+                    status.className = "font-bold text-slate-400";
+                }
+            });
+
+            // Draw Triangle Filled Area
+            const polygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+            polygon.setAttribute("points", `${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`);
+            polygon.setAttribute("fill", "rgba(99, 102, 241, 0.08)");
+            polygon.setAttribute("stroke", "#4f46e5");
+            polygon.setAttribute("stroke-width", "3");
+            polygon.setAttribute("stroke-linejoin", "round");
+            svg.appendChild(polygon);
+
+            // Draw Clickable Edge Hitboxes
+            const edges = [
+                { p1: A, p2: B, key: 'AB' },
+                { p1: B, p2: C, key: 'BC' },
+                { p1: C, p2: A, key: 'CA' }
+            ];
+
+            edges.forEach(edge => {
+                const lineHit = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                lineHit.setAttribute("x1", edge.p1.x);
+                lineHit.setAttribute("y1", edge.p1.y);
+                lineHit.setAttribute("x2", edge.p2.x);
+                lineHit.setAttribute("y2", edge.p2.y);
+                lineHit.setAttribute("stroke", activeBisectors.has(edge.key) ? "#a855f7" : "transparent");
+                lineHit.setAttribute("stroke-width", "8");
+                lineHit.setAttribute("class", "clickable-edge");
+                lineHit.onclick = () => toggleSide(edge.key);
+                svg.appendChild(lineHit);
+            });
+
+            // Draw Angle Arcs
+            drawAngleArc(svg, A, B, C, degA, "#f43f5e", "∠A");
+            drawAngleArc(svg, B, A, C, degB, "#10b981", "∠B");
+            drawAngleArc(svg, C, A, B, degC, "#3b82f6", "∠C");
+
+            // Calculate Circumcenter O
+            const circumO = calculateCircumcenter(A, B, C);
+
+            // Draw Active Perpendicular Bisectors
+            edges.forEach(edge => {
+                if (activeBisectors.has(edge.key)) {
+                    drawPerpendicularBisector(svg, edge.p1, edge.p2, circumO, edge.key);
+                }
+            });
+
+            if (circumO) {
+                const radius = getDistance(circumO, A);
+
+                // Draw Circumcircle if toggled or active bisectors >= 2
+                if (showCircumcircle) {
+                    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    circle.setAttribute("cx", circumO.x);
+                    circle.setAttribute("cy", circumO.y);
+                    circle.setAttribute("r", radius);
+                    circle.setAttribute("fill", "rgba(168, 85, 247, 0.04)");
+                    circle.setAttribute("stroke", "#a855f7");
+                    circle.setAttribute("stroke-width", "2.5");
+                    circle.setAttribute("stroke-dasharray", "6 4");
+                    svg.appendChild(circle);
+                }
+
+                // If 2 or more bisectors are active, draw Circumcenter "외심"
+                if (activeBisectors.size >= 2) {
+                    // Lines from circumcenter to vertices
+                    [A, B, C].forEach(v => {
+                        const lineR = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                        lineR.setAttribute("x1", circumO.x);
+                        lineR.setAttribute("y1", circumO.y);
+                        lineR.setAttribute("x2", v.x);
+                        lineR.setAttribute("y2", v.y);
+                        lineR.setAttribute("stroke", "#a855f7");
+                        lineR.setAttribute("stroke-width", "1.8");
+                        lineR.setAttribute("stroke-dasharray", "3 3");
+                        svg.appendChild(lineR);
+                    });
+
+                    // Circumcenter Point O Marker
+                    const groupO = document.createElementNS("http://www.w3.org/2000/svg", "g");
+
+                    const outerO = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    outerO.setAttribute("cx", circumO.x);
+                    outerO.setAttribute("cy", circumO.y);
+                    outerO.setAttribute("r", "12");
+                    outerO.setAttribute("fill", "rgba(168, 85, 247, 0.25)");
+                    outerO.setAttribute("class", "animate-pulse-subtle");
+
+                    const innerO = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                    innerO.setAttribute("cx", circumO.x);
+                    innerO.setAttribute("cy", circumO.y);
+                    innerO.setAttribute("r", "7");
+                    innerO.setAttribute("fill", "#7e22ce");
+                    innerO.setAttribute("stroke", "white");
+                    innerO.setAttribute("stroke-width", "2.5");
+
+                    const labelO = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    labelO.setAttribute("x", circumO.x + 12);
+                    labelO.setAttribute("y", circumO.y - 10);
+                    labelO.setAttribute("font-size", "15");
+                    labelO.setAttribute("font-weight", "900");
+                    labelO.setAttribute("fill", "#581c87");
+                    labelO.textContent = "외심";
+
+                    groupO.appendChild(outerO);
+                    groupO.appendChild(innerO);
+                    groupO.appendChild(labelO);
+                    svg.appendChild(groupO);
+
+                    // Update Toast Message
+                    document.getElementById('hint-text').innerHTML = `✨ <strong>${activeBisectors.size}개</strong>의 수직이등분선의 교점인 <strong>'외심'</strong>이 표시되었습니다!`;
+                } else {
+                    document.getElementById('hint-text').textContent = "삼각형의 변을 클릭하여 수직이등분선을 2개 이상 그려보세요!";
+                }
+            }
+
+            // Render Vertices A, B, C
+            [A, B, C].forEach(v => {
+                const isDragging = state.draggingVertex === v.label;
+                const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                g.setAttribute("class", "cursor-grab active:cursor-grabbing");
+
+                // Transparent touch hit area (45px radius -> 90px touch target for fat fingers)
+                const touchHit = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                touchHit.setAttribute("cx", v.x);
+                touchHit.setAttribute("cy", v.y);
+                touchHit.setAttribute("r", "45");
+                touchHit.setAttribute("fill", "transparent");
+
+                const halo = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                halo.setAttribute("cx", v.x);
+                halo.setAttribute("cy", v.y);
+                halo.setAttribute("r", isDragging ? "24" : "18");
+                halo.setAttribute("fill", isDragging ? "rgba(79, 70, 229, 0.35)" : "rgba(79, 70, 229, 0.15)");
+
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circle.setAttribute("cx", v.x);
+                circle.setAttribute("cy", v.y);
+                circle.setAttribute("r", isDragging ? "13" : "11");
+                circle.setAttribute("fill", "#4f46e5");
+                circle.setAttribute("stroke", "white");
+                circle.setAttribute("stroke-width", "3");
+
+                const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                label.setAttribute("x", v.x);
+                label.setAttribute("y", v.y < 150 ? v.y - 20 : v.y + 30);
+                label.setAttribute("text-anchor", "middle");
+                label.setAttribute("font-size", "17");
+                label.setAttribute("font-weight", "bold");
+                label.setAttribute("fill", "#1e1b4b");
+                label.textContent = v.label;
+
+                g.appendChild(touchHit);
+                g.appendChild(halo);
+                g.appendChild(circle);
+                g.appendChild(label);
+                svg.appendChild(g);
+            });
+        }
+
+        /* SVG Helper: Draw Angle Arc */
+        function drawAngleArc(svg, vertex, p1, p2, degVal, color, labelText) {
+            const len1 = getDistance(vertex, p1);
+            const len2 = getDistance(vertex, p2);
+            if (len1 === 0 || len2 === 0) return;
+
+            const u1 = { x: (p1.x - vertex.x) / len1, y: (p1.y - vertex.y) / len1 };
+            const u2 = { x: (p2.x - vertex.x) / len2, y: (p2.y - vertex.y) / len2 };
+
+            // Render Right Angle Square Symbol for 90° angles
+            if (degVal === 90) {
+                const sq = 18;
+                const pA = { x: vertex.x + u1.x * sq, y: vertex.y + u1.y * sq };
+                const pB = { x: vertex.x + u1.x * sq + u2.x * sq, y: vertex.y + u1.y * sq + u2.y * sq };
+                const pC = { x: vertex.x + u2.x * sq, y: vertex.y + u2.y * sq };
+
+                const sqPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                sqPath.setAttribute("d", `M ${pA.x} ${pA.y} L ${pB.x} ${pB.y} L ${pC.x} ${pC.y}`);
+                sqPath.setAttribute("fill", "none");
+                sqPath.setAttribute("stroke", color);
+                sqPath.setAttribute("stroke-width", "2.5");
+                sqPath.setAttribute("stroke-linejoin", "miter");
+                svg.appendChild(sqPath);
+
+                // Angle label next to right angle symbol
+                const labelR = 24;
+                const textX = vertex.x + (u1.x + u2.x) * labelR;
+                const textY = vertex.y + (u1.y + u2.y) * labelR + 4;
+
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", textX);
+                text.setAttribute("y", textY);
+                text.setAttribute("text-anchor", "middle");
+                text.setAttribute("font-size", "12");
+                text.setAttribute("font-weight", "800");
+                text.setAttribute("fill", color);
+                text.textContent = `90°`;
+                svg.appendChild(text);
+                return;
+            }
+
+            const r = 32;
+            const a1 = Math.atan2(p1.y - vertex.y, p1.x - vertex.x);
+            const a2 = Math.atan2(p2.y - vertex.y, p2.x - vertex.x);
+
+            let diff = a2 - a1;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+
+            const startA = a1;
+            const endA = a1 + diff;
+
+            const x1 = vertex.x + r * Math.cos(startA);
+            const y1 = vertex.y + r * Math.sin(startA);
+            const x2 = vertex.x + r * Math.cos(endA);
+            const y2 = vertex.y + r * Math.sin(endA);
+
+            const largeArcFlag = Math.abs(diff) > Math.PI ? 1 : 0;
+            const sweepFlag = diff > 0 ? 1 : 0;
+
+            const pathData = `M ${x1} ${y1} A ${r} ${r} 0 ${largeArcFlag} ${sweepFlag} ${x2} ${y2}`;
+
+            const arcPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            arcPath.setAttribute("d", pathData);
+            arcPath.setAttribute("fill", "none");
+            arcPath.setAttribute("stroke", color);
+            arcPath.setAttribute("stroke-width", "2.5");
+            svg.appendChild(arcPath);
+
+            // Label Position
+            const midA = startA + diff / 2;
+            const textR = r + 18;
+            const textX = vertex.x + textR * Math.cos(midA);
+            const textY = vertex.y + textR * Math.sin(midA) + 4;
+
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            text.setAttribute("x", textX);
+            text.setAttribute("y", textY);
+            text.setAttribute("text-anchor", "middle");
+            text.setAttribute("font-size", "12");
+            text.setAttribute("font-weight", "800");
+            text.setAttribute("fill", color);
+            text.textContent = `${degVal}°`;
+            svg.appendChild(text);
+        }
+
+        /* SVG Helper: Draw Perpendicular Bisector */
+        function drawPerpendicularBisector(svg, P1, P2, circumO, edgeKey) {
+            const mid = { x: (P1.x + P2.x) / 2, y: (P1.y + P2.y) / 2 };
+            const dx = P2.x - P1.x;
+            const dy = P2.y - P1.y;
+            const len = Math.sqrt(dx * dx + dy * dy);
+
+            if (len === 0) return;
+
+            // 변 방향의 단위벡터
+            const ux = dx / len;
+            const uy = dy / len;
+
+            // 기본 수직 단위벡터
+            let nx = -uy;
+            let ny = ux;
+
+            // 외심 O가 위치하는 방향 벡터 계산
+            let dirX = nx;
+            let dirY = ny;
+            let rayLength = 300;
+
+            if (circumO) {
+                const vx = circumO.x - mid.x;
+                const vy = circumO.y - mid.y;
+                const distToO = Math.sqrt(vx * vx + vy * vy);
+
+                if (distToO > 2) {
+                    // 예각일 땐 안쪽(내부 외심), 둔각일 땐 바깥쪽(외부 외심)을 향해 뻗음
+                    dirX = vx / distToO;
+                    dirY = vy / distToO;
+                    // 외심 O 지점을 지나쳐 깔끔하게 멈추도록 설정 (거리 + 35px)
+                    rayLength = distToO + 35;
+                } else {
+                    // 외심 O와 중점이 거의 일치할 때 (직각삼각형의 빗변)
+                    // 반대편 꼭짓점을 향하도록 내향 벡터 설정
+                    const otherVertex = (edgeKey === 'AB') ? state.C : (edgeKey === 'BC') ? state.A : state.B;
+                    const toOtherX = otherVertex.x - mid.x;
+                    const toOtherY = otherVertex.y - mid.y;
+                    if (toOtherX * nx + toOtherY * ny < 0) {
+                        nx = -nx;
+                        ny = -ny;
+                    }
+                    dirX = nx;
+                    dirY = ny;
+                    rayLength = 120;
+                }
+            }
+
+            // 변의 중점(M)에서 시작하여 외심(O) 방향으로 단방향 연장
+            const startX = mid.x;
+            const startY = mid.y;
+            const endX = mid.x + dirX * rayLength;
+            const endY = mid.y + dirY * rayLength;
+
+            const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            line.setAttribute("x1", startX);
+            line.setAttribute("y1", startY);
+            line.setAttribute("x2", endX);
+            line.setAttribute("y2", endY);
+            line.setAttribute("stroke", "#9333ea");
+            line.setAttribute("stroke-width", "2.5");
+            line.setAttribute("stroke-dasharray", "6 4");
+            line.setAttribute("class", "reveal-line");
+            svg.appendChild(line);
+
+            // 1. 수직이등분선과 변 교점에 직각 표시 (Right Angle Symbol)
+            const sqSize = 10;
+            const pA = { x: mid.x + ux * sqSize, y: mid.y + uy * sqSize };
+            const pB = { x: mid.x + ux * sqSize + dirX * sqSize, y: mid.y + uy * sqSize + dirY * sqSize };
+            const pC = { x: mid.x + dirX * sqSize, y: mid.y + dirY * sqSize };
+
+            const sqPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            sqPath.setAttribute("d", `M ${pA.x} ${pA.y} L ${pB.x} ${pB.y} L ${pC.x} ${pC.y}`);
+            sqPath.setAttribute("fill", "none");
+            sqPath.setAttribute("stroke", "#7e22ce");
+            sqPath.setAttribute("stroke-width", "2");
+            svg.appendChild(sqPath);
+
+            // 2. 변의 나눠진 두 부분 길이 같음 표시 (Equal Length Tick Marks)
+            const m1 = { x: (P1.x + mid.x) / 2, y: (P1.y + mid.y) / 2 };
+            const m2 = { x: (mid.x + P2.x) / 2, y: (mid.y + P2.y) / 2 };
+
+            const tickLen = 6;
+            let tickCount = 1;
+            if (edgeKey === 'BC') tickCount = 2;
+            if (edgeKey === 'CA') tickCount = 3;
+
+            const drawTicksAt = (center) => {
+                const spacing = 4;
+                const startOffset = -((tickCount - 1) * spacing) / 2;
+
+                for (let i = 0; i < tickCount; i++) {
+                    const offset = startOffset + i * spacing;
+                    const cX = center.x + ux * offset;
+                    const cY = center.y + uy * offset;
+
+                    const tickLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    tickLine.setAttribute("x1", cX - dirX * tickLen);
+                    tickLine.setAttribute("y1", cY - dirY * tickLen);
+                    tickLine.setAttribute("x2", cX + dirX * tickLen);
+                    tickLine.setAttribute("y2", cY + dirY * tickLen);
+                    tickLine.setAttribute("stroke", "#7e22ce");
+                    tickLine.setAttribute("stroke-width", "2");
+                    svg.appendChild(tickLine);
+                }
+            };
+
+            drawTicksAt(m1);
+            drawTicksAt(m2);
+
+            // 중점 표시 점
+            const dot = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            dot.setAttribute("cx", mid.x);
+            dot.setAttribute("cy", mid.y);
+            dot.setAttribute("r", "3.5");
+            dot.setAttribute("fill", "#7e22ce");
+            svg.appendChild(dot);
+        }
+
+        /* Window Load & Resize Initialization */
+        window.addEventListener('load', () => {
+            initInteractions();
+            applyPreset('acute');
+        });
+
+        window.addEventListener('resize', () => {
+            render();
+        });
+    </script>
+</body>
+</html>
