@@ -363,7 +363,7 @@
             </div>
         </div>
 
-        <!-- [6. 교사용 관리자 비밀번호 입력 모달 (일차함수 블랙잭 스타일)] -->
+        <!-- [6. 교사용 관리자 비밀번호 입력 모달] -->
         <div id="modal-admin-auth" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-slate-900 border border-amber-500/40 w-full max-w-xs rounded-2xl p-5 space-y-4 shadow-2xl text-center relative">
                 <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-xl mx-auto border border-amber-500/30">
@@ -379,7 +379,7 @@
                     <p id="admin-auth-err" class="text-[10px] text-rose-400 hidden">비밀번호가 일치하지 않습니다.</p>
                 </div>
 
-                <!-- 키패드 스타일 버튼 (블랙잭 동일 디자인) -->
+                <!-- 키패드 스타일 버튼 -->
                 <div class="grid grid-cols-3 gap-1.5 text-xs font-tech font-bold">
                     <button onclick="appendAdminPin('1')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">1</button>
                     <button onclick="appendAdminPin('2')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">2</button>
@@ -401,7 +401,7 @@
             </div>
         </div>
 
-        <!-- [7. 교사용 관리자 패널 모달 (일차함수 블랙잭 스타일 완벽 반영)] -->
+        <!-- [7. 교사용 관리자 패널 모달] -->
         <div id="modal-admin-panel" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-3 md:p-4 hidden overflow-y-auto">
             <div class="bg-slate-900 border border-cyan-500/40 w-full max-w-2xl rounded-2xl p-4 md:p-5 space-y-4 shadow-2xl text-slate-200 my-auto">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
@@ -526,7 +526,7 @@
             </div>
         </div>
 
-        <!-- [9. 전체 기록 초기화 경고 모달 (이미지 2)] -->
+        <!-- [9. 전체 기록 초기화 경고 모달] -->
         <div id="modal-reset-warning" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-slate-900 border border-rose-500/40 w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl text-center relative">
                 <div class="w-14 h-14 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center text-2xl mx-auto border border-rose-500/30">
@@ -558,7 +558,7 @@
             </div>
         </div>
 
-        <!-- [10. 전체 기록 초기화 비번 인증 모달 (이미지 1)] -->
+        <!-- [10. 전체 기록 초기화 비번 인증 모달] -->
         <div id="modal-reset-auth" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-slate-900 border border-amber-500/40 w-full max-w-xs rounded-2xl p-5 space-y-4 shadow-2xl text-center relative">
                 <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-xl mx-auto border border-amber-500/30">
@@ -596,7 +596,7 @@
             </div>
         </div>
 
-        <!-- [11. 전체 기록 초기화 완료 모달 (이미지 3)] -->
+        <!-- [11. 전체 기록 초기화 완료 모달] -->
         <div id="modal-reset-success" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-slate-900 border border-emerald-500/40 w-full max-w-xs rounded-2xl p-5 space-y-4 shadow-2xl text-center relative">
                 <div class="w-14 h-14 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center text-3xl mx-auto border border-emerald-500/30">
@@ -619,6 +619,121 @@
     <footer class="bg-slate-950 border-t border-slate-800/80 py-1 px-4 text-center text-[10px] md:text-[11px] text-slate-500 font-sans shrink-0">
         © 2026 김효경│수학 수업용 인터랙티브 콘텐츠
     </footer>
+
+    <!-- Firebase Realtime Synchronization Module -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, doc, getDoc, setDoc, deleteDoc, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Configuration Setup
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'speed-defense-game';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' 
+            ? JSON.parse(__firebase_config) 
+            : { apiKey: "demo-api-key", authDomain: "demo.firebaseapp.com", projectId: "demo-project" };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let globalLeaderboard = [];
+
+        // Public collection path rule
+        const leaderboardColRef = collection(db, 'artifacts', appId, 'public', 'data', 'speed_def_leaderboard');
+
+        // Authenticate & Listen for Realtime Leaderboard Updates
+        async function initFirebase() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    const userCredential = await signInWithCustomToken(auth, __initial_auth_token);
+                    currentUser = userCredential.user;
+                } else {
+                    const userCredential = await signInAnonymously(auth);
+                    currentUser = userCredential.user;
+                }
+            } catch (err) {
+                console.warn("Firebase Auth Warning, proceeding in fallback mode:", err);
+            }
+
+            // Listen to real-time changes across all devices
+            onSnapshot(leaderboardColRef, (snapshot) => {
+                const list = [];
+                snapshot.forEach((docSnap) => {
+                    list.push(docSnap.data());
+                });
+
+                // Deduplicate & sort in JS memory
+                const map = new Map();
+                list.forEach(item => {
+                    if (!map.has(item.name)) {
+                        map.set(item.name, item);
+                    } else {
+                        const existing = map.get(item.name);
+                        if (item.score > existing.score || (item.score === existing.score && item.timeSec < existing.timeSec)) {
+                            map.set(item.name, item);
+                        }
+                    }
+                });
+
+                globalLeaderboard = Array.from(map.values());
+                globalLeaderboard.sort((x, y) => {
+                    if (y.score !== x.score) return y.score - x.score;
+                    return (x.timeSec || 999) - (y.timeSec || 999);
+                });
+
+                window.cloudLeaderboard = globalLeaderboard;
+                if (typeof window.renderUserLeaderboard === 'function') window.renderUserLeaderboard();
+                if (typeof window.renderAdminLeaderboard === 'function') window.renderAdminLeaderboard();
+            }, (error) => {
+                console.error("Leaderboard Realtime Sync Error:", error);
+            });
+        }
+
+        // Global functions exposed for score saving & resetting via Firestore
+        window.saveScoreToCloud = async function(name, pts, timeSec) {
+            const nowStr = new Date().toLocaleDateString('ko-KR');
+            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'speed_def_leaderboard', name);
+
+            try {
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    const existing = docSnap.data();
+                    if (pts > existing.score || (pts === existing.score && timeSec < existing.timeSec)) {
+                        await setDoc(docRef, { name, score: pts, timeSec, date: nowStr, timestamp: Date.now() });
+                    }
+                } else {
+                    await setDoc(docRef, { name, score: pts, timeSec, date: nowStr, timestamp: Date.now() });
+                }
+            } catch (e) {
+                console.error("Save score error:", e);
+            }
+        };
+
+        window.deleteScoreFromCloud = async function(nameToDelete) {
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'speed_def_leaderboard', nameToDelete);
+                await deleteDoc(docRef);
+            } catch (e) {
+                console.error("Delete score error:", e);
+            }
+        };
+
+        window.resetAllScoresInCloud = async function() {
+            try {
+                const snapshot = await getDocs(leaderboardColRef);
+                const deletePromises = [];
+                snapshot.forEach((docSnap) => {
+                    deletePromises.push(deleteDoc(docSnap.ref));
+                });
+                await Promise.all(deletePromises);
+            } catch (e) {
+                console.error("Reset scores error:", e);
+            }
+        };
+
+        initFirebase();
+    </script>
 
     <script>
         let audioCtx = null;
@@ -1330,60 +1445,16 @@
         }
 
         /* 
-         * 동일 인물 중복 도배 방지:
-         * 학생 이름(학번이름) 기준으로 이미 존재 시, 더 높은 점수(동점일 경우 최단 시간)일 때만 업데이트
+         * 실시간 클라우드 데이터베이스 저장 및 핸들링
          */
         function saveScoreToLeaderboard(name, pts, timeSec) {
-            let leaderboard = JSON.parse(localStorage.getItem('speed_def_leaderboard') || '[]');
-            const nowStr = new Date().toLocaleDateString('ko-KR');
-
-            const existingIndex = leaderboard.findIndex(item => item.name === name);
-
-            if (existingIndex !== -1) {
-                const existing = leaderboard[existingIndex];
-                if (pts > existing.score || (pts === existing.score && timeSec < existing.timeSec)) {
-                    leaderboard[existingIndex] = { name, score: pts, timeSec, date: nowStr };
-                }
-            } else {
-                leaderboard.push({ name, score: pts, timeSec, date: nowStr });
+            if (window.saveScoreToCloud) {
+                window.saveScoreToCloud(name, pts, timeSec);
             }
-
-            leaderboard.sort((x, y) => {
-                if (y.score !== x.score) return y.score - x.score;
-                return (x.timeSec || 999) - (y.timeSec || 999);
-            });
-
-            leaderboard = leaderboard.slice(0, 50);
-            localStorage.setItem('speed_def_leaderboard', JSON.stringify(leaderboard));
         }
 
-        /* 
-         * 정제된 랭킹 리스트 반환 (기존 중복 데이터도 최고기록 1개로 필터링)
-         */
         function getCleanLeaderboard() {
-            let rawData = JSON.parse(localStorage.getItem('speed_def_leaderboard') || '[]');
-            const map = new Map();
-
-            rawData.forEach(item => {
-                if (!map.has(item.name)) {
-                    map.set(item.name, item);
-                } else {
-                    const existing = map.get(item.name);
-                    if (item.score > existing.score || (item.score === existing.score && item.timeSec < existing.timeSec)) {
-                        map.set(item.name, item);
-                    }
-                }
-            });
-
-            const cleanList = Array.from(map.values());
-            cleanList.sort((x, y) => {
-                if (y.score !== x.score) return y.score - x.score;
-                return (x.timeSec || 999) - (y.timeSec || 999);
-            });
-
-            // 정제된 데이터로 localStorage 자동 갱신
-            localStorage.setItem('speed_def_leaderboard', JSON.stringify(cleanList));
-            return cleanList;
+            return window.cloudLeaderboard || [];
         }
 
         function openLeaderboardModal() {
@@ -1397,6 +1468,7 @@
 
         function renderUserLeaderboard() {
             const tbody = document.getElementById('user-leaderboard-body');
+            if (!tbody) return;
             tbody.innerHTML = '';
             let leaderboard = getCleanLeaderboard();
 
@@ -1460,6 +1532,7 @@
 
         function renderAdminLeaderboard() {
             const tbody = document.getElementById('admin-leaderboard-body');
+            if (!tbody) return;
             tbody.innerHTML = '';
             let leaderboard = getCleanLeaderboard();
 
@@ -1468,7 +1541,8 @@
                 leaderboard = leaderboard.filter(item => item.name.toLowerCase().includes(searchKey));
             }
 
-            document.getElementById('admin-student-count').textContent = leaderboard.length;
+            const countEl = document.getElementById('admin-student-count');
+            if (countEl) countEl.textContent = leaderboard.length;
 
             if (leaderboard.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-500">등록되거나 검색된 기록이 없습니다.</td></tr>`;
@@ -1494,10 +1568,9 @@
         }
 
         function deleteLeaderboardItem(nameToDelete) {
-            let leaderboard = JSON.parse(localStorage.getItem('speed_def_leaderboard') || '[]');
-            leaderboard = leaderboard.filter(item => item.name !== nameToDelete);
-            localStorage.setItem('speed_def_leaderboard', JSON.stringify(leaderboard));
-            renderAdminLeaderboard();
+            if (window.deleteScoreFromCloud) {
+                window.deleteScoreFromCloud(nameToDelete);
+            }
             showToast(`${nameToDelete} 요원의 기록이 삭제되었습니다.`);
         }
 
@@ -1573,8 +1646,9 @@
             const inputPin = document.getElementById('input-reset-pin').value;
             if (inputPin === adminPin) {
                 closeResetAuthModal();
-                localStorage.removeItem('speed_def_leaderboard');
-                renderAdminLeaderboard();
+                if (window.resetAllScoresInCloud) {
+                    window.resetAllScoresInCloud();
+                }
                 document.getElementById('modal-reset-success').classList.remove('hidden');
             } else {
                 document.getElementById('reset-auth-err').classList.remove('hidden');
@@ -1584,266 +1658,160 @@
 
         function closeResetSuccessModal() {
             document.getElementById('modal-reset-success').classList.add('hidden');
+            renderAdminLeaderboard();
         }
 
-        function openRulesModal() { document.getElementById('modal-rules').classList.remove('hidden'); }
-        function closeRulesModal() { document.getElementById('modal-rules').classList.add('hidden'); }
+        function openRulesModal() {
+            document.getElementById('modal-rules').classList.remove('hidden');
+        }
 
-        function drawCuteMonster(ctx, x, y, radius, monster) {
-            const time = Date.now() * 0.005;
-            const bounce = Math.sin(time * 3 + monster.id) * 2;
-            const my = y + bounce;
+        function closeRulesModal() {
+            document.getElementById('modal-rules').classList.add('hidden');
+        }
 
-            ctx.save();
-            ctx.translate(x, my);
+        /* 
+         * 몬스터 진격 및 캔버스 디펜스 시뮬레이션 엔진
+         */
+        function spawnMonster() {
+            monsterIdCounter++;
+            const emojiList = ['👾', '👻', '🤖', '👺', '🛸', '🤡'];
+            const chosenEmoji = emojiList[Math.floor(Math.random() * emojiList.length)];
+            const yNormalized = 0.15 + Math.random() * 0.7; // Y relative position (0.15 ~ 0.85)
 
-            // Body Shadow
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
-            ctx.beginPath();
-            ctx.ellipse(0, radius + 4, radius * 0.7, 3, 0, 0, Math.PI * 2);
-            ctx.fill();
-
-            ctx.fillStyle = monster.color;
-            ctx.shadowColor = monster.color;
-            ctx.shadowBlur = 8;
-
-            if (monster.type === 0) {
-                // Slime monster shape
-                ctx.beginPath();
-                ctx.arc(0, 0, radius, Math.PI, 0, false);
-                ctx.bezierCurveTo(radius, radius * 0.8, -radius, radius * 0.8, -radius, 0);
-                ctx.fill();
-
-                // Antenna / horn
-                ctx.beginPath();
-                ctx.arc(0, -radius - 2, 3.5, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.strokeStyle = monster.color;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(0, -radius);
-                ctx.lineTo(0, -radius - 2);
-                ctx.stroke();
-            } else if (monster.type === 1) {
-                // Round monster with cat ears
-                ctx.beginPath();
-                ctx.arc(0, 0, radius, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Ears
-                ctx.beginPath();
-                ctx.moveTo(-radius * 0.6, -radius * 0.5);
-                ctx.lineTo(-radius * 0.9, -radius * 1.2);
-                ctx.lineTo(-radius * 0.2, -radius * 0.8);
-                ctx.fill();
-
-                ctx.beginPath();
-                ctx.moveTo(radius * 0.6, -radius * 0.5);
-                ctx.lineTo(radius * 0.9, -radius * 1.2);
-                ctx.lineTo(radius * 0.2, -radius * 0.8);
-                ctx.fill();
-            } else {
-                // Chubby monster with feet
-                ctx.beginPath();
-                ctx.arc(0, 0, radius, 0, Math.PI * 2);
-                ctx.fill();
-
-                // Feet
-                ctx.beginPath();
-                ctx.arc(-radius * 0.4, radius * 0.7, 4, 0, Math.PI * 2);
-                ctx.arc(radius * 0.4, radius * 0.7, 4, 0, Math.PI * 2);
-                ctx.fill();
-            }
-
-            ctx.shadowBlur = 0;
-
-            // Rosy Cheeks
-            ctx.fillStyle = 'rgba(255, 150, 180, 0.7)';
-            ctx.beginPath();
-            ctx.arc(-radius * 0.5, radius * 0.15, radius * 0.25, 0, Math.PI * 2);
-            ctx.arc(radius * 0.5, radius * 0.15, radius * 0.25, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Big expressive eyes
-            const eyeOffsetX = 2.5;
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            ctx.arc(-radius * 0.3 + eyeOffsetX, -radius * 0.15, radius * 0.32, 0, Math.PI * 2);
-            ctx.arc(radius * 0.3 + eyeOffsetX, -radius * 0.15, radius * 0.32, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Pupils
-            ctx.fillStyle = '#0f172a';
-            ctx.beginPath();
-            ctx.arc(-radius * 0.25 + eyeOffsetX + 1, -radius * 0.15, radius * 0.16, 0, Math.PI * 2);
-            ctx.arc(radius * 0.35 + eyeOffsetX + 1, -radius * 0.15, radius * 0.16, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Eye shine
-            ctx.fillStyle = '#ffffff';
-            ctx.beginPath();
-            ctx.arc(-radius * 0.3 + eyeOffsetX + 2, -radius * 0.22, radius * 0.08, 0, Math.PI * 2);
-            ctx.arc(radius * 0.3 + eyeOffsetX + 2, -radius * 0.22, radius * 0.08, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Mouth
-            ctx.strokeStyle = '#0f172a';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            if (monster.hp > 1) {
-                ctx.arc(0, radius * 0.2, radius * 0.2, 0.1, Math.PI - 0.1, false);
-                ctx.stroke();
-            } else {
-                ctx.arc(0, radius * 0.2, radius * 0.15, 0, Math.PI * 2);
-                ctx.fillStyle = '#f43f5e';
-                ctx.fill();
-                ctx.stroke();
-            }
-
-            ctx.restore();
+            monsters.push({
+                id: monsterIdCounter,
+                x: 0.05,
+                y: yNormalized,
+                speed: (0.0008 + Math.random() * 0.0006) * speedFactor * (1 + currentWave * 0.15),
+                hp: 1,
+                maxHp: 1,
+                emoji: chosenEmoji,
+                scale: 1.0
+            });
+            spawnedMonstersCount++;
         }
 
         function startAnimationLoop() {
+            if (animFrameId) cancelAnimationFrame(animFrameId);
+
             const canvas = document.getElementById('defense-canvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
 
-            function render() {
-                const container = canvas.parentElement;
-                const width = container.clientWidth || 300;
-                const height = container.clientHeight || 200;
-                const dpr = window.devicePixelRatio || 1;
-
-                if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
-                    canvas.width = width * dpr;
-                    canvas.height = height * dpr;
-                }
-
-                ctx.save();
-                ctx.scale(dpr, dpr);
-                ctx.clearRect(0, 0, width, height);
-
-                // Grid background
-                ctx.fillStyle = '#020617';
-                ctx.fillRect(0, 0, width, height);
-
-                ctx.strokeStyle = '#0f172a';
-                ctx.lineWidth = 1;
-                for (let x = 0; x < width; x += 30) {
-                    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
-                }
-                for (let y = 0; y < height; y += 30) {
-                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
-                }
-
-                // Defense Wall on Right Edge
-                const wallX = width - 25;
-                ctx.fillStyle = '#1e293b';
-                ctx.fillRect(wallX, 0, 25, height);
-                ctx.strokeStyle = '#38bdf8';
-                ctx.lineWidth = 3;
-                ctx.beginPath(); ctx.moveTo(wallX, 0); ctx.lineTo(wallX, height); ctx.stroke();
-
-                // Core pulse
-                ctx.fillStyle = '#0284c7';
-                ctx.beginPath(); ctx.arc(wallX + 12, height / 2, 16, 0, Math.PI * 2); ctx.fill();
-
+            function loop() {
                 if (!isGameOver) {
-                    // Monster Spawning
+                    // Spawn logic
                     spawnTimer++;
-                    if (spawnTimer > (120 / speedFactor) && spawnedMonstersCount < totalWaveMonstersToSpawn) {
-                        spawnTimer = 0;
-                        spawnedMonstersCount++;
-                        const colors = ['#f43f5e', '#a855f7', '#06b6d4', '#10b981', '#f59e0b'];
-                        monsters.push({
-                            id: ++monsterIdCounter,
-                            x: 0,
-                            y: 0.2 + Math.random() * 0.6,
-                            speed: (0.0015 + currentWave * 0.0004) * speedFactor,
-                            hp: 1,
-                            type: Math.floor(Math.random() * 3),
-                            color: colors[Math.floor(Math.random() * colors.length)]
-                        });
+                    if (spawnedMonstersCount < totalWaveMonstersToSpawn && spawnTimer % Math.max(20, Math.floor(100 / (1 + currentWave * 0.2))) === 0) {
+                        spawnMonster();
                     }
 
-                    // Update & Draw Monsters
+                    // Resize canvas resolution
+                    const rect = canvas.getBoundingClientRect();
+                    if (canvas.width !== rect.width || canvas.height !== rect.height) {
+                        canvas.width = rect.width;
+                        canvas.height = rect.height;
+                    }
+
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                    // Draw Base Line / Base Shield
+                    const baseX = canvas.width * 0.92;
+                    ctx.beginPath();
+                    ctx.strokeStyle = 'rgba(6, 182, 212, 0.4)';
+                    ctx.lineWidth = 4;
+                    ctx.setLineDash([8, 6]);
+                    ctx.moveTo(baseX, 0);
+                    ctx.lineTo(baseX, canvas.height);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    // Draw Base Structure
+                    ctx.fillStyle = '#0284c7';
+                    ctx.shadowColor = '#38bdf8';
+                    ctx.shadowBlur = 12;
+                    ctx.fillRect(baseX - 6, canvas.height * 0.1, 12, canvas.height * 0.8);
+                    ctx.shadowBlur = 0;
+
+                    // Update & Render Monsters
                     for (let i = monsters.length - 1; i >= 0; i--) {
                         const m = monsters[i];
                         m.x += m.speed;
 
-                        if (m.x >= 0.92) {
-                            playSound('hit');
-                            baseHp -= 15;
-                            combo = 0;
-                            updateHUD();
-                            monsters.splice(i, 1);
-                            showToast('경고! 몬스터가 기지에 침투하였습니다! (-15 HP)', true);
+                        const renderX = m.x * canvas.width;
+                        const renderY = m.y * canvas.height;
 
-                            if (baseHp <= 0) {
-                                endGame(false);
-                                break;
-                            }
+                        // Check base reached
+                        if (renderX >= baseX - 15) {
+                            baseHp -= 12;
+                            updateHUD();
+                            playSound('hit');
+                            createExplosion(m.x, m.y);
+                            monsters.splice(i, 1);
+                            if (baseHp <= 0) endGame(false);
                             continue;
                         }
 
-                        const px = m.x * (width - 30);
-                        const py = m.y * height;
-
-                        // Draw cute monster
-                        drawCuteMonster(ctx, px, py, 14, m);
-                    }
-                }
-
-                // Render Lasers
-                for (let i = laserEffects.length - 1; i >= 0; i--) {
-                    const l = laserEffects[i];
-                    ctx.strokeStyle = l.color;
-                    ctx.shadowColor = l.color;
-                    ctx.shadowBlur = 15;
-                    ctx.lineWidth = 4;
-                    ctx.globalAlpha = l.alpha;
-
-                    ctx.beginPath();
-                    ctx.moveTo(l.startX * width, l.startY * height);
-                    ctx.lineTo(l.endX * (width - 30), l.endY * height);
-                    ctx.stroke();
-
-                    ctx.globalAlpha = 1.0;
-                    l.alpha -= 0.1;
-                    if (l.alpha <= 0) laserEffects.splice(i, 1);
-                }
-
-                // Render Explosions
-                for (let i = explosionParticles.length - 1; i >= 0; i--) {
-                    const p = explosionParticles[i];
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    p.life -= 0.04;
-
-                    if (p.life <= 0) {
-                        explosionParticles.splice(i, 1);
-                        continue;
+                        // Draw Monster Emoji
+                        ctx.font = `${Math.floor(canvas.height * 0.12)}px sans-serif`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(m.emoji, renderX, renderY);
                     }
 
-                    ctx.fillStyle = p.color;
-                    ctx.globalAlpha = p.life;
-                    ctx.beginPath();
-                    ctx.arc(p.x * (width - 30), p.y * height, 3.5, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.globalAlpha = 1.0;
-                }
+                    // Render Lasers
+                    for (let i = laserEffects.length - 1; i >= 0; i--) {
+                        const l = laserEffects[i];
+                        ctx.beginPath();
+                        ctx.strokeStyle = l.color;
+                        ctx.globalAlpha = l.alpha;
+                        ctx.lineWidth = 5;
+                        ctx.moveTo(l.startX * canvas.width, l.startY * canvas.height);
+                        ctx.lineTo(l.endX * canvas.width, l.endY * canvas.height);
+                        ctx.stroke();
+                        ctx.globalAlpha = 1.0;
 
-                if (!isGameOver) {
+                        l.alpha -= 0.1;
+                        if (l.alpha <= 0) laserEffects.splice(i, 1);
+                    }
+
+                    // Render Particles
+                    for (let i = explosionParticles.length - 1; i >= 0; i--) {
+                        const p = explosionParticles[i];
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        p.life -= 0.04;
+
+                        if (p.life <= 0) {
+                            explosionParticles.splice(i, 1);
+                            continue;
+                        }
+
+                        ctx.beginPath();
+                        ctx.fillStyle = p.color;
+                        ctx.globalAlpha = p.life;
+                        ctx.arc(p.x * canvas.width, p.y * canvas.height, 4, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.globalAlpha = 1.0;
+                    }
+
                     checkWaveProgress();
                 }
 
-                ctx.restore();
-                animFrameId = requestAnimationFrame(render);
+                animFrameId = requestAnimationFrame(loop);
             }
 
-            if (animFrameId) cancelAnimationFrame(animFrameId);
-            render();
+            loop();
         }
+
+        window.addEventListener('resize', () => {
+            const canvas = document.getElementById('defense-canvas');
+            if (canvas) {
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width;
+                canvas.height = rect.height;
+            }
+        });
     </script>
 </body>
 </html>
