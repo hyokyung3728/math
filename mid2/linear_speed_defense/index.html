@@ -58,7 +58,7 @@
         .katex { font-size: 1.15em; }
     </style>
 </head>
-<body class="h-screen max-h-screen w-screen overflow-hidden flex flex-col justify-between select-none bg-slate-950">
+<body class="h-[100dvh] max-h-[100dvh] w-screen overflow-hidden flex flex-col justify-between select-none bg-slate-950">
 
     <!-- 상단 대시보드 헤더 -->
     <header class="bg-slate-900/95 border-b border-cyan-500/30 px-3 py-2 shrink-0 z-30 backdrop-blur">
@@ -210,7 +210,7 @@
                 
                 <!-- [LEFT SIDE] 몬스터 진격 디펜스 캔버스 및 필살기 버튼 -->
                 <div class="md:col-span-7 flex flex-col space-y-2 h-full min-h-0">
-                    <div class="flex-1 w-full relative bg-slate-950 rounded-2xl overflow-hidden border border-cyan-500/30 shadow-2xl min-h-[180px]">
+                    <div class="flex-1 w-full relative bg-slate-950 rounded-2xl overflow-hidden border border-cyan-500/30 shadow-2xl min-h-[110px]">
                         <canvas id="defense-canvas" class="w-full h-full object-contain block"></canvas>
                         
                         <!-- 비상 경보 오버레이 -->
@@ -240,17 +240,12 @@
                 </div>
 
                 <!-- [RIGHT SIDE] 스피드 문제 풀이 콘솔 패널 -->
-                <div class="md:col-span-5 bg-slate-900/95 border border-cyan-500/40 rounded-2xl p-3 md:p-4 flex flex-col justify-between shadow-2xl overflow-y-auto">
+                <div class="md:col-span-5 bg-slate-900/95 border border-cyan-500/40 rounded-2xl p-2.5 md:p-4 flex flex-col justify-between shadow-2xl min-h-0 overflow-hidden">
                     
                     <!-- 문제 카테고리 & 타이틀 -->
-                    <div class="space-y-3">
-                        <div class="text-xs text-cyan-400 font-bold uppercase tracking-widest flex items-center justify-center gap-1.5 border-b border-slate-800 pb-2">
-                            <i class="fa-solid fa-crosshair text-rose-400"></i>
-                            <span id="question-category">일차함수 판별 모드</span>
-                        </div>
-
+                    <div class="space-y-2 min-h-0 flex-1 flex flex-col">
                         <!-- 문제 제시 영역 (KaTeX 랜더링 지원) -->
-                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-center min-h-[110px] flex flex-col items-center justify-center shadow-inner space-y-2">
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-2 md:p-3 text-center flex-1 min-h-[64px] flex flex-col items-center justify-center shadow-inner space-y-1 overflow-hidden">
                             <div id="question-prompt" class="text-xs md:text-sm text-slate-300 leading-relaxed">
                                 다음 식은 일차함수인가요?
                             </div>
@@ -261,7 +256,7 @@
                     </div>
 
                     <!-- 답변 인터페이스 -->
-                    <div id="answer-container" class="w-full mt-3">
+                    <div id="answer-container" class="w-full mt-2 shrink-0">
                         <!-- JS Dynamic rendering (OX / Choice) -->
                     </div>
                 </div>
@@ -1018,7 +1013,6 @@
 
         function renderQuestionUI() {
             currentQuestion = generateSpeedQuestion();
-            document.getElementById('question-category').textContent = currentQuestion.category;
             document.getElementById('question-prompt').textContent = currentQuestion.prompt;
             document.getElementById('question-math-display').innerHTML = katexRender(currentQuestion.mathTex);
 
@@ -1029,11 +1023,11 @@
                 const div = document.createElement('div');
                 div.className = "grid grid-cols-2 gap-3";
                 div.innerHTML = `
-                    <button onclick="submitAnswer('O')" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-jua text-xl md:text-2xl py-3.5 rounded-2xl shadow-xl border border-emerald-300/40 transform active:scale-95 transition flex items-center justify-center space-x-2">
+                    <button onclick="submitAnswer('O')" class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-jua text-lg md:text-2xl py-2.5 md:py-3.5 rounded-2xl shadow-xl border border-emerald-300/40 transform active:scale-95 transition flex items-center justify-center space-x-2">
                         <i class="fa-solid fa-circle-check text-2xl"></i>
                         <span>O (맞음)</span>
                     </button>
-                    <button onclick="submitAnswer('X')" class="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-jua text-xl md:text-2xl py-3.5 rounded-2xl shadow-xl border border-rose-300/40 transform active:scale-95 transition flex items-center justify-center space-x-2">
+                    <button onclick="submitAnswer('X')" class="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-jua text-lg md:text-2xl py-2.5 md:py-3.5 rounded-2xl shadow-xl border border-rose-300/40 transform active:scale-95 transition flex items-center justify-center space-x-2">
                         <i class="fa-solid fa-circle-xmark text-2xl"></i>
                         <span>X (아님)</span>
                     </button>
@@ -1044,7 +1038,7 @@
                 div.className = "grid grid-cols-2 gap-3";
                 currentQuestion.options.forEach(opt => {
                     const btn = document.createElement('button');
-                    btn.className = "bg-gradient-to-r from-cyan-700 to-blue-700 hover:from-cyan-600 hover:to-blue-600 text-white font-jua text-lg py-3.5 rounded-2xl shadow-xl border border-cyan-300/30 transform active:scale-95 transition flex items-center justify-center";
+                    btn.className = "bg-gradient-to-r from-cyan-700 to-blue-700 hover:from-cyan-600 hover:to-blue-600 text-white font-jua text-base md:text-lg py-2.5 md:py-3.5 rounded-2xl shadow-xl border border-cyan-300/30 transform active:scale-95 transition flex items-center justify-center";
                     btn.textContent = opt;
                     btn.onclick = () => submitAnswer(opt);
                     div.appendChild(btn);
@@ -1055,7 +1049,7 @@
                 div.className = "grid grid-cols-2 gap-2.5";
                 currentQuestion.options.forEach(opt => {
                     const btn = document.createElement('button');
-                    btn.className = "bg-slate-950 hover:bg-slate-800 text-cyan-300 font-jua text-base md:text-lg py-2.5 rounded-xl border border-cyan-500/30 active:scale-95 transition shadow shadow-cyan-500/10";
+                    btn.className = "bg-slate-950 hover:bg-slate-800 text-cyan-300 font-jua text-sm md:text-lg py-2 md:py-2.5 rounded-xl border border-cyan-500/30 active:scale-95 transition shadow shadow-cyan-500/10";
                     btn.textContent = opt;
                     btn.onclick = () => submitAnswer(opt);
                     div.appendChild(btn);
@@ -1066,7 +1060,7 @@
                 div.className = "grid grid-cols-2 gap-2.5";
                 currentQuestion.options.forEach(opt => {
                     const btn = document.createElement('button');
-                    btn.className = "bg-slate-950 hover:bg-slate-800 text-cyan-300 font-tech font-bold text-sm md:text-base py-2.5 rounded-xl border border-cyan-500/30 active:scale-95 transition shadow shadow-cyan-500/10";
+                    btn.className = "bg-slate-950 hover:bg-slate-800 text-cyan-300 font-tech font-bold text-sm md:text-base py-2 md:py-2.5 rounded-xl border border-cyan-500/30 active:scale-95 transition shadow shadow-cyan-500/10";
                     btn.innerHTML = katexRender(opt);
                     btn.onclick = () => submitAnswer(opt);
                     div.appendChild(btn);
@@ -1077,7 +1071,7 @@
                 div.className = "grid grid-cols-2 gap-2.5";
                 currentQuestion.options.forEach(opt => {
                     const btn = document.createElement('button');
-                    btn.className = "bg-slate-950 hover:bg-slate-800 text-cyan-300 font-tech font-extrabold text-xl py-3 rounded-xl border border-cyan-500/30 active:scale-95 transition shadow shadow-cyan-500/10";
+                    btn.className = "bg-slate-950 hover:bg-slate-800 text-cyan-300 font-tech font-extrabold text-lg md:text-xl py-2 md:py-3 rounded-xl border border-cyan-500/30 active:scale-95 transition shadow shadow-cyan-500/10";
                     btn.textContent = opt;
                     btn.onclick = () => submitAnswer(opt);
                     div.appendChild(btn);
