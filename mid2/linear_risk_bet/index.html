@@ -164,40 +164,40 @@
                     </div>
 
                     <div id="clue-1" class="bg-slate-800 border-2 border-amber-500/80 p-2 rounded-xl transition-all shadow-sm">
-                        <div class="flex items-center justify-between text-[11px] font-bold mb-0.5">
-                            <span class="text-amber-400"><i class="fa-solid fa-key mr-1"></i> HINT 1 (5.0x)</span>
+                        <div class="flex flex-nowrap items-center justify-between gap-1 text-[10px] md:text-[11px] font-bold mb-0.5">
+                            <span class="text-amber-400 whitespace-nowrap"><i class="fa-solid fa-key mr-1"></i>HINT 1 (5.0x)</span>
                             <span class="text-amber-400 font-bold text-[10px]">공개됨</span>
                         </div>
                         <div class="clue-text text-xs font-semibold text-slate-100 leading-snug">힌트 생성 중...</div>
                     </div>
 
                     <div id="clue-2" class="bg-slate-800/50 border border-slate-700 p-2 rounded-xl opacity-60 transition-all">
-                        <div class="flex items-center justify-between text-[11px] font-bold mb-0.5">
-                            <span class="text-slate-400"><i class="fa-solid fa-lock mr-1"></i> HINT 2 (3.0x)</span>
+                        <div class="flex flex-nowrap items-center justify-between gap-1 text-[10px] md:text-[11px] font-bold mb-0.5">
+                            <span class="text-slate-400 whitespace-nowrap"><i class="fa-solid fa-lock mr-1"></i>HINT 2 (3.0x)</span>
                             <span class="text-slate-500 text-[10px]">잠김</span>
                         </div>
                         <div class="clue-text text-xs text-slate-400 leading-snug">다음 힌트 열기 버튼을 누르세요.</div>
                     </div>
 
                     <div id="clue-3" class="bg-slate-800/50 border border-slate-700 p-2 rounded-xl opacity-60 transition-all">
-                        <div class="flex items-center justify-between text-[11px] font-bold mb-0.5">
-                            <span class="text-slate-400"><i class="fa-solid fa-lock mr-1"></i> HINT 3 (2.0x)</span>
+                        <div class="flex flex-nowrap items-center justify-between gap-1 text-[10px] md:text-[11px] font-bold mb-0.5">
+                            <span class="text-slate-400 whitespace-nowrap"><i class="fa-solid fa-lock mr-1"></i>HINT 3 (2.0x)</span>
                             <span class="text-slate-500 text-[10px]">잠김</span>
                         </div>
                         <div class="clue-text text-xs text-slate-400 leading-snug">다음 힌트 열기 버튼을 누르세요.</div>
                     </div>
 
                     <div id="clue-4" class="bg-slate-800/50 border border-slate-700 p-2 rounded-xl opacity-60 transition-all">
-                        <div class="flex items-center justify-between text-[11px] font-bold mb-0.5">
-                            <span class="text-slate-400"><i class="fa-solid fa-lock mr-1"></i> HINT 4 (1.5x)</span>
+                        <div class="flex flex-nowrap items-center justify-between gap-1 text-[10px] md:text-[11px] font-bold mb-0.5">
+                            <span class="text-slate-400 whitespace-nowrap"><i class="fa-solid fa-lock mr-1"></i>HINT 4 (1.5x)</span>
                             <span class="text-slate-500 text-[10px]">잠김</span>
                         </div>
                         <div class="clue-text text-xs text-slate-400 leading-snug">다음 힌트 열기 버튼을 누르세요.</div>
                     </div>
 
                     <div id="clue-5" class="bg-slate-800/50 border border-slate-700 p-2 rounded-xl opacity-60 transition-all">
-                        <div class="flex items-center justify-between text-[11px] font-bold mb-0.5">
-                            <span class="text-slate-400"><i class="fa-solid fa-lock mr-1"></i> HINT 5 (1.2x)</span>
+                        <div class="flex flex-nowrap items-center justify-between gap-1 text-[10px] md:text-[11px] font-bold mb-0.5">
+                            <span class="text-slate-400 whitespace-nowrap"><i class="fa-solid fa-lock mr-1"></i>HINT 5 (1.2x)</span>
                             <span class="text-slate-500 text-[10px]">잠김</span>
                         </div>
                         <div class="clue-text text-xs text-slate-400 leading-snug">다음 힌트 열기 버튼을 누르세요.</div>
@@ -220,9 +220,9 @@
 
             <!-- 열 2: 답안 입력 & 베팅 설정 (4/12 너비) -->
             <div class="col-span-4 bg-slate-800/90 border border-slate-700 rounded-2xl p-2 md:p-2.5 shadow-xl flex flex-col justify-between h-full min-h-0 overflow-y-auto">
-                <h3 class="font-jua text-sm text-slate-200 border-b border-slate-700/80 pb-1 flex items-center justify-between shrink-0">
-                    <span><i class="fa-solid fa-pen-to-square text-indigo-400 mr-1"></i>일차함수식 입력</span>
-                    <span class="text-[10px] font-normal text-slate-400">형식: <span class="italic">y = ax + b</span></span>
+                <h3 class="font-jua text-sm text-slate-200 border-b border-slate-700/80 pb-1 flex flex-col items-start leading-tight md:flex-row md:items-center md:justify-between shrink-0">
+                    <span class="whitespace-nowrap"><i class="fa-solid fa-pen-to-square text-indigo-400 mr-1"></i>일차함수 식 입력</span>
+                    <span class="text-[10px] font-normal text-slate-400 whitespace-nowrap">형식: <span class="italic">y = ax + b</span></span>
                 </h3>
 
                 <!-- a와 b 값 입력 -->
@@ -269,9 +269,9 @@
 
                 <!-- 베팅 금액 설정 -->
                 <div class="pt-1.5 border-t border-slate-700/60 space-y-1 shrink-0">
-                    <div class="flex justify-between items-center text-xs">
-                        <span class="text-slate-300 font-semibold text-[11px]">베팅 칩 설정</span>
-                        <span class="text-amber-400 font-mono font-bold text-xs" id="bet-amount-display">100 CHIPS</span>
+                    <div class="flex flex-col items-start leading-tight md:flex-row md:justify-between md:items-center text-xs">
+                        <span class="text-slate-300 font-semibold text-[11px] whitespace-nowrap">베팅 칩 설정</span>
+                        <span class="text-amber-400 font-mono font-bold text-xs whitespace-nowrap" id="bet-amount-display">100 CHIPS</span>
                     </div>
 
                     <input type="range" id="bet-slider" min="50" max="1000" step="50" value="100" oninput="updateBetDisplay()" class="w-full accent-amber-400 cursor-pointer h-1.5">
@@ -288,7 +288,7 @@
                 <!-- 최종 정답 베팅 제출 버튼 -->
                 <button onclick="submitAnswer()" class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-500 hover:to-teal-400 text-slate-950 font-jua text-base py-2 rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center space-x-1.5 mt-1.5 shrink-0">
                     <i class="fa-solid fa-dice text-lg"></i>
-                    <span>정답에 칩 베팅하기!</span>
+                    <span class="flex flex-col items-center leading-tight md:flex-row md:space-x-1"><span>정답에</span><span>칩 베팅하기</span></span>
                 </button>
             </div>
 
@@ -365,6 +365,10 @@
                 <div class="flex justify-between items-center">
                     <span class="text-slate-400">총 소요 시간:</span>
                     <span id="final-time" class="font-mono font-bold text-cyan-300">42초</span>
+                </div>
+                <div class="flex justify-between items-center" id="final-rank-row">
+                    <span class="text-slate-400">내 순위:</span>
+                    <span id="final-rank" class="font-jua text-lg text-emerald-300">계산 중...</span>
                 </div>
                 <div class="flex justify-between items-center">
                     <span class="text-slate-400">획득 칭호:</span>
@@ -451,11 +455,17 @@
 
                 <!-- 관리자 전용 실시간 순위표 -->
                 <div class="bg-slate-900/90 border border-amber-500/30 p-3 rounded-xl space-y-2">
-                    <div class="text-xs text-amber-400 font-bold flex items-center justify-between">
-                        <span><i class="fa-solid fa-trophy mr-1"></i>학생 순위표 (TOP 10)</span>
-                        <button onclick="renderAdminLeaderboard()" class="text-[10px] text-slate-400 hover:text-amber-300 underline">
-                            <i class="fa-solid fa-arrows-rotate mr-0.5"></i>새로고침
-                        </button>
+                    <div class="text-xs text-amber-400 font-bold flex flex-wrap items-center justify-between gap-2">
+                        <span class="whitespace-nowrap"><i class="fa-solid fa-trophy mr-1"></i>학생 순위표</span>
+                        <div class="flex items-center gap-2">
+                            <div class="relative">
+                                <i class="fa-solid fa-magnifying-glass absolute left-2 top-1/2 -translate-y-1/2 text-slate-500 text-[10px]"></i>
+                                <input type="text" id="admin-search-name" oninput="renderAdminLeaderboard()" placeholder="이름 검색" class="bg-slate-800 border border-slate-600 rounded-lg pl-6 pr-2 py-1 text-[11px] text-white font-normal w-28 focus:outline-none focus:border-amber-500">
+                            </div>
+                            <button onclick="reloadAdminLeaderboard()" class="text-[10px] text-slate-400 hover:text-amber-300 underline whitespace-nowrap">
+                                <i class="fa-solid fa-arrows-rotate mr-0.5"></i>새로고침
+                            </button>
+                        </div>
                     </div>
                     <div class="max-h-40 overflow-y-auto pr-1">
                         <table class="w-full text-left text-xs">
@@ -465,6 +475,8 @@
                                     <th class="py-1 px-1">학번이름</th>
                                     <th class="py-1 px-1 text-right">최종 칩</th>
                                     <th class="py-1 px-1 text-right">시간</th>
+                                    <th class="py-1 px-1 text-right whitespace-nowrap">기록일자</th>
+                                    <th class="py-1 px-1 text-center">관리</th>
                                 </tr>
                             </thead>
                             <tbody id="admin-leaderboard-body" class="divide-y divide-slate-700/50">
@@ -530,6 +542,26 @@
                 <button onclick="closeAdminPanelModal()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-jua py-2 rounded-xl transition text-sm">
                     닫기
                 </button>
+            </div>
+        </div>
+
+        <!-- [개별 기록 삭제 재확인 모달] -->
+        <div id="modal-delete-score" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-[60] flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-800 border border-rose-500/80 w-full max-w-xs rounded-2xl p-4 space-y-3 text-center shadow-2xl">
+                <div class="w-12 h-12 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center text-2xl mx-auto border border-rose-500/30">
+                    <i class="fa-solid fa-user-xmark"></i>
+                </div>
+                <div class="space-y-1">
+                    <h3 class="font-jua text-lg text-rose-300">기록 삭제</h3>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        <b id="delete-score-name" class="text-white">학생</b> 의 기록을 정말 삭제할까요?<br>
+                        <span class="text-rose-400 font-bold">(삭제된 기록은 복구할 수 없습니다)</span>
+                    </p>
+                </div>
+                <div class="flex space-x-2 pt-1">
+                    <button onclick="closeDeleteScoreModal()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-200 font-jua py-2 rounded-xl text-xs transition">취소</button>
+                    <button onclick="confirmDeleteScore()" class="flex-1 bg-rose-700 hover:bg-rose-600 text-white font-jua py-2 rounded-xl text-xs transition shadow-lg">삭제하기</button>
+                </div>
             </div>
         </div>
 
@@ -599,6 +631,10 @@
         let verifiedAdminPin = null;
         // 클라우드에서 내려받은 순위표 캐시
         let leaderboardCache = [];
+        // 관리자용 전체 기록 캐시 (id 포함)
+        let adminScoresCache = [];
+        // 삭제 대기 중인 기록 id
+        let pendingDeleteScoreId = null;
 
         // 연습 모드 여부 플래그
         let isPracticeMode = false;
@@ -708,6 +744,23 @@
             if (den < 0) { num = -num; den = -den; }
             const g = gcd(num, den);
             return `${num / g}/${den / g}`;
+        }
+
+        // 일차함수 식을 수학적으로 자연스러운 형태로 표기 (y=-1x+2 -> y=-x+2, y=2x+0 -> y=2x, y=0x-2 -> y=-2)
+        function buildEquationHTML(aStr, aVal, bVal) {
+            const xi = '<span class="italic">x</span>';
+            const yi = '<span class="italic">y</span>';
+            const bNum = Number(bVal);
+            if (aVal === 0) {
+                return `${yi} = ${isNaN(bNum) ? 0 : bNum}`;
+            }
+            let aPart = String(aStr);
+            if (aVal === 1) aPart = '';
+            else if (aVal === -1) aPart = '-';
+            let bPart = '';
+            if (!isNaN(bNum) && bNum > 0) bPart = ` + ${bNum}`;
+            else if (!isNaN(bNum) && bNum < 0) bPart = ` - ${Math.abs(bNum)}`;
+            return `${yi} = ${aPart}${xi}${bPart}`;
         }
 
         // 확장된 다채롭고 정교한 일차함수 힌트 생성기
@@ -1033,7 +1086,11 @@
                 bText = ' + b';
             }
 
-            document.getElementById('equation-preview').innerHTML = `<span class="italic">y</span> = ${aText}<span class="italic">x</span>${bText}`;
+            if (!isNaN(valA)) {
+                document.getElementById('equation-preview').innerHTML = buildEquationHTML(rawA, valA, isNaN(valB) ? NaN : valB) + (isNaN(valB) && valA !== 0 ? ' + b' : '');
+            } else {
+                document.getElementById('equation-preview').innerHTML = `<span class="italic">y</span> = a<span class="italic">x</span>${bText}`;
+            }
 
             if (!isNaN(valA) && !isNaN(valB)) {
                 drawPreviewGraph(valA, valB, aText, bText);
@@ -1121,7 +1178,7 @@
                 changeText.textContent = `${chipChange.toLocaleString()} CHIPS`;
             }
 
-            eqText.innerHTML = `<span class="italic">y</span> = ${currentProblem.aStr}<span class="italic">x</span> ${currentProblem.b >= 0 ? '+ ' + currentProblem.b : '- ' + Math.abs(currentProblem.b)}`;
+            eqText.innerHTML = buildEquationHTML(currentProblem.aStr, currentProblem.a, currentProblem.b);
             multText.textContent = `${multiplier.toFixed(1)}x`;
 
             modal.classList.remove('hidden');
@@ -1228,6 +1285,16 @@
                 modeSubtitle.textContent = "일차함수 베팅 복습이 모두 완료되었습니다.";
                 saveScoreToLeaderboard(playerName, playerChips, totalElapsedSeconds, badgeTitle);
             }
+
+            const rankRow = document.getElementById('final-rank-row');
+            const rankEl = document.getElementById('final-rank');
+            if (isPracticeMode) {
+                if (rankRow) rankRow.classList.add('hidden');
+            } else if (rankRow && rankEl) {
+                rankRow.classList.remove('hidden');
+                rankEl.textContent = '계산 중...';
+                showMyRank(playerChips, totalElapsedSeconds);
+            }
         }
 
         async function saveScoreToLeaderboard(name, chips, timeSec, badge) {
@@ -1239,6 +1306,32 @@
                 return;
             }
             await fetchLeaderboard();
+        }
+
+        // 내 순위 계산 (칩 내림차순, 동점 시 소요시간 짧은 순)
+        async function showMyRank(chips, timeSec) {
+            const rankEl = document.getElementById('final-rank');
+            if (!rankEl) return;
+            try {
+                const totalRes = await cloud.from('game_scores').select('id', { count: 'exact', head: true });
+                const betterRes = await cloud
+                    .from('game_scores')
+                    .select('id', { count: 'exact', head: true })
+                    .or(`chips.gt.${chips},and(chips.eq.${chips},time_sec.lt.${timeSec})`);
+                if (totalRes.error || betterRes.error) {
+                    rankEl.textContent = '순위 계산 실패';
+                    return;
+                }
+                const total = totalRes.count || 0;
+                const rank = (betterRes.count || 0) + 1;
+                let medal = '';
+                if (rank === 1) medal = '🥇 ';
+                else if (rank === 2) medal = '🥈 ';
+                else if (rank === 3) medal = '🥉 ';
+                rankEl.textContent = `${medal}${rank}위 / ${total}명`;
+            } catch (e) {
+                rankEl.textContent = '순위 계산 실패';
+            }
         }
 
         // 클라우드에서 순위표(TOP 10) 가져오기
@@ -1341,37 +1434,105 @@
             document.getElementById('admin-set-rounds').value = totalRounds;
             const chipsSelect = document.getElementById('admin-set-chips');
             if (chipsSelect) chipsSelect.value = String(initialChips);
-            await renderAdminLeaderboard();
+            const searchEl = document.getElementById('admin-search-name');
+            if (searchEl) searchEl.value = '';
+            await reloadAdminLeaderboard();
         }
 
-        async function renderAdminLeaderboard() {
+        // 관리자용: 모든 기록을 불러온다 (id, 기록일자 포함)
+        async function fetchAdminScores() {
+            const { data, error } = await cloud
+                .from('game_scores')
+                .select('id, name, chips, time_sec, badge, created_at')
+                .order('chips', { ascending: false })
+                .order('time_sec', { ascending: true });
+            if (error) return adminScoresCache;
+            adminScoresCache = (data || []).map(function (row) {
+                const d = new Date(row.created_at);
+                return {
+                    id: row.id,
+                    name: row.name,
+                    chips: row.chips,
+                    timeSec: row.time_sec,
+                    badge: row.badge,
+                    dateText: d.toLocaleDateString('ko-KR') + ' ' + d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+                };
+            });
+            return adminScoresCache;
+        }
+
+        async function reloadAdminLeaderboard() {
+            await fetchAdminScores();
+            renderAdminLeaderboard();
+        }
+
+        function renderAdminLeaderboard() {
             const tbody = document.getElementById('admin-leaderboard-body');
             if (!tbody) return;
-            await fetchLeaderboard();
             tbody.innerHTML = '';
 
-            let leaderboard = leaderboardCache;
-            
-            if (leaderboard.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-slate-500">등록된 순위 데이터가 없습니다.</td></tr>`;
-            } else {
-                leaderboard.forEach((item, index) => {
-                    let rankBadge = `${index + 1}위`;
-                    if (index === 0) rankBadge = '🥇';
-                    else if (index === 1) rankBadge = '🥈';
-                    else if (index === 2) rankBadge = '🥉';
+            const keyword = (document.getElementById('admin-search-name')?.value || '').trim().toLowerCase();
+            const ranked = adminScoresCache.map(function (item, idx) {
+                return Object.assign({}, item, { rank: idx + 1 });
+            });
+            const list = keyword ? ranked.filter(function (it) { return it.name.toLowerCase().includes(keyword); }) : ranked;
 
-                    const row = document.createElement('tr');
-                    row.className = "hover:bg-slate-700/30";
-                    row.innerHTML = `
-                        <td class="py-1.5 px-1 font-bold ${index < 3 ? 'text-amber-300' : 'text-slate-300'}">${rankBadge}</td>
-                        <td class="py-1.5 px-1 font-bold text-slate-100">${item.name}</td>
-                        <td class="py-1.5 px-1 font-mono font-bold text-amber-400 text-right">${item.chips.toLocaleString()}</td>
-                        <td class="py-1.5 px-1 font-mono text-cyan-300 text-right">${item.timeSec || '-'}초</td>
-                    `;
-                    tbody.appendChild(row);
-                });
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3 text-slate-500">${keyword ? '검색 결과가 없습니다.' : '등록된 순위 데이터가 없습니다.'}</td></tr>`;
+                return;
             }
+
+            list.forEach(function (item) {
+                let rankBadge = `${item.rank}위`;
+                if (item.rank === 1) rankBadge = '🥇';
+                else if (item.rank === 2) rankBadge = '🥈';
+                else if (item.rank === 3) rankBadge = '🥉';
+
+                const row = document.createElement('tr');
+                row.className = "hover:bg-slate-700/30";
+                row.innerHTML = `
+                    <td class="py-1.5 px-1 font-bold ${item.rank <= 3 ? 'text-amber-300' : 'text-slate-300'}">${rankBadge}</td>
+                    <td class="py-1.5 px-1 font-bold text-slate-100">${item.name}</td>
+                    <td class="py-1.5 px-1 font-mono font-bold text-amber-400 text-right">${item.chips.toLocaleString()}</td>
+                    <td class="py-1.5 px-1 font-mono text-cyan-300 text-right">${item.timeSec || '-'}초</td>
+                    <td class="py-1.5 px-1 font-mono text-[10px] text-slate-400 text-right whitespace-nowrap">${item.dateText}</td>
+                    <td class="py-1.5 px-1 text-center">
+                        <button class="bg-rose-800/80 hover:bg-rose-700 text-rose-100 px-2 py-0.5 rounded-md text-[10px] font-bold transition">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                `;
+                const delBtn = row.querySelector('button');
+                delBtn.addEventListener('click', function () { openDeleteScoreModal(item.id, item.name); });
+                tbody.appendChild(row);
+            });
+        }
+
+        function openDeleteScoreModal(id, name) {
+            pendingDeleteScoreId = id;
+            document.getElementById('delete-score-name').textContent = name;
+            document.getElementById('modal-delete-score').classList.remove('hidden');
+        }
+
+        function closeDeleteScoreModal() {
+            pendingDeleteScoreId = null;
+            document.getElementById('modal-delete-score').classList.add('hidden');
+        }
+
+        async function confirmDeleteScore() {
+            if (!pendingDeleteScoreId) return;
+            const { data, error } = await cloud.rpc('admin_delete_score', {
+                p_pin: verifiedAdminPin,
+                p_id: pendingDeleteScoreId
+            });
+            if (error || data !== true) {
+                showToast('기록 삭제에 실패했습니다. 다시 인증해 주세요.', true);
+                return;
+            }
+            closeDeleteScoreModal();
+            await fetchLeaderboard();
+            await reloadAdminLeaderboard();
+            showToast('선택한 기록이 삭제되었습니다.');
         }
 
         function closeAdminPanelModal() {
@@ -1437,7 +1598,7 @@
         }
 
         function exportLeaderboardData() {
-            let leaderboard = leaderboardCache;
+            let leaderboard = adminScoresCache.length ? adminScoresCache : leaderboardCache;
             if (leaderboard.length === 0) {
                 showToast('복사할 순위표 데이터가 없습니다.', true);
                 return;
@@ -1445,7 +1606,7 @@
 
             let textData = "순위\t이름\t최종 칩\t소요시간(초)\t칭호\t날짜\n";
             leaderboard.forEach((item, idx) => {
-                textData += `${idx + 1}\t${item.name}\t${item.chips}\t${item.timeSec || '-'}\t${item.badge}\t${item.date || '-'}\n`;
+                textData += `${idx + 1}\t${item.name}\t${item.chips}\t${item.timeSec || '-'}\t${item.badge}\t${item.dateText || item.date || '-'}\n`;
             });
 
             const textarea = document.createElement('textarea');
@@ -1475,7 +1636,7 @@
                 showToast('초기화에 실패했습니다. 다시 인증해 주세요.', true);
                 return;
             }
-            await renderAdminLeaderboard();
+            await reloadAdminLeaderboard();
             closeResetConfirmModal();
             showToast('모든 기기의 순위표 데이터가 초기화되었습니다.');
         }
@@ -1649,7 +1810,7 @@
                 }
                 const adminPanel = document.getElementById('modal-admin-panel');
                 if (adminPanel && !adminPanel.classList.contains('hidden')) {
-                    await renderAdminLeaderboard();
+                    await reloadAdminLeaderboard();
                 }
             })
             .subscribe();
