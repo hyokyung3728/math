@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -14,6 +13,8 @@
     <!-- KaTeX for Math Rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <!-- Cloud DB (realtime shared records) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
 
     <style>
         * {
@@ -371,7 +372,7 @@
                 </div>
                 <div>
                     <h3 class="font-tech font-bold text-lg text-amber-300">교사용 인증 패널</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">교사용 보안 비밀번호를 입력하세요. (초기: 1234)</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">교사용 보안 비밀번호를 입력하세요.</p>
                 </div>
 
                 <div class="space-y-2">
@@ -623,7 +624,49 @@
     <script>
         let audioCtx = null;
         let soundEnabled = true;
-        let adminPin = localStorage.getItem('speed_def_admin_pin') || '1234';
+        // ===== Lovable Cloud (실시간 공유 기록 저장소) =====
+        const CLOUD_URL = 'https://qsljiiwijsluciqmzivq.supabase.co';
+        const CLOUD_KEY = 'sb_publishable_bpT-cZ6MNCI24MAeEcBk3Q_xn78wLN3';
+        const cloud = window.supabase.createClient(CLOUD_URL, CLOUD_KEY, { auth: { persistSession: false } });
+
+        let leaderboardCache = [];
+        let currentAdminPin = '';
+
+        function sortBoard(list) {
+            return list.slice().sort((x, y) => {
+                if (y.score !== x.score) return y.score - x.score;
+                return (x.timeSec || 999) - (y.timeSec || 999);
+            });
+        }
+
+        async function fetchLeaderboard() {
+            const { data, error } = await cloud
+                .from('scores')
+                .select('name, score, time_sec, played_on')
+                .order('score', { ascending: false })
+                .order('time_sec', { ascending: true })
+                .limit(500);
+            if (error) { console.error(error); return leaderboardCache; }
+            leaderboardCache = (data || []).map(r => ({ name: r.name, score: r.score, timeSec: r.time_sec, date: r.played_on }));
+            return leaderboardCache;
+        }
+
+        function refreshOpenBoards() {
+            if (!document.getElementById('modal-leaderboard').classList.contains('hidden')) renderUserLeaderboard();
+            if (!document.getElementById('modal-admin-panel').classList.contains('hidden')) renderAdminLeaderboard();
+        }
+
+        async function reloadBoards() {
+            await fetchLeaderboard();
+            refreshOpenBoards();
+        }
+
+        function initCloudRealtime() {
+            reloadBoards();
+            cloud.channel('scores-realtime')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, () => reloadBoards())
+                .subscribe();
+        }
 
         function playSound(type) {
             if (!soundEnabled) return;
@@ -1333,62 +1376,42 @@
          * 동일 인물 중복 도배 방지:
          * 학생 이름(학번이름) 기준으로 이미 존재 시, 더 높은 점수(동점일 경우 최단 시간)일 때만 업데이트
          */
-        function saveScoreToLeaderboard(name, pts, timeSec) {
-            let leaderboard = JSON.parse(localStorage.getItem('speed_def_leaderboard') || '[]');
+        async function saveScoreToLeaderboard(name, pts, timeSec) {
             const nowStr = new Date().toLocaleDateString('ko-KR');
+            try {
+                const { data: existing } = await cloud
+                    .from('scores')
+                    .select('name, score, time_sec')
+                    .eq('name', name)
+                    .maybeSingle();
 
-            const existingIndex = leaderboard.findIndex(item => item.name === name);
-
-            if (existingIndex !== -1) {
-                const existing = leaderboard[existingIndex];
-                if (pts > existing.score || (pts === existing.score && timeSec < existing.timeSec)) {
-                    leaderboard[existingIndex] = { name, score: pts, timeSec, date: nowStr };
+                if (existing) {
+                    if (pts > existing.score || (pts === existing.score && timeSec < existing.time_sec)) {
+                        await cloud.from('scores')
+                            .update({ score: pts, time_sec: timeSec, played_on: nowStr, updated_at: new Date().toISOString() })
+                            .eq('name', name);
+                    }
+                } else {
+                    await cloud.from('scores').insert({ name, score: pts, time_sec: timeSec, played_on: nowStr });
                 }
-            } else {
-                leaderboard.push({ name, score: pts, timeSec, date: nowStr });
+            } catch (e) {
+                console.error(e);
+                showToast('기록 저장에 실패했습니다. 네트워크를 확인하세요.', true);
             }
-
-            leaderboard.sort((x, y) => {
-                if (y.score !== x.score) return y.score - x.score;
-                return (x.timeSec || 999) - (y.timeSec || 999);
-            });
-
-            leaderboard = leaderboard.slice(0, 50);
-            localStorage.setItem('speed_def_leaderboard', JSON.stringify(leaderboard));
+            await reloadBoards();
         }
 
         /* 
          * 정제된 랭킹 리스트 반환 (기존 중복 데이터도 최고기록 1개로 필터링)
          */
         function getCleanLeaderboard() {
-            let rawData = JSON.parse(localStorage.getItem('speed_def_leaderboard') || '[]');
-            const map = new Map();
-
-            rawData.forEach(item => {
-                if (!map.has(item.name)) {
-                    map.set(item.name, item);
-                } else {
-                    const existing = map.get(item.name);
-                    if (item.score > existing.score || (item.score === existing.score && item.timeSec < existing.timeSec)) {
-                        map.set(item.name, item);
-                    }
-                }
-            });
-
-            const cleanList = Array.from(map.values());
-            cleanList.sort((x, y) => {
-                if (y.score !== x.score) return y.score - x.score;
-                return (x.timeSec || 999) - (y.timeSec || 999);
-            });
-
-            // 정제된 데이터로 localStorage 자동 갱신
-            localStorage.setItem('speed_def_leaderboard', JSON.stringify(cleanList));
-            return cleanList;
+            return sortBoard(leaderboardCache);
         }
 
         function openLeaderboardModal() {
             renderUserLeaderboard();
             document.getElementById('modal-leaderboard').classList.remove('hidden');
+            reloadBoards();
         }
 
         function closeLeaderboardModal() {
@@ -1442,10 +1465,14 @@
             document.getElementById('admin-auth-err').classList.add('hidden');
         }
 
-        function submitAdminPin() {
+        async function submitAdminPin() {
             const inputPin = document.getElementById('input-admin-pin').value;
-            if (inputPin === adminPin) {
+            const { data: ok, error } = await cloud.rpc('verify_admin_pin', { _pin: inputPin });
+            if (error) { showToast('인증 서버 연결에 실패했습니다.', true); return; }
+            if (ok) {
+                currentAdminPin = inputPin;
                 closeAdminAuthModal();
+                await fetchLeaderboard();
                 renderAdminLeaderboard();
                 document.getElementById('modal-admin-panel').classList.remove('hidden');
             } else {
@@ -1493,10 +1520,10 @@
             }
         }
 
-        function deleteLeaderboardItem(nameToDelete) {
-            let leaderboard = JSON.parse(localStorage.getItem('speed_def_leaderboard') || '[]');
-            leaderboard = leaderboard.filter(item => item.name !== nameToDelete);
-            localStorage.setItem('speed_def_leaderboard', JSON.stringify(leaderboard));
+        async function deleteLeaderboardItem(nameToDelete) {
+            const { error } = await cloud.from('scores').delete().eq('name', nameToDelete);
+            if (error) { showToast('삭제에 실패했습니다.', true); return; }
+            await fetchLeaderboard();
             renderAdminLeaderboard();
             showToast(`${nameToDelete} 요원의 기록이 삭제되었습니다.`);
         }
@@ -1509,16 +1536,20 @@
             showToast('작전 설정이 변경되었습니다.');
         }
 
-        function changeAdminPin() {
+        async function changeAdminPin() {
             const newPin = document.getElementById('input-new-pin').value.trim();
-            if (newPin.length < 4) {
-                showToast('비밀번호는 최소 4자리 이상이어야 합니다.', true);
+            if (newPin.length < 4 || newPin.length > 6) {
+                showToast('비밀번호는 4~6자리로 입력해 주세요.', true);
                 return;
             }
-            adminPin = newPin;
-            localStorage.setItem('speed_def_admin_pin', adminPin);
+            const { data: ok, error } = await cloud.rpc('set_admin_pin', { _current_pin: currentAdminPin, _new_pin: newPin });
+            if (error || !ok) {
+                showToast('비밀번호 변경에 실패했습니다.', true);
+                return;
+            }
+            currentAdminPin = newPin;
             document.getElementById('input-new-pin').value = '';
-            showToast('🔑 교사용 비밀번호가 변경되었습니다!');
+            showToast('🔑 교사용 비밀번호가 변경되었습니다! (모든 기기 공통)');
         }
 
         function exportLeaderboardData() {
@@ -1569,11 +1600,15 @@
             document.getElementById('reset-auth-err').classList.add('hidden');
         }
 
-        function submitResetPin() {
+        async function submitResetPin() {
             const inputPin = document.getElementById('input-reset-pin').value;
-            if (inputPin === adminPin) {
+            const { data: ok, error } = await cloud.rpc('verify_admin_pin', { _pin: inputPin });
+            if (error) { showToast('인증 서버 연결에 실패했습니다.', true); return; }
+            if (ok) {
                 closeResetAuthModal();
-                localStorage.removeItem('speed_def_leaderboard');
+                const { error: delErr } = await cloud.from('scores').delete().gte('score', -1);
+                if (delErr) { showToast('초기화에 실패했습니다.', true); return; }
+                await fetchLeaderboard();
                 renderAdminLeaderboard();
                 document.getElementById('modal-reset-success').classList.remove('hidden');
             } else {
@@ -1844,6 +1879,9 @@
             if (animFrameId) cancelAnimationFrame(animFrameId);
             render();
         }
+    
+        // 앱 시작 시 클라우드 기록 로드 + 실시간 동기화
+        initCloudRealtime();
     </script>
 </body>
 </html>
