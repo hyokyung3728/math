@@ -224,19 +224,20 @@
 
                     <!-- 하단 필살기 광역 버튼 -->
                     <div class="grid grid-cols-3 gap-2 shrink-0">
-                        <button id="btn-skill-lightning" onclick="triggerUltimateSkill('lightning')" disabled class="bg-slate-900 border border-slate-800 opacity-40 text-cyan-300 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 active:scale-95 shadow">
-                            <i class="fa-solid fa-bolt text-amber-400 text-sm"></i>
-                            <span>⚡전격 (3 Combo)</span>
+                        <button id="btn-skill-lightning" onclick="triggerUltimateSkill('lightning')" disabled class="bg-slate-900 border border-slate-800 opacity-40 text-cyan-300 h-10 w-full min-w-0 rounded-xl text-[10px] md:text-xs font-bold transition flex items-center justify-center space-x-1 active:scale-95 shadow whitespace-nowrap overflow-hidden">
+                            <i class="fa-solid fa-bolt text-amber-400 text-sm shrink-0"></i>
+                            <span class="truncate">⚡전격 (3 Combo)</span>
                         </button>
-                        <button id="btn-skill-bomb" onclick="triggerUltimateSkill('bomb')" disabled class="bg-slate-900 border border-slate-800 opacity-40 text-amber-300 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 active:scale-95 shadow">
-                            <i class="fa-solid fa-bomb text-rose-400 text-sm"></i>
-                            <span>💣폭격 (6 Combo)</span>
+                        <button id="btn-skill-bomb" onclick="triggerUltimateSkill('bomb')" disabled class="bg-slate-900 border border-slate-800 opacity-40 text-amber-300 h-10 w-full min-w-0 rounded-xl text-[10px] md:text-xs font-bold transition flex items-center justify-center space-x-1 active:scale-95 shadow whitespace-nowrap overflow-hidden">
+                            <i class="fa-solid fa-bomb text-rose-400 text-sm shrink-0"></i>
+                            <span class="truncate">💣폭격 (6 Combo)</span>
                         </button>
-                        <button id="btn-skill-laser" onclick="triggerUltimateSkill('laser')" disabled class="bg-slate-900 border border-slate-800 opacity-40 text-emerald-300 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 active:scale-95 shadow">
-                            <i class="fa-solid fa-burst text-emerald-400 text-sm"></i>
-                            <span>💥레이저 (9 Combo)</span>
+                        <button id="btn-skill-laser" onclick="triggerUltimateSkill('laser')" disabled class="bg-slate-900 border border-slate-800 opacity-40 text-emerald-300 h-10 w-full min-w-0 rounded-xl text-[10px] md:text-xs font-bold transition flex items-center justify-center space-x-1 active:scale-95 shadow whitespace-nowrap overflow-hidden">
+                            <i class="fa-solid fa-burst text-emerald-400 text-sm shrink-0"></i>
+                            <span class="truncate">💥레이저 (9 Combo)</span>
                         </button>
                     </div>
+
                 </div>
 
                 <!-- [RIGHT SIDE] 스피드 문제 풀이 콘솔 패널 -->
@@ -317,7 +318,12 @@
                     <span class="text-slate-400">작전 소요 시간:</span>
                     <span id="final-time" class="font-tech text-cyan-300 font-bold">45초</span>
                 </div>
+                <div id="final-rank-row" class="flex justify-between items-center border-t border-slate-800 pt-2">
+                    <span class="text-slate-400">내 순위:</span>
+                    <span id="final-rank" class="font-tech text-emerald-300 font-bold">집계 중...</span>
+                </div>
             </div>
+
 
             <button onclick="quitToMain()" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-jua py-3 rounded-xl transition text-sm border border-cyan-300/30">
                 메인 본부로 복귀
@@ -1264,20 +1270,23 @@
             const btnBomb = document.getElementById('btn-skill-bomb');
             const btnLaser = document.getElementById('btn-skill-laser');
 
+            const skillBase = "h-10 w-full min-w-0 rounded-xl text-[10px] md:text-xs font-bold transition flex items-center justify-center space-x-1 whitespace-nowrap overflow-hidden";
+
             btnLightning.disabled = combo < 3;
             btnLightning.className = combo >= 3 
-                ? "bg-cyan-950 border border-cyan-400 text-cyan-200 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 active:scale-95 shadow glow-laser"
-                : "bg-slate-900 border border-slate-800 opacity-40 text-cyan-300 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1";
+                ? `bg-cyan-950 border border-cyan-400 text-cyan-200 ${skillBase} active:scale-95 shadow glow-laser`
+                : `bg-slate-900 border border-slate-800 opacity-40 text-cyan-300 ${skillBase}`;
 
             btnBomb.disabled = combo < 6;
             btnBomb.className = combo >= 6 
-                ? "bg-amber-950 border border-amber-400 text-amber-200 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 active:scale-95 shadow glow-laser"
-                : "bg-slate-900 border border-slate-800 opacity-40 text-amber-300 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1";
+                ? `bg-amber-950 border border-amber-400 text-amber-200 ${skillBase} active:scale-95 shadow glow-laser`
+                : `bg-slate-900 border border-slate-800 opacity-40 text-amber-300 ${skillBase}`;
 
             btnLaser.disabled = combo < 9;
             btnLaser.className = combo >= 9 
-                ? "bg-emerald-950 border border-emerald-400 text-emerald-200 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1 active:scale-95 shadow glow-laser animate-bounce"
-                : "bg-slate-900 border border-slate-800 opacity-40 text-emerald-300 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1";
+                ? `bg-emerald-950 border border-emerald-400 text-emerald-200 ${skillBase} active:scale-95 shadow glow-laser animate-bounce`
+                : `bg-slate-900 border border-slate-800 opacity-40 text-emerald-300 ${skillBase}`;
+
 
             const warning = document.getElementById('warning-overlay');
             if (baseHp <= 30 && baseHp > 0) {
@@ -1361,10 +1370,30 @@
                 iconBox.innerHTML = '<i class="fa-solid fa-skull-crossbones"></i>';
             }
 
+            const rankRow = document.getElementById('final-rank-row');
+            const rankEl = document.getElementById('final-rank');
             if (!isPracticeMode) {
-                saveScoreToLeaderboard(playerName, score, totalElapsedSeconds);
+                rankRow.classList.remove('hidden');
+                rankEl.textContent = '집계 중...';
+                saveScoreToLeaderboard(playerName, score, totalElapsedSeconds).then(showMyRank);
+            } else {
+                rankRow.classList.add('hidden');
             }
         }
+
+        function showMyRank() {
+            const rankEl = document.getElementById('final-rank');
+            if (!rankEl) return;
+            const list = getCleanLeaderboard();
+            const idx = list.findIndex(item => item.name === playerName);
+            if (idx === -1) {
+                rankEl.textContent = '기록 없음';
+                return;
+            }
+            const medal = idx === 0 ? '🥇 ' : idx === 1 ? '🥈 ' : idx === 2 ? '🥉 ' : '';
+            rankEl.textContent = `${medal}${idx + 1}위 / ${list.length}명`;
+        }
+
 
         /* 
          * 동일 인물 중복 도배 방지:
