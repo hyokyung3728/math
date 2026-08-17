@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -333,7 +334,7 @@
                 <div class="flex items-center justify-between border-b border-slate-800 pb-2">
                     <h3 class="font-tech font-bold text-lg text-amber-400 flex items-center space-x-2">
                         <i class="fa-solid fa-trophy text-amber-300"></i>
-                        <span>명예의 전당 (실시간 TOP 10 랭킹)</span>
+                        <span>명예의 전당 (TOP 10 랭킹)</span>
                     </h3>
                     <button onclick="closeLeaderboardModal()" class="text-slate-400 hover:text-white text-lg px-2">
                         <i class="fa-solid fa-xmark"></i>
@@ -362,7 +363,7 @@
             </div>
         </div>
 
-        <!-- [6. 교사용 관리자 비밀번호 입력 모달 (수정됨: 초기 번호 안내문구 제거)] -->
+        <!-- [6. 교사용 관리자 비밀번호 입력 모달 (일차함수 블랙잭 스타일)] -->
         <div id="modal-admin-auth" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-slate-900 border border-amber-500/40 w-full max-w-xs rounded-2xl p-5 space-y-4 shadow-2xl text-center relative">
                 <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-xl mx-auto border border-amber-500/30">
@@ -370,7 +371,7 @@
                 </div>
                 <div>
                     <h3 class="font-tech font-bold text-lg text-amber-300">교사용 인증 패널</h3>
-                    <p class="text-[11px] text-slate-400 mt-0.5">교사용 보안 비밀번호를 입력하세요.</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">교사용 보안 비밀번호를 입력하세요. (초기: 1234)</p>
                 </div>
 
                 <div class="space-y-2">
@@ -378,7 +379,7 @@
                     <p id="admin-auth-err" class="text-[10px] text-rose-400 hidden">비밀번호가 일치하지 않습니다.</p>
                 </div>
 
-                <!-- 키패드 스타일 버튼 -->
+                <!-- 키패드 스타일 버튼 (블랙잭 동일 디자인) -->
                 <div class="grid grid-cols-3 gap-1.5 text-xs font-tech font-bold">
                     <button onclick="appendAdminPin('1')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">1</button>
                     <button onclick="appendAdminPin('2')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">2</button>
@@ -400,7 +401,7 @@
             </div>
         </div>
 
-        <!-- [7. 교사용 관리자 패널 모달] -->
+        <!-- [7. 교사용 관리자 패널 모달 (일차함수 블랙잭 스타일 완벽 반영)] -->
         <div id="modal-admin-panel" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-3 md:p-4 hidden overflow-y-auto">
             <div class="bg-slate-900 border border-cyan-500/40 w-full max-w-2xl rounded-2xl p-4 md:p-5 space-y-4 shadow-2xl text-slate-200 my-auto">
                 <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
@@ -409,8 +410,8 @@
                             <i class="fa-solid fa-sliders text-base"></i>
                         </div>
                         <div>
-                            <h3 class="font-tech font-bold text-base md:text-lg text-cyan-400 leading-tight">교사용 디펜스 실시간 종합 관리자 패널</h3>
-                            <p class="text-[10px] text-slate-400">학생 성적 실시간 연동 관리 및 원격 설정 제어</p>
+                            <h3 class="font-tech font-bold text-base md:text-lg text-cyan-400 leading-tight">교사용 디펜스 종합 관리자 패널</h3>
+                            <p class="text-[10px] text-slate-400">학생들의 작전 성적 관리 및 게임 환경 제어</p>
                         </div>
                     </div>
                     <button onclick="closeAdminPanelModal()" class="text-slate-400 hover:text-white text-lg px-2">
@@ -525,7 +526,7 @@
             </div>
         </div>
 
-        <!-- [9. 전체 기록 초기화 경고 모달] -->
+        <!-- [9. 전체 기록 초기화 경고 모달 (이미지 2)] -->
         <div id="modal-reset-warning" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-slate-900 border border-rose-500/40 w-full max-w-sm rounded-2xl p-5 space-y-4 shadow-2xl text-center relative">
                 <div class="w-14 h-14 bg-rose-500/20 text-rose-400 rounded-full flex items-center justify-center text-2xl mx-auto border border-rose-500/30">
@@ -557,7 +558,7 @@
             </div>
         </div>
 
-        <!-- [10. 전체 기록 초기화 비번 인증 모달] -->
+        <!-- [10. 전체 기록 초기화 비번 인증 모달 (이미지 1)] -->
         <div id="modal-reset-auth" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-slate-900 border border-amber-500/40 w-full max-w-xs rounded-2xl p-5 space-y-4 shadow-2xl text-center relative">
                 <div class="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-xl mx-auto border border-amber-500/30">
@@ -595,7 +596,7 @@
             </div>
         </div>
 
-        <!-- [11. 전체 기록 초기화 완료 모달] -->
+        <!-- [11. 전체 기록 초기화 완료 모달 (이미지 3)] -->
         <div id="modal-reset-success" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-slate-900 border border-emerald-500/40 w-full max-w-xs rounded-2xl p-5 space-y-4 shadow-2xl text-center relative">
                 <div class="w-14 h-14 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center text-3xl mx-auto border border-emerald-500/30">
@@ -619,191 +620,10 @@
         © 2026 김효경│수학 수업용 인터랙티브 콘텐츠
     </footer>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, deleteDoc, collection, onSnapshot, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'linear-speed-defense';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' 
-            ? JSON.parse(__firebase_config) 
-            : {
-                apiKey: "demo-api-key",
-                authDomain: "demo.firebaseapp.com",
-                projectId: "demo-project",
-                storageBucket: "demo.appspot.com",
-                messagingSenderId: "123456789",
-                appId: "1:123456789:web:abcdef"
-            };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        window.db = db;
-        window.appId = appId;
-        window.remoteLeaderboard = [];
-        window.adminPin = '1234'; // Default PIN
-
-        async function initAuthAndDb() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (err) {
-                console.warn("Auth initial error, falling back to anonymous:", err);
-                try {
-                    await signInAnonymously(auth);
-                } catch(e) {
-                    console.error("Anonymous auth failed:", e);
-                }
-            }
-
-            // Listen to real-time leaderboard
-            const lbColRef = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard');
-            onSnapshot(lbColRef, (snapshot) => {
-                const list = [];
-                snapshot.forEach(docSnap => {
-                    list.push({ docId: docSnap.id, ...docSnap.data() });
-                });
-
-                // Deduplicate & filter highest scores per student
-                const map = new Map();
-                list.forEach(item => {
-                    if (!item.name) return;
-                    if (!map.has(item.name)) {
-                        map.set(item.name, item);
-                    } else {
-                        const existing = map.get(item.name);
-                        if (item.score > existing.score || (item.score === existing.score && item.timeSec < existing.timeSec)) {
-                            map.set(item.name, item);
-                        }
-                    }
-                });
-
-                const sortedList = Array.from(map.values());
-                sortedList.sort((a, b) => {
-                    if (b.score !== a.score) return b.score - a.score;
-                    return (a.timeSec || 999) - (b.timeSec || 999);
-                });
-
-                window.remoteLeaderboard = sortedList;
-
-                // Sync with local table displays if open
-                if (!document.getElementById('modal-leaderboard').classList.contains('hidden')) {
-                    window.renderUserLeaderboard();
-                }
-                if (!document.getElementById('modal-admin-panel').classList.contains('hidden')) {
-                    window.renderAdminLeaderboard();
-                }
-            }, (error) => {
-                console.error("Leaderboard snapshot error:", error);
-            });
-
-            // Listen to real-time admin settings & PIN
-            const settingsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'admin_config');
-            onSnapshot(settingsDocRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    if (data.pin) window.adminPin = data.pin;
-                    if (data.maxWaves) {
-                        window.maxWaves = data.maxWaves;
-                        const wInput = document.getElementById('admin-set-waves');
-                        if (wInput) wInput.value = window.maxWaves;
-                    }
-                    if (data.speedFactor) {
-                        window.speedFactor = data.speedFactor;
-                        const sSelect = document.getElementById('admin-set-speed');
-                        if (sSelect) sSelect.value = window.speedFactor.toString();
-                    }
-                } else {
-                    // Initialize default settings doc in Firestore
-                    setDoc(settingsDocRef, {
-                        pin: "1234",
-                        maxWaves: 5,
-                        speedFactor: 1.0,
-                        updatedAt: new Date().toISOString()
-                    }).catch(e => console.error("Error setting default admin config:", e));
-                }
-            }, (error) => {
-                console.error("Settings snapshot error:", error);
-            });
-        }
-
-        initAuthAndDb();
-
-        window.saveScoreToFirestore = async function(name, pts, timeSec) {
-            try {
-                const sanitizeDocId = name.replace(/[^a-zA-Z0-9가-힣]/g, '_');
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', sanitizeDocId);
-                
-                const snap = await getDoc(docRef);
-                const nowStr = new Date().toLocaleDateString('ko-KR');
-
-                if (snap.exists()) {
-                    const existing = snap.data();
-                    if (pts > existing.score || (pts === existing.score && timeSec < existing.timeSec)) {
-                        await setDoc(docRef, { name, score: pts, timeSec, date: nowStr, updatedAt: new Date().toISOString() });
-                    }
-                } else {
-                    await setDoc(docRef, { name, score: pts, timeSec, date: nowStr, updatedAt: new Date().toISOString() });
-                }
-            } catch (err) {
-                console.error("Error saving score to Firestore:", err);
-            }
-        };
-
-        window.updateAdminPinInFirestore = async function(newPin) {
-            try {
-                const settingsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'admin_config');
-                await setDoc(settingsDocRef, { pin: newPin, updatedAt: new Date().toISOString() }, { merge: true });
-                window.adminPin = newPin;
-                return true;
-            } catch (err) {
-                console.error("Error updating PIN in Firestore:", err);
-                return false;
-            }
-        };
-
-        window.updateAdminSettingsInFirestore = async function(mWaves, sFactor) {
-            try {
-                const settingsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'admin_config');
-                await setDoc(settingsDocRef, { maxWaves: mWaves, speedFactor: sFactor, updatedAt: new Date().toISOString() }, { merge: true });
-            } catch (err) {
-                console.error("Error updating settings in Firestore:", err);
-            }
-        };
-
-        window.deleteStudentFromFirestore = async function(nameToDelete) {
-            try {
-                const sanitizeDocId = nameToDelete.replace(/[^a-zA-Z0-9가-힣]/g, '_');
-                const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'leaderboard', sanitizeDocId);
-                await deleteDoc(docRef);
-            } catch (err) {
-                console.error("Error deleting student score:", err);
-            }
-        };
-
-        window.resetAllLeaderboardFirestore = async function() {
-            try {
-                const lbColRef = collection(db, 'artifacts', appId, 'public', 'data', 'leaderboard');
-                const snapshot = await getDocs(lbColRef);
-                const batch = writeBatch(db);
-                snapshot.forEach(docSnap => {
-                    batch.delete(docSnap.ref);
-                });
-                await batch.commit();
-            } catch (err) {
-                console.error("Error resetting leaderboard:", err);
-            }
-        };
-    </script>
-
     <script>
         let audioCtx = null;
         let soundEnabled = true;
+        let adminPin = localStorage.getItem('speed_def_admin_pin') || '1234';
 
         function playSound(type) {
             if (!soundEnabled) return;
@@ -900,12 +720,12 @@
         let playerName = '요원';
         let isPracticeMode = false;
         let currentWave = 1;
-        window.maxWaves = 5;
+        let maxWaves = 5;
         let baseHp = 100;
         let score = 0;
         let combo = 0;
         let maxComboInWave = 0;
-        window.speedFactor = 1.0;
+        let speedFactor = 1.0;
         let isGameOver = false;
 
         let startTime = 0;
@@ -920,6 +740,7 @@
         let totalWaveMonstersToSpawn = 8;
         let spawnedMonstersCount = 0;
         let spawnTimer = 0;
+        let monsterIdCounter = 0;
 
         function katexRender(texStr) {
             try {
@@ -929,6 +750,9 @@
             }
         }
 
+        /* 
+         * 수학 수식 깔끔한 포맷팅 함수 (1x -> x, -1x -> -x, +0 -> 생략)
+         */
         function formatLinearEq(a, b, isFunctionNotation = false) {
             const prefix = isFunctionNotation ? 'f(x) = ' : 'y = ';
             
@@ -942,7 +766,7 @@
                 bStr = aStr !== '' ? ` + ${b}` : `${b}`;
             } else if (b < 0) {
                 bStr = aStr !== '' ? ` - ${Math.abs(b)}` : `-${Math.abs(b)}`;
-            } else {
+            } else { // b === 0
                 if (aStr === '') bStr = '0';
             }
 
@@ -1387,7 +1211,7 @@
         }
 
         function updateHUD() {
-            document.getElementById('hud-wave').textContent = `WAVE ${currentWave} / ${window.maxWaves}`;
+            document.getElementById('hud-wave').textContent = `WAVE ${currentWave} / ${maxWaves}`;
             document.getElementById('hud-score').textContent = score.toLocaleString();
             document.getElementById('hud-combo').textContent = combo;
             document.getElementById('hud-hp-text').textContent = `${Math.max(0, Math.floor(baseHp))}%`;
@@ -1445,7 +1269,7 @@
             document.getElementById('res-score-gain').textContent = `${score.toLocaleString()} PTS`;
             document.getElementById('res-max-combo').textContent = `${maxComboInWave} COMBO`;
 
-            if (currentWave >= window.maxWaves) {
+            if (currentWave >= maxWaves) {
                 titleEl.textContent = "최종 WAVE 클리어!";
                 subtitleEl.textContent = "모든 방어 작전을 완벽하게 수행했습니다!";
                 btnNext.innerHTML = '<i class="fa-solid fa-square-poll-vertical mr-1"></i>결과 확인';
@@ -1463,7 +1287,7 @@
         function closeResultModal() {
             document.getElementById('modal-result').classList.add('hidden');
 
-            if (currentWave >= window.maxWaves) {
+            if (currentWave >= maxWaves) {
                 endGame(true);
             } else {
                 currentWave++;
@@ -1500,9 +1324,66 @@
                 iconBox.innerHTML = '<i class="fa-solid fa-skull-crossbones"></i>';
             }
 
-            if (!isPracticeMode && window.saveScoreToFirestore) {
-                window.saveScoreToFirestore(playerName, score, totalElapsedSeconds);
+            if (!isPracticeMode) {
+                saveScoreToLeaderboard(playerName, score, totalElapsedSeconds);
             }
+        }
+
+        /* 
+         * 동일 인물 중복 도배 방지:
+         * 학생 이름(학번이름) 기준으로 이미 존재 시, 더 높은 점수(동점일 경우 최단 시간)일 때만 업데이트
+         */
+        function saveScoreToLeaderboard(name, pts, timeSec) {
+            let leaderboard = JSON.parse(localStorage.getItem('speed_def_leaderboard') || '[]');
+            const nowStr = new Date().toLocaleDateString('ko-KR');
+
+            const existingIndex = leaderboard.findIndex(item => item.name === name);
+
+            if (existingIndex !== -1) {
+                const existing = leaderboard[existingIndex];
+                if (pts > existing.score || (pts === existing.score && timeSec < existing.timeSec)) {
+                    leaderboard[existingIndex] = { name, score: pts, timeSec, date: nowStr };
+                }
+            } else {
+                leaderboard.push({ name, score: pts, timeSec, date: nowStr });
+            }
+
+            leaderboard.sort((x, y) => {
+                if (y.score !== x.score) return y.score - x.score;
+                return (x.timeSec || 999) - (y.timeSec || 999);
+            });
+
+            leaderboard = leaderboard.slice(0, 50);
+            localStorage.setItem('speed_def_leaderboard', JSON.stringify(leaderboard));
+        }
+
+        /* 
+         * 정제된 랭킹 리스트 반환 (기존 중복 데이터도 최고기록 1개로 필터링)
+         */
+        function getCleanLeaderboard() {
+            let rawData = JSON.parse(localStorage.getItem('speed_def_leaderboard') || '[]');
+            const map = new Map();
+
+            rawData.forEach(item => {
+                if (!map.has(item.name)) {
+                    map.set(item.name, item);
+                } else {
+                    const existing = map.get(item.name);
+                    if (item.score > existing.score || (item.score === existing.score && item.timeSec < existing.timeSec)) {
+                        map.set(item.name, item);
+                    }
+                }
+            });
+
+            const cleanList = Array.from(map.values());
+            cleanList.sort((x, y) => {
+                if (y.score !== x.score) return y.score - x.score;
+                return (x.timeSec || 999) - (y.timeSec || 999);
+            });
+
+            // 정제된 데이터로 localStorage 자동 갱신
+            localStorage.setItem('speed_def_leaderboard', JSON.stringify(cleanList));
+            return cleanList;
         }
 
         function openLeaderboardModal() {
@@ -1514,10 +1395,10 @@
             document.getElementById('modal-leaderboard').classList.add('hidden');
         }
 
-        window.renderUserLeaderboard = function() {
+        function renderUserLeaderboard() {
             const tbody = document.getElementById('user-leaderboard-body');
             tbody.innerHTML = '';
-            let leaderboard = window.remoteLeaderboard || [];
+            let leaderboard = getCleanLeaderboard();
 
             if (leaderboard.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-slate-500">등록된 순위가 없습니다.</td></tr>`;
@@ -1539,7 +1420,7 @@
                     tbody.appendChild(row);
                 });
             }
-        };
+        }
 
         function openAdminAuthModal() {
             document.getElementById('input-admin-pin').value = '';
@@ -1563,7 +1444,7 @@
 
         function submitAdminPin() {
             const inputPin = document.getElementById('input-admin-pin').value;
-            if (inputPin === window.adminPin) {
+            if (inputPin === adminPin) {
                 closeAdminAuthModal();
                 renderAdminLeaderboard();
                 document.getElementById('modal-admin-panel').classList.remove('hidden');
@@ -1577,10 +1458,10 @@
             document.getElementById('modal-admin-panel').classList.add('hidden');
         }
 
-        window.renderAdminLeaderboard = function() {
+        function renderAdminLeaderboard() {
             const tbody = document.getElementById('admin-leaderboard-body');
             tbody.innerHTML = '';
-            let leaderboard = window.remoteLeaderboard || [];
+            let leaderboard = getCleanLeaderboard();
 
             const searchKey = (document.getElementById('input-admin-search')?.value || '').trim().toLowerCase();
             if (searchKey) {
@@ -1610,47 +1491,38 @@
                     tbody.appendChild(row);
                 });
             }
-        };
+        }
 
         function deleteLeaderboardItem(nameToDelete) {
-            if (window.deleteStudentFromFirestore) {
-                window.deleteStudentFromFirestore(nameToDelete);
-                showToast(`${nameToDelete} 요원의 기록이 실시간 삭제되었습니다.`);
-            }
+            let leaderboard = JSON.parse(localStorage.getItem('speed_def_leaderboard') || '[]');
+            leaderboard = leaderboard.filter(item => item.name !== nameToDelete);
+            localStorage.setItem('speed_def_leaderboard', JSON.stringify(leaderboard));
+            renderAdminLeaderboard();
+            showToast(`${nameToDelete} 요원의 기록이 삭제되었습니다.`);
         }
 
         function updateAdminSettings() {
             const wavesVal = parseInt(document.getElementById('admin-set-waves').value);
             const speedVal = parseFloat(document.getElementById('admin-set-speed').value);
-            if (!isNaN(wavesVal)) window.maxWaves = wavesVal;
-            if (!isNaN(speedVal)) window.speedFactor = speedVal;
-
-            if (window.updateAdminSettingsInFirestore) {
-                window.updateAdminSettingsInFirestore(window.maxWaves, window.speedFactor);
-            }
-            showToast('작전 설정이 실시간 반영되었습니다.');
+            if (!isNaN(wavesVal)) maxWaves = wavesVal;
+            if (!isNaN(speedVal)) speedFactor = speedVal;
+            showToast('작전 설정이 변경되었습니다.');
         }
 
-        async function changeAdminPin() {
+        function changeAdminPin() {
             const newPin = document.getElementById('input-new-pin').value.trim();
             if (newPin.length < 4) {
                 showToast('비밀번호는 최소 4자리 이상이어야 합니다.', true);
                 return;
             }
-            
-            if (window.updateAdminPinInFirestore) {
-                const ok = await window.updateAdminPinInFirestore(newPin);
-                if (ok) {
-                    document.getElementById('input-new-pin').value = '';
-                    showToast('🔑 교사용 비밀번호가 전 기기 실시간 변경되었습니다!');
-                } else {
-                    showToast('비밀번호 변경 실패 (네트워크 연결 확인)', true);
-                }
-            }
+            adminPin = newPin;
+            localStorage.setItem('speed_def_admin_pin', adminPin);
+            document.getElementById('input-new-pin').value = '';
+            showToast('🔑 교사용 비밀번호가 변경되었습니다!');
         }
 
         function exportLeaderboardData() {
-            let leaderboard = window.remoteLeaderboard || [];
+            let leaderboard = getCleanLeaderboard();
             if (leaderboard.length === 0) {
                 showToast('내보낼 데이터가 없습니다.', true);
                 return;
@@ -1697,13 +1569,12 @@
             document.getElementById('reset-auth-err').classList.add('hidden');
         }
 
-        async function submitResetPin() {
+        function submitResetPin() {
             const inputPin = document.getElementById('input-reset-pin').value;
-            if (inputPin === window.adminPin) {
+            if (inputPin === adminPin) {
                 closeResetAuthModal();
-                if (window.resetAllLeaderboardFirestore) {
-                    await window.resetAllLeaderboardFirestore();
-                }
+                localStorage.removeItem('speed_def_leaderboard');
+                renderAdminLeaderboard();
                 document.getElementById('modal-reset-success').classList.remove('hidden');
             } else {
                 document.getElementById('reset-auth-err').classList.remove('hidden');
@@ -1715,12 +1586,121 @@
             document.getElementById('modal-reset-success').classList.add('hidden');
         }
 
-        function openRulesModal() {
-            document.getElementById('modal-rules').classList.remove('hidden');
-        }
+        function openRulesModal() { document.getElementById('modal-rules').classList.remove('hidden'); }
+        function closeRulesModal() { document.getElementById('modal-rules').classList.add('hidden'); }
 
-        function closeRulesModal() {
-            document.getElementById('modal-rules').classList.add('hidden');
+        function drawCuteMonster(ctx, x, y, radius, monster) {
+            const time = Date.now() * 0.005;
+            const bounce = Math.sin(time * 3 + monster.id) * 2;
+            const my = y + bounce;
+
+            ctx.save();
+            ctx.translate(x, my);
+
+            // Body Shadow
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+            ctx.beginPath();
+            ctx.ellipse(0, radius + 4, radius * 0.7, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = monster.color;
+            ctx.shadowColor = monster.color;
+            ctx.shadowBlur = 8;
+
+            if (monster.type === 0) {
+                // Slime monster shape
+                ctx.beginPath();
+                ctx.arc(0, 0, radius, Math.PI, 0, false);
+                ctx.bezierCurveTo(radius, radius * 0.8, -radius, radius * 0.8, -radius, 0);
+                ctx.fill();
+
+                // Antenna / horn
+                ctx.beginPath();
+                ctx.arc(0, -radius - 2, 3.5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = monster.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, -radius);
+                ctx.lineTo(0, -radius - 2);
+                ctx.stroke();
+            } else if (monster.type === 1) {
+                // Round monster with cat ears
+                ctx.beginPath();
+                ctx.arc(0, 0, radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Ears
+                ctx.beginPath();
+                ctx.moveTo(-radius * 0.6, -radius * 0.5);
+                ctx.lineTo(-radius * 0.9, -radius * 1.2);
+                ctx.lineTo(-radius * 0.2, -radius * 0.8);
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.moveTo(radius * 0.6, -radius * 0.5);
+                ctx.lineTo(radius * 0.9, -radius * 1.2);
+                ctx.lineTo(radius * 0.2, -radius * 0.8);
+                ctx.fill();
+            } else {
+                // Chubby monster with feet
+                ctx.beginPath();
+                ctx.arc(0, 0, radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Feet
+                ctx.beginPath();
+                ctx.arc(-radius * 0.4, radius * 0.7, 4, 0, Math.PI * 2);
+                ctx.arc(radius * 0.4, radius * 0.7, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.shadowBlur = 0;
+
+            // Rosy Cheeks
+            ctx.fillStyle = 'rgba(255, 150, 180, 0.7)';
+            ctx.beginPath();
+            ctx.arc(-radius * 0.5, radius * 0.15, radius * 0.25, 0, Math.PI * 2);
+            ctx.arc(radius * 0.5, radius * 0.15, radius * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Big expressive eyes
+            const eyeOffsetX = 2.5;
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(-radius * 0.3 + eyeOffsetX, -radius * 0.15, radius * 0.32, 0, Math.PI * 2);
+            ctx.arc(radius * 0.3 + eyeOffsetX, -radius * 0.15, radius * 0.32, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Pupils
+            ctx.fillStyle = '#0f172a';
+            ctx.beginPath();
+            ctx.arc(-radius * 0.25 + eyeOffsetX + 1, -radius * 0.15, radius * 0.16, 0, Math.PI * 2);
+            ctx.arc(radius * 0.35 + eyeOffsetX + 1, -radius * 0.15, radius * 0.16, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Eye shine
+            ctx.fillStyle = '#ffffff';
+            ctx.beginPath();
+            ctx.arc(-radius * 0.3 + eyeOffsetX + 2, -radius * 0.22, radius * 0.08, 0, Math.PI * 2);
+            ctx.arc(radius * 0.3 + eyeOffsetX + 2, -radius * 0.22, radius * 0.08, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Mouth
+            ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            if (monster.hp > 1) {
+                ctx.arc(0, radius * 0.2, radius * 0.2, 0.1, Math.PI - 0.1, false);
+                ctx.stroke();
+            } else {
+                ctx.arc(0, radius * 0.2, radius * 0.15, 0, Math.PI * 2);
+                ctx.fillStyle = '#f43f5e';
+                ctx.fill();
+                ctx.stroke();
+            }
+
+            ctx.restore();
         }
 
         function startAnimationLoop() {
@@ -1728,157 +1708,141 @@
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
 
-            function resizeCanvas() {
-                const rect = canvas.parentElement.getBoundingClientRect();
-                canvas.width = rect.width;
-                canvas.height = rect.height;
-            }
-            resizeCanvas();
-            window.addEventListener('resize', resizeCanvas);
+            function render() {
+                const container = canvas.parentElement;
+                const width = container.clientWidth || 300;
+                const height = container.clientHeight || 200;
+                const dpr = window.devicePixelRatio || 1;
 
-            let lastTime = performance.now();
+                if (canvas.width !== width * dpr || canvas.height !== height * dpr) {
+                    canvas.width = width * dpr;
+                    canvas.height = height * dpr;
+                }
 
-            function animate(now) {
-                if (isGameOver) return;
-                const dt = (now - lastTime) / 1000;
-                lastTime = now;
+                ctx.save();
+                ctx.scale(dpr, dpr);
+                ctx.clearRect(0, 0, width, height);
 
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                // Grid background
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, width, height);
 
-                // Draw background grid lines
-                ctx.strokeStyle = 'rgba(6, 182, 212, 0.15)';
+                ctx.strokeStyle = '#0f172a';
                 ctx.lineWidth = 1;
-                const gridSize = 30;
-                for (let x = 0; x < canvas.width; x += gridSize) {
-                    ctx.beginPath();
-                    ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height);
-                    ctx.stroke();
+                for (let x = 0; x < width; x += 30) {
+                    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
                 }
-                for (let y = 0; y < canvas.height; y += gridSize) {
-                    ctx.beginPath();
-                    ctx.moveTo(0, y); ctx.lineTo(canvas.width, y);
-                    ctx.stroke();
+                for (let y = 0; y < height; y += 30) {
+                    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
                 }
 
-                // Draw Defense Barrier Line on right
-                const baseLineX = canvas.width * 0.85;
-                ctx.strokeStyle = '#f43f5e';
+                // Defense Wall on Right Edge
+                const wallX = width - 25;
+                ctx.fillStyle = '#1e293b';
+                ctx.fillRect(wallX, 0, 25, height);
+                ctx.strokeStyle = '#38bdf8';
                 ctx.lineWidth = 3;
-                ctx.setLineDash([8, 6]);
-                ctx.beginPath();
-                ctx.moveTo(baseLineX, 0);
-                ctx.lineTo(baseLineX, canvas.height);
-                ctx.stroke();
-                ctx.setLineDash([]);
+                ctx.beginPath(); ctx.moveTo(wallX, 0); ctx.lineTo(wallX, height); ctx.stroke();
 
-                // Spawn Monsters
-                spawnTimer += dt;
-                if (spawnTimer > 1.8 / window.speedFactor && spawnedMonstersCount < totalWaveMonstersToSpawn) {
-                    spawnTimer = 0;
-                    spawnedMonstersCount++;
-                    monsters.push({
-                        x: 0,
-                        y: 0.2 + Math.random() * 0.6,
-                        speed: (0.05 + Math.random() * 0.03) * window.speedFactor,
-                        hp: currentWave >= 3 && Math.random() > 0.6 ? 2 : 1,
-                        maxHp: currentWave >= 3 && Math.random() > 0.6 ? 2 : 1,
-                        type: Math.floor(Math.random() * 3)
-                    });
-                }
+                // Core pulse
+                ctx.fillStyle = '#0284c7';
+                ctx.beginPath(); ctx.arc(wallX + 12, height / 2, 16, 0, Math.PI * 2); ctx.fill();
 
-                // Update & Draw Monsters
-                for (let i = monsters.length - 1; i >= 0; i--) {
-                    const m = monsters[i];
-                    m.x += m.speed * dt;
+                if (!isGameOver) {
+                    // Monster Spawning
+                    spawnTimer++;
+                    if (spawnTimer > (120 / speedFactor) && spawnedMonstersCount < totalWaveMonstersToSpawn) {
+                        spawnTimer = 0;
+                        spawnedMonstersCount++;
+                        const colors = ['#f43f5e', '#a855f7', '#06b6d4', '#10b981', '#f59e0b'];
+                        monsters.push({
+                            id: ++monsterIdCounter,
+                            x: 0,
+                            y: 0.2 + Math.random() * 0.6,
+                            speed: (0.0015 + currentWave * 0.0004) * speedFactor,
+                            hp: 1,
+                            type: Math.floor(Math.random() * 3),
+                            color: colors[Math.floor(Math.random() * colors.length)]
+                        });
+                    }
 
-                    const posX = m.x * canvas.width;
-                    const posY = m.y * canvas.height;
+                    // Update & Draw Monsters
+                    for (let i = monsters.length - 1; i >= 0; i--) {
+                        const m = monsters[i];
+                        m.x += m.speed;
 
-                    // Reached Base
-                    if (m.x >= 0.85) {
-                        playSound('hit');
-                        baseHp -= 15;
-                        combo = 0;
-                        updateHUD();
-                        monsters.splice(i, 1);
+                        if (m.x >= 0.92) {
+                            playSound('hit');
+                            baseHp -= 15;
+                            combo = 0;
+                            updateHUD();
+                            monsters.splice(i, 1);
+                            showToast('경고! 몬스터가 기지에 침투하였습니다! (-15 HP)', true);
 
-                        if (baseHp <= 0) {
-                            endGame(false);
-                            return;
+                            if (baseHp <= 0) {
+                                endGame(false);
+                                break;
+                            }
+                            continue;
                         }
-                        continue;
+
+                        const px = m.x * (width - 30);
+                        const py = m.y * height;
+
+                        // Draw cute monster
+                        drawCuteMonster(ctx, px, py, 14, m);
                     }
-
-                    // Draw cute monster
-                    ctx.save();
-                    ctx.translate(posX, posY);
-
-                    const colors = ['#f59e0b', '#ec4899', '#a855f7'];
-                    ctx.fillStyle = colors[m.type % colors.length];
-                    ctx.beginPath();
-                    ctx.arc(0, 0, 16, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.lineWidth = 2;
-                    ctx.strokeStyle = '#ffffff';
-                    ctx.stroke();
-
-                    // Eyes
-                    ctx.fillStyle = '#ffffff';
-                    ctx.beginPath();
-                    ctx.arc(-5, -4, 4, 0, Math.PI * 2);
-                    ctx.arc(5, -4, 4, 0, Math.PI * 2);
-                    ctx.fill();
-                    ctx.fillStyle = '#000000';
-                    ctx.beginPath();
-                    ctx.arc(-4, -4, 2, 0, Math.PI * 2);
-                    ctx.arc(6, -4, 2, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // HP Bar
-                    if (m.maxHp > 1) {
-                        ctx.fillStyle = '#334155';
-                        ctx.fillRect(-15, -24, 30, 4);
-                        ctx.fillStyle = '#10b981';
-                        ctx.fillRect(-15, -24, (m.hp / m.maxHp) * 30, 4);
-                    }
-
-                    ctx.restore();
                 }
 
-                // Draw Lasers
+                // Render Lasers
                 for (let i = laserEffects.length - 1; i >= 0; i--) {
                     const l = laserEffects[i];
                     ctx.strokeStyle = l.color;
+                    ctx.shadowColor = l.color;
+                    ctx.shadowBlur = 15;
                     ctx.lineWidth = 4;
+                    ctx.globalAlpha = l.alpha;
+
                     ctx.beginPath();
-                    ctx.moveTo(l.startX * canvas.width, l.startY * canvas.height);
-                    ctx.lineTo(l.endX * canvas.width, l.endY * canvas.height);
+                    ctx.moveTo(l.startX * width, l.startY * height);
+                    ctx.lineTo(l.endX * (width - 30), l.endY * height);
                     ctx.stroke();
 
-                    l.alpha -= dt * 4;
+                    ctx.globalAlpha = 1.0;
+                    l.alpha -= 0.1;
                     if (l.alpha <= 0) laserEffects.splice(i, 1);
                 }
 
-                // Draw Explosions
+                // Render Explosions
                 for (let i = explosionParticles.length - 1; i >= 0; i--) {
                     const p = explosionParticles[i];
                     p.x += p.vx;
                     p.y += p.vy;
-                    p.life -= dt * 2;
+                    p.life -= 0.04;
+
+                    if (p.life <= 0) {
+                        explosionParticles.splice(i, 1);
+                        continue;
+                    }
 
                     ctx.fillStyle = p.color;
+                    ctx.globalAlpha = p.life;
                     ctx.beginPath();
-                    ctx.arc(p.x * canvas.width, p.y * canvas.height, Math.max(1, p.life * 6), 0, Math.PI * 2);
+                    ctx.arc(p.x * (width - 30), p.y * height, 3.5, 0, Math.PI * 2);
                     ctx.fill();
-
-                    if (p.life <= 0) explosionParticles.splice(i, 1);
+                    ctx.globalAlpha = 1.0;
                 }
 
-                checkWaveProgress();
-                animFrameId = requestAnimationFrame(animate);
+                if (!isGameOver) {
+                    checkWaveProgress();
+                }
+
+                ctx.restore();
+                animFrameId = requestAnimationFrame(render);
             }
 
-            animFrameId = requestAnimationFrame(animate);
+            if (animFrameId) cancelAnimationFrame(animFrameId);
+            render();
         }
     </script>
 </body>
