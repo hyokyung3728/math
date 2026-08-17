@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -6,9 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>함수 블랙잭 : 일차함수 Risk & Bet</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Jua&family=Noto+Sans+KR:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
+        html, body {
+            height: 100%;
+            height: 100dvh;
+        }
         body {
             font-family: 'Noto Sans KR', sans-serif;
             touch-action: manipulation;
@@ -29,51 +33,51 @@
         .gold-pulse { animation: pulse-gold 2s infinite; }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 h-screen max-h-screen flex flex-col justify-between overflow-hidden">
+<body class="bg-slate-900 text-slate-100 h-[100dvh] max-h-[100dvh] flex flex-col justify-between overflow-hidden">
 
     <!-- 상단 헤더 / 스코어바 -->
-    <header class="bg-slate-800/90 border-b border-slate-700 backdrop-blur px-3 py-2 z-30 shrink-0">
-        <div class="w-full flex items-center justify-between">
-            <div class="flex items-center space-x-2">
-                <div class="bg-gradient-to-tr from-amber-500 to-yellow-300 text-slate-950 p-1.5 rounded-lg shadow">
-                    <i class="fa-solid fa-chart-line text-lg"></i>
+    <header class="bg-slate-800/90 border-b border-slate-700 backdrop-blur px-2 md:px-3 py-1 md:py-2 z-30 shrink-0">
+        <div class="w-full flex flex-nowrap items-center justify-between gap-2">
+            <div class="flex min-w-0 items-center gap-1.5 shrink-0">
+                <div class="bg-gradient-to-tr from-amber-500 to-yellow-300 text-slate-950 p-1 md:p-1.5 rounded-lg shadow shrink-0">
+                    <i class="fa-solid fa-chart-line text-sm md:text-lg"></i>
                 </div>
-                <div>
-                    <h1 class="font-jua text-lg md:text-xl text-yellow-400 tracking-wide leading-none">일차함수 블랙잭</h1>
-                    <p class="text-[11px] text-slate-400 leading-tight">중2 일차함수 복습 베팅 게임</p>
+                <div class="min-w-0">
+                    <h1 class="font-jua text-sm sm:text-base md:text-xl text-yellow-400 tracking-tight leading-none whitespace-nowrap">일차함수 블랙잭</h1>
+                    <p class="hidden md:block text-[11px] text-slate-400 leading-tight whitespace-nowrap">중2 일차함수 복습 베팅 게임</p>
                 </div>
             </div>
 
             <!-- 상태 및 보유 칩 & 컨트롤 버튼 -->
-            <div class="flex items-center space-x-2 md:space-x-3">
+            <div class="flex flex-nowrap items-center justify-end gap-1 md:gap-2.5 min-w-0">
                 <div id="player-name-tag" class="hidden bg-indigo-950/80 border border-indigo-500/40 px-2.5 py-1 rounded-full text-xs font-bold text-indigo-300 flex items-center space-x-1">
                     <i class="fa-solid fa-user-astronaut text-indigo-400"></i>
-                    <span id="display-player-name">학생</span>
+                    <span id="display-player-name" class="max-w-[7rem] truncate">학생</span>
                 </div>
-                <div class="bg-slate-950/80 border border-slate-700 px-3 py-1 rounded-full flex items-center space-x-2">
-                    <i class="fa-solid fa-coins text-amber-400 text-base"></i>
-                    <span id="player-chips" class="font-jua text-base md:text-lg text-amber-300">1000</span>
-                    <span class="text-[10px] text-slate-400">CHIPS</span>
+                <div class="bg-slate-950/80 border border-slate-700 px-2 md:px-3 py-0.5 md:py-1 rounded-full flex items-center gap-1.5 shrink-0">
+                    <i class="fa-solid fa-coins text-amber-400 text-sm md:text-base"></i>
+                    <span id="player-chips" class="font-jua text-sm md:text-lg text-amber-300">1000</span>
+                    <span class="hidden sm:inline text-[10px] text-slate-400">CHIPS</span>
                 </div>
                 <!-- 인게임 첫 화면 복귀 버튼 (클릭 및 터치 영역 확장) -->
                 <button id="btn-exit-main" onclick="exitToMainMenu()" class="hidden bg-slate-700 hover:bg-rose-900/80 active:bg-rose-800 border border-slate-600 hover:border-rose-600 text-slate-200 hover:text-rose-200 px-3.5 py-1.5 md:px-4 md:py-2 rounded-xl text-xs md:text-sm font-bold shadow-md transition-all transform active:scale-95 flex items-center space-x-1.5 cursor-pointer shrink-0" title="첫 화면으로 돌아가기">
                     <i class="fa-solid fa-house text-rose-400 text-sm"></i>
-                    <span class="whitespace-nowrap">처음으로</span>
+                    <span class="hidden sm:inline whitespace-nowrap">처음으로</span>
                 </button>
-                <button id="btn-sound" onclick="toggleSound()" class="bg-slate-700 hover:bg-slate-600 w-8 h-8 rounded-full flex items-center justify-center text-slate-300 transition text-sm">
+                <button id="btn-sound" onclick="toggleSound()" class="bg-slate-700 hover:bg-slate-600 w-7 h-7 md:w-8 md:h-8 shrink-0 rounded-full flex items-center justify-center text-slate-300 transition text-sm">
                     <i class="fa-solid fa-volume-high"></i>
                 </button>
-                <button onclick="openLeaderboardModal()" class="bg-amber-600 hover:bg-amber-500 text-white px-2.5 py-1 rounded-lg text-xs font-bold shadow transition flex items-center space-x-1">
+                <button onclick="openLeaderboardModal()" class="bg-amber-600 hover:bg-amber-500 text-white px-2 md:px-2.5 py-1 shrink-0 rounded-lg text-xs font-bold shadow transition flex items-center space-x-1">
                     <i class="fa-solid fa-trophy text-amber-300"></i>
-                    <span>순위표</span>
+                    <span class="hidden sm:inline">순위표</span>
                 </button>
-                <button onclick="openRulesModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1 rounded-lg text-xs font-bold shadow transition flex items-center space-x-1">
+                <button onclick="openRulesModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-2 md:px-2.5 py-1 shrink-0 rounded-lg text-xs font-bold shadow transition flex items-center space-x-1">
                     <i class="fa-solid fa-circle-question"></i>
-                    <span>규칙</span>
+                    <span class="hidden sm:inline">규칙</span>
                 </button>
-                <button onclick="openAdminAuthModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 border border-slate-600 px-2.5 py-1 rounded-lg text-xs font-bold shadow transition flex items-center space-x-1" title="교사용 관리자">
+                <button onclick="openAdminAuthModal()" class="bg-slate-700 hover:bg-slate-600 text-slate-300 border border-slate-600 px-2 md:px-2.5 py-1 shrink-0 rounded-lg text-xs font-bold shadow transition flex items-center space-x-1" title="교사용 관리자">
                     <i class="fa-solid fa-key text-amber-400"></i>
-                    <span>교사용</span>
+                    <span class="hidden sm:inline">교사용</span>
                 </button>
             </div>
         </div>
@@ -85,10 +89,10 @@
         <span id="toast-msg">메시지 내용</span>
     </div>
 
-    <main class="w-full flex-grow px-2 py-1.5 overflow-hidden flex flex-col justify-center">
+    <main class="w-full flex-1 min-h-0 px-1.5 md:px-2 py-1 md:py-1.5 overflow-hidden flex flex-col justify-center">
 
         <!-- [모드 선택 / 이름 입력 시작 화면] -->
-        <div id="screen-mode-select" class="space-y-4 my-auto py-2 max-w-xl mx-auto w-full text-center">
+        <div id="screen-mode-select" class="space-y-3 md:space-y-4 my-auto py-1 max-w-xl mx-auto w-full text-center max-h-full overflow-y-auto">
             <div class="space-y-1.5">
                 <span class="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-3 py-0.5 rounded-full text-xs font-semibold">태블릿 전용 수학 액티비티</span>
                 <h2 class="font-jua text-3xl md:text-4xl text-white">리스크를 감수하고 정답을 맞혀라!</h2>
@@ -126,10 +130,10 @@
         </div>
 
         <!-- [게임 플레이 화면: 한 화면 3열 레이아웃] -->
-        <div id="screen-game" class="hidden h-full grid grid-cols-12 gap-2.5 items-stretch">
+        <div id="screen-game" class="hidden h-full min-h-0 grid grid-cols-12 gap-1.5 md:gap-2.5 items-stretch">
 
             <!-- 열 1: 힌트 카드 목록 (5/12 너비) -->
-            <div class="col-span-5 flex flex-col justify-between space-y-1.5 h-full">
+            <div class="col-span-5 flex flex-col justify-between space-y-1 md:space-y-1.5 h-full min-h-0">
                 <!-- 라운드 & 배당 상태 & 문제 리셋 & 타이머 -->
                 <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-2 flex items-center justify-between shadow shrink-0">
                     <div>
@@ -147,7 +151,7 @@
                 </div>
 
                 <!-- 힌트 카드 목록 (5단계) -->
-                <div class="flex-1 flex flex-col justify-between space-y-1 overflow-y-auto">
+                <div class="flex-1 min-h-0 flex flex-col justify-between space-y-1 overflow-y-auto">
                     <!-- 족집게 특수 힌트 배너 (아이템 구매 시 출현) -->
                     <div id="scope-hint-card" class="hidden bg-gradient-to-r from-emerald-950 to-slate-900 border-2 border-emerald-400 p-2 rounded-xl transition-all shadow-md animate-pulse">
                         <div class="flex items-center justify-between text-[11px] font-bold mb-0.5 text-emerald-300">
@@ -215,7 +219,7 @@
             </div>
 
             <!-- 열 2: 답안 입력 & 베팅 설정 (4/12 너비) -->
-            <div class="col-span-4 bg-slate-800/90 border border-slate-700 rounded-2xl p-2.5 shadow-xl flex flex-col justify-between h-full">
+            <div class="col-span-4 bg-slate-800/90 border border-slate-700 rounded-2xl p-2 md:p-2.5 shadow-xl flex flex-col justify-between h-full min-h-0 overflow-y-auto">
                 <h3 class="font-jua text-sm text-slate-200 border-b border-slate-700/80 pb-1 flex items-center justify-between shrink-0">
                     <span><i class="fa-solid fa-pen-to-square text-indigo-400 mr-1"></i>일차함수식 입력</span>
                     <span class="text-[10px] font-normal text-slate-400">형식: <span class="italic">y = ax + b</span></span>
@@ -289,7 +293,7 @@
             </div>
 
             <!-- 열 3: 제일 오른쪽 시각화 좌표평면 레이더 (3/12 너비) -->
-            <div class="col-span-3 bg-slate-800/90 border border-slate-700 rounded-2xl p-2.5 shadow-xl flex flex-col justify-between items-center h-full">
+            <div class="col-span-3 bg-slate-800/90 border border-slate-700 rounded-2xl p-2 md:p-2.5 shadow-xl flex flex-col justify-between items-center h-full min-h-0">
                 <div class="w-full flex items-center justify-between text-[11px] text-slate-400 shrink-0 mb-1">
                     <span><i class="fa-solid fa-circle-nodes text-emerald-400 mr-1"></i>그래프 레이더</span>
                     <span id="canvas-status" class="text-[10px] text-amber-300">대기 중</span>
@@ -343,7 +347,7 @@
         </div>
 
         <!-- [최종 게임 종료 성적표] -->
-        <div id="screen-game-over" class="hidden max-w-md mx-auto w-full bg-slate-800 border-2 border-amber-500/50 rounded-2xl p-5 text-center space-y-4 shadow-2xl my-auto">
+        <div id="screen-game-over" class="hidden max-w-md mx-auto w-full max-h-full overflow-y-auto bg-slate-800 border-2 border-amber-500/50 rounded-2xl p-5 text-center space-y-4 shadow-2xl my-auto">
             <div class="w-14 h-14 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center text-3xl mx-auto border border-amber-500/40 gold-pulse">
                 <i class="fa-solid fa-crown"></i>
             </div>
@@ -584,7 +588,17 @@
         // 웹 오디오 API를 이용한 효과음 발생기
         let audioCtx = null;
         let soundEnabled = true;
-        let adminPin = localStorage.getItem('func_blackjack_admin_pin') || '1234';
+        // ===== 클라우드(실시간 공유) 연동 =====
+        const CLOUD_URL = "https://lxixistyugomargqefbs.supabase.co";
+        const CLOUD_KEY = "sb_publishable_Tj1k1gMOKBOEkom81GSHbQ_q2OTi888";
+        const cloud = window.supabase.createClient(CLOUD_URL, CLOUD_KEY, {
+            auth: { persistSession: false, autoRefreshToken: false }
+        });
+
+        // 인증에 성공한 교사용 비밀번호(해당 세션에서만 사용)
+        let verifiedAdminPin = null;
+        // 클라우드에서 내려받은 순위표 캐시
+        let leaderboardCache = [];
 
         // 연습 모드 여부 플래그
         let isPracticeMode = false;
@@ -1127,8 +1141,8 @@
         // 처음에 이름 입력 없이 연습모드로 시작
         function initPracticeGame() {
             isPracticeMode = true;
-            playerName = "연습생";
-            document.getElementById('display-player-name').textContent = "연습생 (연습모드)";
+            playerName = "연습모드";
+            document.getElementById('display-player-name').textContent = "연습모드";
             document.getElementById('player-name-tag').classList.remove('hidden');
             showToast("🎮 연습모드로 게임을 시작합니다. (순위표 미기록)");
             startGame();
@@ -1216,24 +1230,52 @@
             }
         }
 
-        function saveScoreToLeaderboard(name, chips, timeSec, badge) {
-            let leaderboard = JSON.parse(localStorage.getItem('func_blackjack_leaderboard') || '[]');
-            leaderboard.push({ name, chips, timeSec, badge, date: new Date().toLocaleDateString('ko-KR') });
-            
-            leaderboard.sort((a, b) => {
-                if (b.chips !== a.chips) return b.chips - a.chips;
-                return (a.timeSec || 999) - (b.timeSec || 999);
+        async function saveScoreToLeaderboard(name, chips, timeSec, badge) {
+            const { error } = await cloud.from('game_scores').insert({
+                name: name, chips: chips, time_sec: timeSec, badge: badge
             });
-
-            leaderboard = leaderboard.slice(0, 10);
-            localStorage.setItem('func_blackjack_leaderboard', JSON.stringify(leaderboard));
+            if (error) {
+                showToast('기록 저장에 실패했습니다. 네트워크를 확인해 주세요.', true);
+                return;
+            }
+            await fetchLeaderboard();
         }
 
-        function openLeaderboardModal() {
+        // 클라우드에서 순위표(TOP 10) 가져오기
+        async function fetchLeaderboard() {
+            const { data, error } = await cloud
+                .from('game_scores')
+                .select('name, chips, time_sec, badge, created_at')
+                .order('chips', { ascending: false })
+                .order('time_sec', { ascending: true })
+                .limit(10);
+            if (error) return leaderboardCache;
+            leaderboardCache = (data || []).map(function (row) {
+                return {
+                    name: row.name,
+                    chips: row.chips,
+                    timeSec: row.time_sec,
+                    badge: row.badge,
+                    date: new Date(row.created_at).toLocaleDateString('ko-KR')
+                };
+            });
+            return leaderboardCache;
+        }
+
+        async function openLeaderboardModal() {
             const tbody = document.getElementById('leaderboard-body');
+            tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-slate-500">기록을 불러오는 중...</td></tr>`;
+            document.getElementById('modal-leaderboard').classList.remove('hidden');
+            await fetchLeaderboard();
+            renderLeaderboard();
+        }
+
+        function renderLeaderboard() {
+            const tbody = document.getElementById('leaderboard-body');
+            if (!tbody) return;
             tbody.innerHTML = '';
 
-            let leaderboard = JSON.parse(localStorage.getItem('func_blackjack_leaderboard') || '[]');
+            let leaderboard = leaderboardCache;
             
             if (leaderboard.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" class="text-center py-4 text-slate-500">아직 등록된 기록이 없습니다!</td></tr>`;
@@ -1255,8 +1297,6 @@
                     tbody.appendChild(row);
                 });
             }
-
-            document.getElementById('modal-leaderboard').classList.remove('hidden');
         }
 
         function closeLeaderboardModal() {
@@ -1274,11 +1314,19 @@
             document.getElementById('modal-admin-auth').classList.add('hidden');
         }
 
-        function authenticateAdmin() {
+        async function authenticateAdmin() {
             const pin = document.getElementById('input-admin-pin').value;
             const errEl = document.getElementById('admin-auth-error');
 
-            if (pin === adminPin) {
+            const { data, error } = await cloud.rpc('verify_admin_pin', { p_pin: pin });
+
+            if (error) {
+                showToast('네트워크 오류로 인증에 실패했습니다.', true);
+                return;
+            }
+
+            if (data === true) {
+                verifiedAdminPin = pin;
                 if (errEl) errEl.classList.add('hidden');
                 closeAdminAuthModal();
                 openAdminPanelModal();
@@ -1287,18 +1335,22 @@
             }
         }
 
-        function openAdminPanelModal() {
-            renderAdminLeaderboard();
-            document.getElementById('admin-set-rounds').value = totalRounds;
+        async function openAdminPanelModal() {
             document.getElementById('modal-admin-panel').classList.remove('hidden');
+            await loadGameSettings();
+            document.getElementById('admin-set-rounds').value = totalRounds;
+            const chipsSelect = document.getElementById('admin-set-chips');
+            if (chipsSelect) chipsSelect.value = String(initialChips);
+            await renderAdminLeaderboard();
         }
 
-        function renderAdminLeaderboard() {
+        async function renderAdminLeaderboard() {
             const tbody = document.getElementById('admin-leaderboard-body');
             if (!tbody) return;
+            await fetchLeaderboard();
             tbody.innerHTML = '';
 
-            let leaderboard = JSON.parse(localStorage.getItem('func_blackjack_leaderboard') || '[]');
+            let leaderboard = leaderboardCache;
             
             if (leaderboard.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-slate-500">등록된 순위 데이터가 없습니다.</td></tr>`;
@@ -1327,7 +1379,7 @@
         }
 
         // 라운드 수 직접 입력 및 초기 지급 칩 업데이트
-        function updateAdminSettings() {
+        async function updateAdminSettings() {
             const roundsInput = document.getElementById('admin-set-rounds');
             const chipsSelect = document.getElementById('admin-set-chips');
 
@@ -1335,27 +1387,57 @@
             if (isNaN(parsedRounds) || parsedRounds < 1) {
                 parsedRounds = 1;
             }
-            totalRounds = parsedRounds;
-            initialChips = parseInt(chipsSelect.value);
 
-            document.getElementById('info-total-rounds').textContent = totalRounds;
-            showToast(`설정이 변경되었습니다: ${totalRounds}라운드 / ${initialChips}칩`);
+            const { data, error } = await cloud.rpc('admin_update_settings', {
+                p_pin: verifiedAdminPin,
+                p_rounds: parsedRounds,
+                p_chips: parseInt(chipsSelect.value)
+            });
+
+            if (error || data !== true) {
+                showToast('설정 저장에 실패했습니다. 다시 인증해 주세요.', true);
+                return;
+            }
+
+            await loadGameSettings();
+            showToast(`모든 기기에 설정이 적용되었습니다: ${totalRounds}라운드 / ${initialChips}칩`);
         }
 
-        function changeAdminPin() {
+        // 클라우드에 저장된 공용 설정 불러오기
+        async function loadGameSettings() {
+            const { data, error } = await cloud.rpc('get_public_settings');
+            if (error || !data || !data.length) return;
+            const row = Array.isArray(data) ? data[0] : data;
+            totalRounds = row.total_rounds;
+            initialChips = row.initial_chips;
+            const infoEl = document.getElementById('info-total-rounds');
+            if (infoEl) infoEl.textContent = totalRounds;
+        }
+
+        async function changeAdminPin() {
             const newPin = document.getElementById('input-new-admin-pin').value.trim();
             if (newPin.length < 4) {
                 showToast('비밀번호는 최소 4자리 이상이어야 합니다.', true);
                 return;
             }
-            adminPin = newPin;
-            localStorage.setItem('func_blackjack_admin_pin', adminPin);
+
+            const { data, error } = await cloud.rpc('admin_change_pin', {
+                p_pin: verifiedAdminPin,
+                p_new_pin: newPin
+            });
+
+            if (error || data !== true) {
+                showToast('비밀번호 변경에 실패했습니다. 다시 인증해 주세요.', true);
+                return;
+            }
+
+            verifiedAdminPin = newPin;
             document.getElementById('input-new-admin-pin').value = '';
-            showToast('관리자 비밀번호가 새로 변경되었습니다.');
+            showToast('비밀번호가 변경되었습니다. 모든 기기에 즉시 적용됩니다.');
         }
 
         function exportLeaderboardData() {
-            let leaderboard = JSON.parse(localStorage.getItem('func_blackjack_leaderboard') || '[]');
+            let leaderboard = leaderboardCache;
             if (leaderboard.length === 0) {
                 showToast('복사할 순위표 데이터가 없습니다.', true);
                 return;
@@ -1387,11 +1469,15 @@
         }
 
         // 실제 초기화 실행
-        function confirmResetLeaderboard() {
-            localStorage.removeItem('func_blackjack_leaderboard');
-            renderAdminLeaderboard();
+        async function confirmResetLeaderboard() {
+            const { data, error } = await cloud.rpc('admin_reset_scores', { p_pin: verifiedAdminPin });
+            if (error || data !== true) {
+                showToast('초기화에 실패했습니다. 다시 인증해 주세요.', true);
+                return;
+            }
+            await renderAdminLeaderboard();
             closeResetConfirmModal();
-            showToast('순위표 데이터가 완전히 초기화되었습니다.');
+            showToast('모든 기기의 순위표 데이터가 초기화되었습니다.');
         }
 
         function openRulesModal() { document.getElementById('modal-rules').classList.remove('hidden'); }
@@ -1553,6 +1639,25 @@
 
         window.addEventListener('resize', drawEmptyCanvas);
         window.addEventListener('load', drawEmptyCanvas);
+
+        // ===== 실시간 순위표 동기화 =====
+        cloud.channel('game_scores_realtime')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'game_scores' }, async function () {
+                await fetchLeaderboard();
+                if (!document.getElementById('modal-leaderboard').classList.contains('hidden')) {
+                    renderLeaderboard();
+                }
+                const adminPanel = document.getElementById('modal-admin-panel');
+                if (adminPanel && !adminPanel.classList.contains('hidden')) {
+                    await renderAdminLeaderboard();
+                }
+            })
+            .subscribe();
+
+        // 첫 진입 시 공용 설정과 순위표를 클라우드에서 불러오고, 주기적으로 최신화
+        loadGameSettings();
+        fetchLeaderboard();
+        setInterval(loadGameSettings, 15000);
     </script>
 </body>
 </html>
