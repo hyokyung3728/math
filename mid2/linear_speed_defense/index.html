@@ -133,6 +133,17 @@
                     <input type="text" id="input-player-name" maxlength="12" placeholder="예: 2701김효경" class="w-full bg-slate-950 border border-cyan-500/40 rounded-xl px-4 py-2.5 text-white font-bold text-sm focus:outline-none focus:border-cyan-400 transition shadow-inner">
                 </div>
 
+                <div>
+                    <label class="block text-xs text-cyan-300 font-bold mb-1.5">
+                        <i class="fa-solid fa-school text-cyan-400 mr-1"></i>방코드 (교사가 안내한 학급 코드)
+                    </label>
+                    <div class="flex space-x-2">
+                        <input type="text" id="input-room-code" maxlength="20" placeholder="예: 7B9K 또는 1BAN-MATH" class="flex-1 bg-slate-950 border border-cyan-500/40 rounded-xl px-4 py-2.5 text-white font-bold text-sm uppercase focus:outline-none focus:border-cyan-400 transition shadow-inner">
+                        <button onclick="joinRoomFromMain()" class="bg-cyan-700 hover:bg-cyan-600 text-white font-bold text-xs px-4 rounded-xl border border-cyan-400/30 transition whitespace-nowrap">입장</button>
+                    </div>
+                    <p id="room-status-text" class="text-[11px] text-slate-400 mt-1.5">방코드 없이도 연습 훈련 모드는 이용할 수 있습니다.</p>
+                </div>
+
                 <div class="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-2 font-sans">
                     <p class="text-amber-400 font-bold flex items-center text-xs"><i class="fa-solid fa-bolt mr-1.5"></i>스피드 작전 3대 수칙</p>
                     <div class="space-y-1 text-[11px] md:text-xs">
@@ -330,6 +341,24 @@
             </button>
         </div>
 
+        <!-- [4-1. 방코드 입력 모달] -->
+        <div id="modal-room" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+            <div class="bg-slate-900 border border-cyan-500/40 w-full max-w-xs rounded-2xl p-5 space-y-4 shadow-2xl text-center">
+                <div class="w-12 h-12 bg-cyan-500/20 text-cyan-300 rounded-full flex items-center justify-center text-xl mx-auto border border-cyan-500/30">
+                    <i class="fa-solid fa-school"></i>
+                </div>
+                <div>
+                    <h3 class="font-tech font-bold text-lg text-cyan-300">학급 방 입장</h3>
+                    <p class="text-[11px] text-slate-400 mt-0.5">교사가 안내한 방코드와 학번이름을 입력하세요.</p>
+                </div>
+                <input type="text" id="modal-input-room-code" maxlength="20" placeholder="방코드 (예: 7B9K)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-center text-cyan-200 font-tech font-bold tracking-widest uppercase focus:outline-none focus:border-cyan-400">
+                <input type="text" id="modal-input-nickname" maxlength="12" placeholder="학번이름 (예: 2701김효경)" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-center text-white font-bold text-sm focus:outline-none focus:border-cyan-400">
+                <p id="modal-room-err" class="text-[10px] text-rose-400 hidden">유효하지 않거나 마감된 방코드입니다. 교사에게 문의하세요.</p>
+                <button onclick="joinRoomFromModal()" class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white font-jua py-2.5 rounded-xl transition text-sm border border-cyan-300/30 shadow-lg">입장하기</button>
+                <button onclick="closeRoomModal()" class="w-full text-xs text-slate-400 hover:text-white pt-1">취소</button>
+            </div>
+        </div>
+
         <!-- [5. 명예의 전당 / 순위표 모달] -->
         <div id="modal-leaderboard" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
             <div class="bg-slate-900 border border-cyan-500/40 w-full max-w-md rounded-2xl p-5 space-y-3.5 shadow-2xl relative text-slate-200">
@@ -341,6 +370,11 @@
                     <button onclick="closeLeaderboardModal()" class="text-slate-400 hover:text-white text-lg px-2">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="tab-modal-class" onclick="switchRankTab('class')" class="py-2 rounded-xl text-xs font-bold border transition">🏫 우리 반 랭킹</button>
+                    <button id="tab-modal-global" onclick="switchRankTab('global')" class="py-2 rounded-xl text-xs font-bold border transition">🏆 전체 랭킹</button>
                 </div>
 
                 <div class="max-h-60 overflow-y-auto pr-1">
@@ -432,6 +466,12 @@
                                 <input type="text" id="input-admin-search" oninput="renderAdminLeaderboard()" placeholder="학생 이름 검색..." class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg pl-7 pr-2 py-1 w-36 focus:outline-none focus:border-cyan-400">
                                 <i class="fa-solid fa-magnifying-glass text-[10px] text-slate-500 absolute left-2.5 top-2"></i>
                             </div>
+                            <select id="select-admin-room" onchange="renderAdminLeaderboard()" class="bg-slate-900 border border-slate-700 text-xs text-white rounded-lg px-2 py-1 focus:outline-none focus:border-cyan-400">
+                                <option value="">전체 방</option>
+                            </select>
+                            <button onclick="exportRoomCSV()" class="text-[10px] bg-emerald-800 hover:bg-emerald-700 text-emerald-200 px-2 py-1 rounded-lg border border-emerald-700 flex items-center space-x-1">
+                                <i class="fa-solid fa-file-csv"></i><span>CSV</span>
+                            </button>
                             <button onclick="renderAdminLeaderboard()" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-cyan-300 px-2 py-1 rounded-lg border border-slate-700 flex items-center space-x-1">
                                 <i class="fa-solid fa-rotate-right"></i>
                                 <span>새로고침</span>
@@ -444,6 +484,7 @@
                             <thead class="text-[10px] text-slate-400 border-b border-slate-800 uppercase bg-slate-900/50 sticky top-0">
                                 <tr>
                                     <th class="py-1.5 px-2">순위</th>
+                                    <th class="py-1.5 px-2">방코드</th>
                                     <th class="py-1.5 px-2">학번/이름</th>
                                     <th class="py-1.5 px-2 text-right">최고 점수</th>
                                     <th class="py-1.5 px-2 text-right">소요시간</th>
@@ -454,6 +495,38 @@
                             <tbody id="admin-leaderboard-body" class="divide-y divide-slate-800">
                                 <!-- JS Dynamic -->
                             </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 방(학급) 관리 -->
+                <div class="bg-slate-950/90 border border-slate-800 p-3.5 rounded-xl space-y-2.5">
+                    <span class="text-xs text-cyan-300 font-bold flex items-center">
+                        <i class="fa-solid fa-door-open mr-1.5"></i>방코드(학급) 관리
+                    </span>
+                    <div class="flex flex-col sm:flex-row gap-2">
+                        <button onclick="createRandomRoom()" class="bg-cyan-700 hover:bg-cyan-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-cyan-400/30 whitespace-nowrap">
+                            <i class="fa-solid fa-dice mr-1"></i>랜덤 생성
+                        </button>
+                        <div class="flex flex-1 gap-2">
+                            <input type="text" id="input-custom-room" maxlength="20" placeholder="직접 지정 (예: 1BAN-MATH)" class="flex-1 bg-slate-900 border border-slate-700 text-xs text-white rounded-lg px-2 py-1.5 uppercase focus:outline-none focus:border-cyan-400">
+                            <button onclick="createCustomRoom()" class="bg-slate-800 hover:bg-slate-700 text-cyan-300 text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-700 whitespace-nowrap">생성</button>
+                        </div>
+                    </div>
+                    <p id="custom-room-err" class="text-[10px] text-rose-400 hidden">이미 사용 중인 방코드입니다</p>
+
+                    <div class="max-h-44 overflow-y-auto pr-1">
+                        <table class="w-full text-left text-xs font-sans">
+                            <thead class="text-[10px] text-slate-400 border-b border-slate-800 uppercase bg-slate-900/50 sticky top-0">
+                                <tr>
+                                    <th class="py-1.5 px-2">방코드</th>
+                                    <th class="py-1.5 px-2 text-center">학생 수</th>
+                                    <th class="py-1.5 px-2 text-center">전체 랭킹</th>
+                                    <th class="py-1.5 px-2 text-center">활성화</th>
+                                    <th class="py-1.5 px-2 text-center">관리</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-rooms-body" class="divide-y divide-slate-800"></tbody>
                         </table>
                     </div>
                 </div>
@@ -626,12 +699,22 @@
         let audioCtx = null;
         let soundEnabled = true;
         // ===== Lovable Cloud (실시간 공유 기록 저장소) =====
-        const CLOUD_URL = 'https://qsljiiwijsluciqmzivq.supabase.co';
-        const CLOUD_KEY = 'sb_publishable_bpT-cZ6MNCI24MAeEcBk3Q_xn78wLN3';
+        const CLOUD_URL = 'https://cyejsrsgktxoqnalwpja.supabase.co';
+        const CLOUD_KEY = 'sb_publishable_lTJ24YlEJ-znvVlVtpTaug_2GRO31dk';
         const cloud = window.supabase.createClient(CLOUD_URL, CLOUD_KEY, { auth: { persistSession: false } });
 
-        let leaderboardCache = [];
+        let leaderboardCache = [];   // 전체 기록 (room 정보 포함)
+        let roomsCache = [];         // 방 목록
+        let currentRoom = null;      // 현재 입장한 방 정보 (row)
+        let rankTab = 'global';      // 'class' | 'global'
         let currentAdminPin = '';
+
+        const LS_ROOM = 'last_room_code';
+        const LS_NICK = 'nickname';
+
+        function normalizeCode(code) {
+            return (code || '').trim().toUpperCase();
+        }
 
         function sortBoard(list) {
             return list.slice().sort((x, y) => {
@@ -640,33 +723,218 @@
             });
         }
 
+        // 동일 방 + 동일 닉네임은 최고 점수 1건으로 그룹화
+        function groupBest(list) {
+            const map = new Map();
+            list.forEach(item => {
+                const key = `${item.roomCode || '-'}|${item.name}`;
+                const prev = map.get(key);
+                if (!prev || item.score > prev.score || (item.score === prev.score && item.timeSec < prev.timeSec)) {
+                    map.set(key, item);
+                }
+            });
+            return sortBoard(Array.from(map.values()));
+        }
+
+        async function fetchRooms() {
+            const { data, error } = await cloud
+                .from('rooms')
+                .select('room_code, created_type, is_active, allow_global_ranking, created_at')
+                .order('created_at', { ascending: false });
+            if (error) { console.error(error); return roomsCache; }
+            roomsCache = data || [];
+            return roomsCache;
+        }
+
+        async function fetchRoom(code) {
+            const { data, error } = await cloud
+                .from('rooms')
+                .select('room_code, created_type, is_active, allow_global_ranking, created_at')
+                .eq('room_code', normalizeCode(code))
+                .maybeSingle();
+            if (error) { console.error(error); return null; }
+            return data;
+        }
+
         async function fetchLeaderboard() {
             const { data, error } = await cloud
-                .from('scores')
-                .select('name, score, time_sec, played_on')
+                .from('game_records')
+                .select('room_code, nickname, score, play_time, created_at')
                 .order('score', { ascending: false })
-                .order('time_sec', { ascending: true })
-                .limit(500);
+                .order('play_time', { ascending: true })
+                .limit(2000);
             if (error) { console.error(error); return leaderboardCache; }
-            leaderboardCache = (data || []).map(r => ({ name: r.name, score: r.score, timeSec: r.time_sec, date: r.played_on }));
+            leaderboardCache = (data || []).map(r => ({
+                roomCode: r.room_code,
+                name: r.nickname,
+                score: r.score,
+                timeSec: r.play_time,
+                date: r.created_at ? new Date(r.created_at).toLocaleDateString('ko-KR') : '-'
+            }));
             return leaderboardCache;
         }
 
+        function getCleanLeaderboard() {
+            return groupBest(leaderboardCache);
+        }
+
+        function getClassBoard() {
+            if (!currentRoom) return [];
+            return groupBest(leaderboardCache.filter(r => r.roomCode === currentRoom.room_code));
+        }
+
+        function getGlobalBoard() {
+            const allowed = new Set(roomsCache.filter(r => r.allow_global_ranking).map(r => r.room_code));
+            return groupBest(leaderboardCache.filter(r => r.roomCode && allowed.has(r.roomCode)));
+        }
+
         function refreshOpenBoards() {
-            if (!document.getElementById('modal-leaderboard').classList.contains('hidden')) renderUserLeaderboard();
-            if (!document.getElementById('modal-admin-panel').classList.contains('hidden')) renderAdminLeaderboard();
+            renderRankWidget();
+            if (!document.getElementById('modal-admin-panel').classList.contains('hidden')) {
+                renderAdminLeaderboard();
+                renderAdminRooms();
+            }
         }
 
         async function reloadBoards() {
-            await fetchLeaderboard();
+            await Promise.all([fetchRooms(), fetchLeaderboard()]);
             refreshOpenBoards();
         }
 
         function initCloudRealtime() {
-            reloadBoards();
-            cloud.channel('scores-realtime')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'scores' }, () => reloadBoards())
+            restoreSession().then(reloadBoards);
+            cloud.channel('records-realtime')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'game_records' }, () => reloadBoards())
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'rooms' }, () => reloadBoards())
                 .subscribe();
+        }
+
+        // ===== 방 입장 / 세션 복원 =====
+        function updateRoomStatusUI() {
+            const el = document.getElementById('room-status-text');
+            const input = document.getElementById('input-room-code');
+            if (currentRoom) {
+                if (input) input.value = currentRoom.room_code;
+                if (el) {
+                    el.innerHTML = `<span class="text-emerald-400 font-bold">✅ ${currentRoom.room_code} 방에 입장했습니다.</span>` +
+                        (currentRoom.allow_global_ranking ? '' : ' <span class="text-amber-400">(이 방은 전체 랭킹에 포함되지 않습니다)</span>');
+                }
+            } else if (el) {
+                el.textContent = '방코드 없이도 연습 훈련 모드는 이용할 수 있습니다.';
+            }
+        }
+
+        async function restoreSession() {
+            const savedNick = localStorage.getItem(LS_NICK);
+            if (savedNick) {
+                const nameInput = document.getElementById('input-player-name');
+                if (nameInput) nameInput.value = savedNick;
+            }
+            const savedCode = localStorage.getItem(LS_ROOM);
+            if (savedCode) {
+                const room = await fetchRoom(savedCode);
+                if (room && room.is_active) {
+                    currentRoom = room;
+                    rankTab = 'class';
+                } else {
+                    localStorage.removeItem(LS_ROOM);
+                }
+            }
+            updateRoomStatusUI();
+            switchRankTab(currentRoom ? 'class' : 'global', true);
+        }
+
+        async function enterRoom(code, nick) {
+            const roomCode = normalizeCode(code);
+            if (!roomCode) { showToast('방코드를 입력해 주세요!', true); return false; }
+            const room = await fetchRoom(roomCode);
+            if (!room || !room.is_active) {
+                showToast('유효하지 않거나 마감된 방코드입니다. 교사에게 문의하세요.', true);
+                return false;
+            }
+            currentRoom = room;
+            localStorage.setItem(LS_ROOM, room.room_code);
+            if (nick) {
+                localStorage.setItem(LS_NICK, nick);
+                const nameInput = document.getElementById('input-player-name');
+                if (nameInput) nameInput.value = nick;
+            }
+            updateRoomStatusUI();
+            await reloadBoards();
+            switchRankTab('class');
+            showToast(`🏫 ${room.room_code} 방에 입장했습니다!`);
+            return true;
+        }
+
+        async function joinRoomFromMain() {
+            const code = document.getElementById('input-room-code').value;
+            const nick = document.getElementById('input-player-name').value.trim();
+            await enterRoom(code, nick);
+        }
+
+        function openRoomModal() {
+            document.getElementById('modal-room-err').classList.add('hidden');
+            document.getElementById('modal-input-room-code').value = localStorage.getItem(LS_ROOM) || '';
+            document.getElementById('modal-input-nickname').value = localStorage.getItem(LS_NICK) || '';
+            document.getElementById('modal-room').classList.remove('hidden');
+        }
+
+        function closeRoomModal() {
+            document.getElementById('modal-room').classList.add('hidden');
+        }
+
+        async function joinRoomFromModal() {
+            const code = document.getElementById('modal-input-room-code').value;
+            const nick = document.getElementById('modal-input-nickname').value.trim();
+            const ok = await enterRoom(code, nick);
+            if (ok) closeRoomModal();
+            else document.getElementById('modal-room-err').classList.remove('hidden');
+        }
+
+        // ===== 이원화 랭킹 탭 =====
+        const TAB_ON = 'py-2 rounded-xl text-xs font-bold border transition bg-cyan-600 text-white border-cyan-300/40 shadow';
+        const TAB_OFF = 'py-2 rounded-xl text-xs font-bold border transition bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700';
+
+        function switchRankTab(tab, silent) {
+            if (tab === 'class' && !currentRoom && !silent) {
+                openRoomModal();
+                return;
+            }
+            rankTab = tab;
+            [['tab-class', 'tab-global'], ['tab-modal-class', 'tab-modal-global']].forEach(([c, g]) => {
+                const ce = document.getElementById(c), ge = document.getElementById(g);
+                if (ce) ce.className = (rankTab === 'class') ? TAB_ON : TAB_OFF;
+                if (ge) ge.className = (rankTab === 'global') ? TAB_ON : TAB_OFF;
+            });
+            renderRankWidget();
+        }
+
+        function rankRowsHTML(list, colspan) {
+            if (!list.length) {
+                const msg = (rankTab === 'class' && !currentRoom) ? '방코드를 입력하면 우리 반 랭킹이 표시됩니다.' : '등록된 순위가 없습니다.';
+                return `<tr><td colspan="${colspan}" class="text-center py-3 text-slate-500">${msg}</td></tr>`;
+            }
+            return list.slice(0, 10).map((item, idx) => {
+                let rankBadge = `${idx + 1}위`;
+                if (idx === 0) rankBadge = '🥇';
+                else if (idx === 1) rankBadge = '🥈';
+                else if (idx === 2) rankBadge = '🥉';
+                return `<tr class="hover:bg-slate-800/50">
+                        <td class="py-1.5 px-1 font-bold ${idx < 3 ? 'text-amber-300' : 'text-slate-300'}">${rankBadge}</td>
+                        <td class="py-1.5 px-1 font-bold text-slate-100">${item.name}</td>
+                        <td class="py-1.5 px-1 font-tech font-bold text-amber-400 text-right">${item.score.toLocaleString()}</td>
+                        <td class="py-1.5 px-1 font-tech text-cyan-300 text-right">${item.timeSec}초</td>
+                    </tr>`;
+            }).join('');
+        }
+
+        function renderRankWidget() {
+            const list = rankTab === 'class' ? getClassBoard() : getGlobalBoard();
+            const html = rankRowsHTML(list, 4);
+            const main = document.getElementById('main-rank-body');
+            if (main) main.innerHTML = html;
+            const modalBody = document.getElementById('user-leaderboard-body');
+            if (modalBody) modalBody.innerHTML = html;
         }
 
         function playSound(type) {
@@ -1198,6 +1466,12 @@
                 showToast('방위 요원 이름을 입력해 주세요!', true);
                 return;
             }
+            if (!currentRoom) {
+                showToast('랭킹 작전은 방코드 입장이 필요합니다.', true);
+                openRoomModal();
+                return;
+            }
+            localStorage.setItem(LS_NICK, inputName);
             isPracticeMode = false;
             playerName = inputName;
             document.getElementById('display-player-name').textContent = playerName;
@@ -1384,38 +1658,50 @@
         function showMyRank() {
             const rankEl = document.getElementById('final-rank');
             if (!rankEl) return;
-            const list = getCleanLeaderboard();
+            const list = currentRoom ? getClassBoard() : getGlobalBoard();
             const idx = list.findIndex(item => item.name === playerName);
             if (idx === -1) {
                 rankEl.textContent = '기록 없음';
                 return;
             }
             const medal = idx === 0 ? '🥇 ' : idx === 1 ? '🥈 ' : idx === 2 ? '🥉 ' : '';
-            rankEl.textContent = `${medal}${idx + 1}위 / ${list.length}명`;
+            const label = currentRoom ? '우리 반' : '전체';
+            rankEl.textContent = `${medal}${idx + 1}위 / ${list.length}명 (${label})`;
         }
 
-
-        /* 
-         * 동일 인물 중복 도배 방지:
-         * 학생 이름(학번이름) 기준으로 이미 존재 시, 더 높은 점수(동점일 경우 최단 시간)일 때만 업데이트
+        /*
+         * 기록 저장:
+         * - 제출 시점에 방 상태를 재확인 (마감된 방이면 연습 기록으로 전환)
+         * - 동일 방 + 동일 학번이름은 최고 점수로만 갱신
          */
         async function saveScoreToLeaderboard(name, pts, timeSec) {
-            const nowStr = new Date().toLocaleDateString('ko-KR');
+            if (!currentRoom) {
+                showToast('방코드가 없어 연습 기록으로 처리됩니다.', true);
+                return;
+            }
+            const fresh = await fetchRoom(currentRoom.room_code);
+            if (!fresh || !fresh.is_active) {
+                currentRoom = fresh || null;
+                showToast('방이 마감되어 기록이 등록되지 않았습니다. (연습 기록으로 전환)', true);
+                return;
+            }
+            currentRoom = fresh;
             try {
                 const { data: existing } = await cloud
-                    .from('scores')
-                    .select('name, score, time_sec')
-                    .eq('name', name)
+                    .from('game_records')
+                    .select('id, score, play_time')
+                    .eq('room_code', fresh.room_code)
+                    .eq('nickname', name)
                     .maybeSingle();
 
                 if (existing) {
-                    if (pts > existing.score || (pts === existing.score && timeSec < existing.time_sec)) {
-                        await cloud.from('scores')
-                            .update({ score: pts, time_sec: timeSec, played_on: nowStr, updated_at: new Date().toISOString() })
-                            .eq('name', name);
+                    if (pts > existing.score || (pts === existing.score && timeSec < existing.play_time)) {
+                        await cloud.from('game_records')
+                            .update({ score: pts, play_time: timeSec, created_at: new Date().toISOString() })
+                            .eq('id', existing.id);
                     }
                 } else {
-                    await cloud.from('scores').insert({ name, score: pts, time_sec: timeSec, played_on: nowStr });
+                    await cloud.from('game_records').insert({ room_code: fresh.room_code, nickname: name, score: pts, play_time: timeSec });
                 }
             } catch (e) {
                 console.error(e);
@@ -1424,15 +1710,8 @@
             await reloadBoards();
         }
 
-        /* 
-         * 정제된 랭킹 리스트 반환 (기존 중복 데이터도 최고기록 1개로 필터링)
-         */
-        function getCleanLeaderboard() {
-            return sortBoard(leaderboardCache);
-        }
-
         function openLeaderboardModal() {
-            renderUserLeaderboard();
+            switchRankTab(rankTab, true);
             document.getElementById('modal-leaderboard').classList.remove('hidden');
             reloadBoards();
         }
@@ -1442,30 +1721,7 @@
         }
 
         function renderUserLeaderboard() {
-            const tbody = document.getElementById('user-leaderboard-body');
-            tbody.innerHTML = '';
-            let leaderboard = getCleanLeaderboard();
-
-            if (leaderboard.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-3 text-slate-500">등록된 순위가 없습니다.</td></tr>`;
-            } else {
-                leaderboard.slice(0, 10).forEach((item, idx) => {
-                    let rankBadge = `${idx + 1}위`;
-                    if (idx === 0) rankBadge = '🥇';
-                    else if (idx === 1) rankBadge = '🥈';
-                    else if (idx === 2) rankBadge = '🥉';
-
-                    const row = document.createElement('tr');
-                    row.className = "hover:bg-slate-800/50";
-                    row.innerHTML = `
-                        <td class="py-1.5 px-1 font-bold ${idx < 3 ? 'text-amber-300' : 'text-slate-300'}">${rankBadge}</td>
-                        <td class="py-1.5 px-1 font-bold text-slate-100">${item.name}</td>
-                        <td class="py-1.5 px-1 font-tech font-bold text-amber-400 text-right">${item.score.toLocaleString()}</td>
-                        <td class="py-1.5 px-1 font-tech text-cyan-300 text-right">${item.timeSec}초</td>
-                    `;
-                    tbody.appendChild(row);
-                });
-            }
+            renderRankWidget();
         }
 
         function openAdminAuthModal() {
@@ -1495,7 +1751,8 @@
             if (ok) {
                 currentAdminPin = inputPin;
                 closeAdminAuthModal();
-                await fetchLeaderboard();
+                await Promise.all([fetchRooms(), fetchLeaderboard()]);
+                renderAdminRooms();
                 renderAdminLeaderboard();
                 document.getElementById('modal-admin-panel').classList.remove('hidden');
             } else {
@@ -1508,32 +1765,148 @@
             document.getElementById('modal-admin-panel').classList.add('hidden');
         }
 
+        // ===== 방 관리 =====
+        function randomCode(len) {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let out = '';
+            for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
+            return out;
+        }
+
+        async function createRoomRow(code, type) {
+            const { error } = await cloud.from('rooms').insert({ room_code: code, created_type: type });
+            return error;
+        }
+
+        async function createRandomRoom() {
+            for (let attempt = 0; attempt < 12; attempt++) {
+                const code = randomCode(4 + Math.floor(Math.random() * 3)); // 4~6자리
+                const existing = await fetchRoom(code);
+                if (existing) continue;
+                const error = await createRoomRow(code, 'random');
+                if (error) continue;
+                await fetchRooms();
+                renderAdminRooms();
+                showToast(`🎲 방코드 ${code} 가 생성되었습니다!`);
+                return;
+            }
+            showToast('방코드 생성에 실패했습니다. 다시 시도해 주세요.', true);
+        }
+
+        async function createCustomRoom() {
+            const input = document.getElementById('input-custom-room');
+            const err = document.getElementById('custom-room-err');
+            const code = normalizeCode(input.value);
+            err.classList.add('hidden');
+            if (!code || code.length < 2) { showToast('방코드를 2자 이상 입력해 주세요.', true); return; }
+            const existing = await fetchRoom(code);
+            if (existing) { err.classList.remove('hidden'); return; }
+            const error = await createRoomRow(code, 'custom');
+            if (error) { err.classList.remove('hidden'); return; }
+            input.value = '';
+            await fetchRooms();
+            renderAdminRooms();
+            showToast(`🏫 방코드 ${code} 가 생성되었습니다!`);
+        }
+
+        async function toggleRoomFlag(code, field, value) {
+            const patch = {};
+            patch[field] = value;
+            const { error } = await cloud.from('rooms').update(patch).eq('room_code', code);
+            if (error) { showToast('방 설정 변경에 실패했습니다.', true); return; }
+            await fetchRooms();
+            if (currentRoom && currentRoom.room_code === code) {
+                currentRoom = roomsCache.find(r => r.room_code === code) || currentRoom;
+                if (!currentRoom.is_active) { currentRoom = null; localStorage.removeItem(LS_ROOM); }
+                updateRoomStatusUI();
+            }
+            renderAdminRooms();
+            renderRankWidget();
+            showToast('방 설정이 변경되었습니다.');
+        }
+
+        async function deleteRoom(code) {
+            const { error } = await cloud.from('rooms').delete().eq('room_code', code);
+            if (error) { showToast('방 삭제에 실패했습니다.', true); return; }
+            await Promise.all([fetchRooms(), fetchLeaderboard()]);
+            renderAdminRooms();
+            renderAdminLeaderboard();
+            showToast(`${code} 방이 삭제되었습니다.`);
+        }
+
+        function roomStudentCount(code) {
+            return new Set(leaderboardCache.filter(r => r.roomCode === code).map(r => r.name)).size;
+        }
+
+        function renderAdminRooms() {
+            const tbody = document.getElementById('admin-rooms-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const sel = document.getElementById('select-admin-room');
+            if (sel) {
+                const prev = sel.value;
+                sel.innerHTML = '<option value="">전체 방</option>' + roomsCache.map(r => `<option value="${r.room_code}">${r.room_code}</option>`).join('');
+                sel.value = prev;
+            }
+
+            if (!roomsCache.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center py-3 text-slate-500">생성된 방이 없습니다.</td></tr>';
+                return;
+            }
+
+            roomsCache.forEach(r => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-slate-800/50 transition';
+                row.innerHTML = `
+                    <td class="py-1.5 px-2 font-tech font-bold text-cyan-300">${r.room_code}<span class="ml-1 text-[9px] text-slate-500">${r.created_type === 'custom' ? '직접' : '랜덤'}</span></td>
+                    <td class="py-1.5 px-2 text-center text-slate-300">${roomStudentCount(r.room_code)}명</td>
+                    <td class="py-1.5 px-2 text-center">
+                        <button onclick="toggleRoomFlag('${r.room_code}', 'allow_global_ranking', ${!r.allow_global_ranking})" class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${r.allow_global_ranking ? 'bg-emerald-900/60 text-emerald-300 border-emerald-700' : 'bg-slate-800 text-slate-400 border-slate-700'}">${r.allow_global_ranking ? 'ON' : 'OFF'}</button>
+                    </td>
+                    <td class="py-1.5 px-2 text-center">
+                        <button onclick="toggleRoomFlag('${r.room_code}', 'is_active', ${!r.is_active})" class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${r.is_active ? 'bg-cyan-900/60 text-cyan-300 border-cyan-700' : 'bg-rose-950 text-rose-300 border-rose-800'}">${r.is_active ? '활성' : '마감'}</button>
+                    </td>
+                    <td class="py-1.5 px-2 text-center">
+                        <button onclick="exportRoomCSV('${r.room_code}')" class="bg-slate-800 hover:bg-slate-700 text-emerald-300 px-1.5 py-0.5 rounded text-[10px] border border-slate-700 mr-1">CSV</button>
+                        <button onclick="deleteRoom('${r.room_code}')" class="bg-rose-950 hover:bg-rose-800 text-rose-300 px-1.5 py-0.5 rounded text-[10px] border border-rose-800/50">삭제</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function adminFilteredList() {
+            let list = getCleanLeaderboard();
+            const roomFilter = document.getElementById('select-admin-room')?.value || '';
+            if (roomFilter) list = list.filter(item => item.roomCode === roomFilter);
+            const searchKey = (document.getElementById('input-admin-search')?.value || '').trim().toLowerCase();
+            if (searchKey) list = list.filter(item => item.name.toLowerCase().includes(searchKey));
+            return list;
+        }
+
         function renderAdminLeaderboard() {
             const tbody = document.getElementById('admin-leaderboard-body');
             tbody.innerHTML = '';
-            let leaderboard = getCleanLeaderboard();
-
-            const searchKey = (document.getElementById('input-admin-search')?.value || '').trim().toLowerCase();
-            if (searchKey) {
-                leaderboard = leaderboard.filter(item => item.name.toLowerCase().includes(searchKey));
-            }
+            const leaderboard = adminFilteredList();
 
             document.getElementById('admin-student-count').textContent = leaderboard.length;
 
             if (leaderboard.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-slate-500">등록되거나 검색된 기록이 없습니다.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-slate-500">등록되거나 검색된 기록이 없습니다.</td></tr>`;
             } else {
                 leaderboard.forEach((item, idx) => {
                     const row = document.createElement('tr');
                     row.className = "hover:bg-slate-800/50 transition border-b border-slate-800/40";
                     row.innerHTML = `
                         <td class="py-1.5 px-2 font-bold text-slate-300">${idx + 1}</td>
+                        <td class="py-1.5 px-2 font-tech text-cyan-300">${item.roomCode || '-'}</td>
                         <td class="py-1.5 px-2 font-bold text-slate-100">${item.name}</td>
                         <td class="py-1.5 px-2 font-tech font-bold text-amber-400 text-right">${item.score.toLocaleString()}</td>
                         <td class="py-1.5 px-2 font-tech text-cyan-300 text-right">${item.timeSec}초</td>
                         <td class="py-1.5 px-2 text-slate-400 text-center text-[10px]">${item.date || '-'}</td>
                         <td class="py-1.5 px-1 text-center">
-                            <button onclick="deleteLeaderboardItem('${item.name}')" class="bg-rose-950 hover:bg-rose-800 text-rose-300 px-1.5 py-0.5 rounded text-[10px] transition border border-rose-800/50">
+                            <button onclick="deleteLeaderboardItem('${item.roomCode || ''}','${item.name}')" class="bg-rose-950 hover:bg-rose-800 text-rose-300 px-1.5 py-0.5 rounded text-[10px] transition border border-rose-800/50">
                                 삭제
                             </button>
                         </td>
@@ -1543,11 +1916,14 @@
             }
         }
 
-        async function deleteLeaderboardItem(nameToDelete) {
-            const { error } = await cloud.from('scores').delete().eq('name', nameToDelete);
+        async function deleteLeaderboardItem(roomCode, nameToDelete) {
+            let q = cloud.from('game_records').delete().eq('nickname', nameToDelete);
+            q = roomCode ? q.eq('room_code', roomCode) : q.is('room_code', null);
+            const { error } = await q;
             if (error) { showToast('삭제에 실패했습니다.', true); return; }
             await fetchLeaderboard();
             renderAdminLeaderboard();
+            renderAdminRooms();
             showToast(`${nameToDelete} 요원의 기록이 삭제되었습니다.`);
         }
 
@@ -1575,15 +1951,42 @@
             showToast('🔑 교사용 비밀번호가 변경되었습니다! (모든 기기 공통)');
         }
 
+        // 특정 방(또는 현재 필터) 기록 CSV 다운로드
+        function exportRoomCSV(roomCode) {
+            let list, label;
+            if (roomCode) {
+                list = getCleanLeaderboard().filter(item => item.roomCode === roomCode);
+                label = roomCode;
+            } else {
+                list = adminFilteredList();
+                label = document.getElementById('select-admin-room')?.value || 'ALL';
+            }
+            if (!list.length) { showToast('내보낼 데이터가 없습니다.', true); return; }
+            let csv = '순위,방코드,학번이름,최고점수,소요시간(초),기록일자\n';
+            list.forEach((item, idx) => {
+                csv += `${idx + 1},${item.roomCode || '-'},${item.name},${item.score},${item.timeSec},${item.date || '-'}\n`;
+            });
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `speed_defense_${label}_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('📥 CSV 파일이 다운로드되었습니다!');
+        }
+
         function exportLeaderboardData() {
-            let leaderboard = getCleanLeaderboard();
+            const leaderboard = adminFilteredList();
             if (leaderboard.length === 0) {
                 showToast('내보낼 데이터가 없습니다.', true);
                 return;
             }
-            let text = "순위\t학번이름\t최고점수\t소요시간\t달성일자\n";
+            let text = "순위\t방코드\t학번이름\t최고점수\t소요시간\t달성일자\n";
             leaderboard.forEach((item, idx) => {
-                text += `${idx + 1}\t${item.name}\t${item.score}\t${item.timeSec}\t${item.date || '-'}\n`;
+                text += `${idx + 1}\t${item.roomCode || '-'}\t${item.name}\t${item.score}\t${item.timeSec}\t${item.date || '-'}\n`;
             });
             const area = document.createElement('textarea');
             area.value = text;
@@ -1629,10 +2032,11 @@
             if (error) { showToast('인증 서버 연결에 실패했습니다.', true); return; }
             if (ok) {
                 closeResetAuthModal();
-                const { error: delErr } = await cloud.from('scores').delete().gte('score', -1);
+                const { error: delErr } = await cloud.from('game_records').delete().gte('score', -1);
                 if (delErr) { showToast('초기화에 실패했습니다.', true); return; }
                 await fetchLeaderboard();
                 renderAdminLeaderboard();
+                renderAdminRooms();
                 document.getElementById('modal-reset-success').classList.remove('hidden');
             } else {
                 document.getElementById('reset-auth-err').classList.remove('hidden');
