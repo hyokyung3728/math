@@ -412,7 +412,7 @@
                 </div>
 
                 <div class="space-y-2">
-                    <input type="password" id="input-admin-pin" readonly placeholder="비밀번호 입력" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-center text-amber-300 font-tech font-bold tracking-widest text-lg focus:outline-none focus:border-amber-400">
+                    <input type="password" id="input-admin-pin" inputmode="numeric" autocomplete="off" maxlength="6" onkeydown="handlePinKey(event,'admin')" placeholder="비밀번호 입력" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-center text-amber-300 font-tech font-bold tracking-widest text-lg focus:outline-none focus:border-amber-400">
                     <p id="admin-auth-err" class="text-[10px] text-rose-400 hidden">비밀번호가 일치하지 않습니다.</p>
                 </div>
 
@@ -429,7 +429,8 @@
                     <button onclick="appendAdminPin('9')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">9</button>
                     <button onclick="clearAdminPin()" class="bg-rose-900/60 hover:bg-rose-800 text-rose-300 py-2.5 rounded-lg">C</button>
                     <button onclick="appendAdminPin('0')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">0</button>
-                    <button onclick="submitAdminPin()" class="bg-amber-600 hover:bg-amber-500 text-slate-950 py-2.5 rounded-lg font-bold">확인</button>
+                    <button onclick="backspaceAdminPin()" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200"><i class="fa-solid fa-delete-left"></i></button>
+                    <button onclick="submitAdminPin()" class="col-span-3 bg-amber-600 hover:bg-amber-500 text-slate-950 py-2.5 rounded-lg font-bold">확인</button>
                 </div>
 
                 <button onclick="closeAdminAuthModal()" class="w-full text-xs text-slate-400 hover:text-white pt-1">
@@ -646,7 +647,7 @@
                 </div>
 
                 <div class="space-y-2">
-                    <input type="password" id="input-reset-pin" readonly placeholder="비밀번호 입력" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-center text-amber-300 font-tech font-bold tracking-widest text-lg focus:outline-none focus:border-amber-400">
+                    <input type="password" id="input-reset-pin" inputmode="numeric" autocomplete="off" maxlength="6" onkeydown="handlePinKey(event,'reset')" placeholder="비밀번호 입력" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-center text-amber-300 font-tech font-bold tracking-widest text-lg focus:outline-none focus:border-amber-400">
                     <p id="reset-auth-err" class="text-[10px] text-rose-400 hidden">비밀번호가 일치하지 않습니다.</p>
                 </div>
 
@@ -663,7 +664,8 @@
                     <button onclick="appendResetPin('9')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">9</button>
                     <button onclick="clearResetPin()" class="bg-rose-900/60 hover:bg-rose-800 text-rose-300 py-2.5 rounded-lg">C</button>
                     <button onclick="appendResetPin('0')" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200">0</button>
-                    <button onclick="submitResetPin()" class="bg-rose-600 hover:bg-rose-500 text-white py-2.5 rounded-lg font-bold">확인</button>
+                    <button onclick="backspaceResetPin()" class="bg-slate-800 hover:bg-slate-700 active:bg-slate-600 py-2.5 rounded-lg text-slate-200"><i class="fa-solid fa-delete-left"></i></button>
+                    <button onclick="submitResetPin()" class="col-span-3 bg-rose-600 hover:bg-rose-500 text-white py-2.5 rounded-lg font-bold">확인</button>
                 </div>
 
                 <button onclick="closeResetAuthModal()" class="w-full text-xs text-slate-400 hover:text-white pt-1">
@@ -711,7 +713,7 @@
         let currentAdminPin = '';
 
         const LS_ROOM = 'last_room_code';
-        try { localStorage.removeItem('nickname'); } catch (e) {}
+        try { localStorage.removeItem('nickname'); localStorage.removeItem(LS_ROOM); } catch (e) {}
 
         function normalizeCode(code) {
             return (code || '').trim().toUpperCase();
@@ -826,18 +828,11 @@
         }
 
         async function restoreSession() {
-            const savedCode = localStorage.getItem(LS_ROOM);
-            if (savedCode) {
-                const room = await fetchRoom(savedCode);
-                if (room && room.is_active) {
-                    currentRoom = room;
-                    rankTab = 'class';
-                } else {
-                    localStorage.removeItem(LS_ROOM);
-                }
-            }
+            // 방코드는 기억하지 않습니다 (매번 새로 입력)
+            currentRoom = null;
+            try { localStorage.removeItem(LS_ROOM); } catch (e) {}
             updateRoomStatusUI();
-            switchRankTab(currentRoom ? 'class' : 'global', true);
+            switchRankTab('global', true);
         }
 
         // 다른 방에서 이미 사용 중인 이름인지 검사 (이름은 전체에서 유일해야 함)
@@ -864,7 +859,7 @@
                 if (!ok) { showToast('이미 다른 방에서 사용 중인 이름입니다. 다른 이름을 사용하세요.', true); return false; }
             }
             currentRoom = room;
-            localStorage.setItem(LS_ROOM, room.room_code);
+            // 방코드는 저장하지 않습니다.
             updateRoomStatusUI();
             await reloadBoards();
             switchRankTab('class');
@@ -1749,6 +1744,7 @@
             document.getElementById('input-admin-pin').value = '';
             document.getElementById('admin-auth-err').classList.add('hidden');
             document.getElementById('modal-admin-auth').classList.remove('hidden');
+            setTimeout(() => document.getElementById('input-admin-pin').focus(), 50);
         }
 
         function closeAdminAuthModal() {
@@ -1758,6 +1754,26 @@
         function appendAdminPin(num) {
             const input = document.getElementById('input-admin-pin');
             input.value += num;
+        }
+
+        function backspaceAdminPin() {
+            const input = document.getElementById('input-admin-pin');
+            input.value = input.value.slice(0, -1);
+        }
+
+        function backspaceResetPin() {
+            const input = document.getElementById('input-reset-pin');
+            input.value = input.value.slice(0, -1);
+        }
+
+        function handlePinKey(e, kind) {
+            const errId = kind === 'admin' ? 'admin-auth-err' : 'reset-auth-err';
+            const errEl = document.getElementById(errId);
+            if (errEl) errEl.classList.add('hidden');
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                if (kind === 'admin') submitAdminPin(); else submitResetPin();
+            }
         }
 
         function clearAdminPin() {
@@ -2031,6 +2047,7 @@
             document.getElementById('input-reset-pin').value = '';
             document.getElementById('reset-auth-err').classList.add('hidden');
             document.getElementById('modal-reset-auth').classList.remove('hidden');
+            setTimeout(() => document.getElementById('input-reset-pin').focus(), 50);
         }
 
         function closeResetAuthModal() {
