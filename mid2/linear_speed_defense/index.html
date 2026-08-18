@@ -128,13 +128,6 @@
             <div class="bg-slate-900/90 border border-cyan-500/30 p-5 md:p-6 rounded-2xl shadow-2xl space-y-4 text-left backdrop-blur">
                 <div>
                     <label class="block text-xs text-cyan-300 font-bold mb-1.5">
-                        <i class="fa-solid fa-id-badge text-cyan-400 mr-1"></i>방위 요원 이름 (학번이름으로 적을것)
-                    </label>
-                    <input type="text" id="input-player-name" maxlength="12" placeholder="예: 2701김효경" class="w-full bg-slate-950 border border-cyan-500/40 rounded-xl px-4 py-2.5 text-white font-bold text-sm focus:outline-none focus:border-cyan-400 transition shadow-inner">
-                </div>
-
-                <div>
-                    <label class="block text-xs text-cyan-300 font-bold mb-1.5">
                         <i class="fa-solid fa-school text-cyan-400 mr-1"></i>방코드 (교사가 안내한 학급 코드)
                     </label>
                     <div class="flex space-x-2">
@@ -143,6 +136,14 @@
                     </div>
                     <p id="room-status-text" class="text-[11px] text-slate-400 mt-1.5">방코드 없이도 연습 훈련 모드는 이용할 수 있습니다.</p>
                 </div>
+
+                <div>
+                    <label class="block text-xs text-cyan-300 font-bold mb-1.5">
+                        <i class="fa-solid fa-id-badge text-cyan-400 mr-1"></i>방위 요원 이름 (학번이름으로 적을것)
+                    </label>
+                    <input type="text" id="input-player-name" maxlength="12" placeholder="예: 2701김효경" class="w-full bg-slate-950 border border-cyan-500/40 rounded-xl px-4 py-2.5 text-white font-bold text-sm focus:outline-none focus:border-cyan-400 transition shadow-inner">
+                </div>
+
 
                 <div class="bg-slate-950/80 p-3.5 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-2 font-sans">
                     <p class="text-amber-400 font-bold flex items-center text-xs"><i class="fa-solid fa-bolt mr-1.5"></i>스피드 작전 3대 수칙</p>
@@ -710,7 +711,7 @@
         let currentAdminPin = '';
 
         const LS_ROOM = 'last_room_code';
-        const LS_NICK = 'nickname';
+        try { localStorage.removeItem('nickname'); } catch (e) {}
 
         function normalizeCode(code) {
             return (code || '').trim().toUpperCase();
@@ -825,11 +826,6 @@
         }
 
         async function restoreSession() {
-            const savedNick = localStorage.getItem(LS_NICK);
-            if (savedNick) {
-                const nameInput = document.getElementById('input-player-name');
-                if (nameInput) nameInput.value = savedNick;
-            }
             const savedCode = localStorage.getItem(LS_ROOM);
             if (savedCode) {
                 const room = await fetchRoom(savedCode);
@@ -844,6 +840,17 @@
             switchRankTab(currentRoom ? 'class' : 'global', true);
         }
 
+        // 다른 방에서 이미 사용 중인 이름인지 검사 (이름은 전체에서 유일해야 함)
+        async function checkNicknameAvailable(name, roomCode) {
+            const { data, error } = await cloud
+                .from('game_records')
+                .select('room_code')
+                .eq('nickname', name);
+            if (error) { console.error(error); return true; }
+            const conflict = (data || []).some(r => normalizeCode(r.room_code) !== normalizeCode(roomCode));
+            return !conflict;
+        }
+
         async function enterRoom(code, nick) {
             const roomCode = normalizeCode(code);
             if (!roomCode) { showToast('방코드를 입력해 주세요!', true); return false; }
@@ -852,13 +859,12 @@
                 showToast('유효하지 않거나 마감된 방코드입니다. 교사에게 문의하세요.', true);
                 return false;
             }
+            if (nick) {
+                const ok = await checkNicknameAvailable(nick, room.room_code);
+                if (!ok) { showToast('이미 다른 방에서 사용 중인 이름입니다. 다른 이름을 사용하세요.', true); return false; }
+            }
             currentRoom = room;
             localStorage.setItem(LS_ROOM, room.room_code);
-            if (nick) {
-                localStorage.setItem(LS_NICK, nick);
-                const nameInput = document.getElementById('input-player-name');
-                if (nameInput) nameInput.value = nick;
-            }
             updateRoomStatusUI();
             await reloadBoards();
             switchRankTab('class');
@@ -874,8 +880,8 @@
 
         function openRoomModal() {
             document.getElementById('modal-room-err').classList.add('hidden');
-            document.getElementById('modal-input-room-code').value = localStorage.getItem(LS_ROOM) || '';
-            document.getElementById('modal-input-nickname').value = localStorage.getItem(LS_NICK) || '';
+            document.getElementById('modal-input-room-code').value = currentRoom ? currentRoom.room_code : '';
+            document.getElementById('modal-input-nickname').value = document.getElementById('input-player-name').value.trim();
             document.getElementById('modal-room').classList.remove('hidden');
         }
 
@@ -887,9 +893,14 @@
             const code = document.getElementById('modal-input-room-code').value;
             const nick = document.getElementById('modal-input-nickname').value.trim();
             const ok = await enterRoom(code, nick);
-            if (ok) closeRoomModal();
-            else document.getElementById('modal-room-err').classList.remove('hidden');
+            if (ok) {
+                if (nick) document.getElementById('input-player-name').value = nick;
+                closeRoomModal();
+            } else {
+                document.getElementById('modal-room-err').classList.remove('hidden');
+            }
         }
+
 
         // ===== 이원화 랭킹 탭 =====
         const TAB_ON = 'py-2 rounded-xl text-xs font-bold border transition bg-cyan-600 text-white border-cyan-300/40 shadow';
@@ -1460,18 +1471,22 @@
             startGame();
         }
 
-        function initStartGame() {
+        async function initStartGame() {
             const inputName = document.getElementById('input-player-name').value.trim();
+            if (!currentRoom) {
+                showToast('먼저 방코드를 입력하고 입장해 주세요.', true);
+                openRoomModal();
+                return;
+            }
             if (!inputName) {
                 showToast('방위 요원 이름을 입력해 주세요!', true);
                 return;
             }
-            if (!currentRoom) {
-                showToast('랭킹 작전은 방코드 입장이 필요합니다.', true);
-                openRoomModal();
+            const available = await checkNicknameAvailable(inputName, currentRoom.room_code);
+            if (!available) {
+                showToast('이미 다른 방에서 사용 중인 이름입니다. 다른 이름을 사용하세요.', true);
                 return;
             }
-            localStorage.setItem(LS_NICK, inputName);
             isPracticeMode = false;
             playerName = inputName;
             document.getElementById('display-player-name').textContent = playerName;
@@ -1479,6 +1494,7 @@
             document.getElementById('badge-mode').textContent = 'RANKING';
             startGame();
         }
+
 
         function startGame() {
             isGameOver = false;
@@ -1686,6 +1702,11 @@
                 return;
             }
             currentRoom = fresh;
+            if (!(await checkNicknameAvailable(name, fresh.room_code))) {
+                showToast('이미 다른 방에서 사용 중인 이름이라 기록이 등록되지 않았습니다.', true);
+                return;
+            }
+
             try {
                 const { data: existing } = await cloud
                     .from('game_records')
