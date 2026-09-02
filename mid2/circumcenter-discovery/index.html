@@ -50,6 +50,7 @@
         .ovl { text-decoration: overline; }
         .drop-slot.over { background:#e0e7ff; border-color:#6366f1; }
         .cond-card.sel { outline:3px solid #6366f1; outline-offset:1px; }
+        .cond-card { touch-action: none; }
         .touch-board {
             touch-action: none;
             -webkit-touch-callout: none;
@@ -401,8 +402,8 @@
                     </div>
 
                     <!-- Navigation Action -->
-                    <button onclick="switchStep(1)" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs sm:text-sm shadow-md transition duration-200 flex items-center justify-center gap-1.5 shrink-0">
-                        <i class="fa-solid fa-rotate-left"></i> 1단계로 돌아가기
+                    <button onclick="switchStep(4)" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs sm:text-sm shadow-md transition duration-200 flex items-center justify-center gap-1.5 shrink-0">
+                        <i class="fa-solid fa-key"></i> 4단계: 증명하기
                     </button>
                 </div>
 
@@ -1538,7 +1539,7 @@
             }
         }
 
-        const S4 = { A:{x:95,y:330}, B:{x:415,y:330}, C:{x:250,y:80}, perpDrawn:false, filled:[null,null,null,null], selectedCard:null };
+        const S4 = { A:{x:60,y:300}, B:{x:440,y:340}, C:{x:260,y:60}, perpDrawn:false, filled:[null,null,null,null], selectedCard:null, dragMoved:false };
 
         const S4_CARDS = [
             { id:'c1', html:'&#8736;ODA = &#8736;ODB = 90&#176;' },
@@ -1628,6 +1629,14 @@
             const tri = s4El('polygon', { points:`${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`, fill:'#eef2ff', stroke:'#1e293b', 'stroke-width':3, 'stroke-linejoin':'round' });
             svg.appendChild(tri);
 
+            // 수선을 내린 후: △OAD, △OBD를 서로 다른 색으로 강조
+            if (S4.perpDrawn) {
+                const triOAD = s4El('polygon', { points:`${O.x},${O.y} ${A.x},${A.y} ${D.x},${D.y}`, fill:'#fbbf24', 'fill-opacity':'0.4', stroke:'#f59e0b', 'stroke-width':1.5, 'stroke-linejoin':'round' });
+                svg.appendChild(triOAD);
+                const triOBD = s4El('polygon', { points:`${O.x},${O.y} ${B.x},${B.y} ${D.x},${D.y}`, fill:'#34d399', 'fill-opacity':'0.4', stroke:'#059669', 'stroke-width':1.5, 'stroke-linejoin':'round' });
+                svg.appendChild(triOBD);
+            }
+
             // O에서 꼭짓점까지 선분
             s4Line(svg, O, A, '#7c3aed', 2.4);
             s4Line(svg, O, B, '#7c3aed', 2.4);
@@ -1695,16 +1704,87 @@
                 el.innerHTML = c.html;
                 el.dataset.card = c.id;
                 if (!used) {
-                    el.draggable = true;
-                    el.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', c.id); S4.selectedCard = c.id; });
                     el.addEventListener('click', () => {
+                        if (S4.dragMoved) { S4.dragMoved = false; return; }
                         S4.selectedCard = (S4.selectedCard === c.id) ? null : c.id;
                         renderStep4Cards();
                     });
+                    el.addEventListener('pointerdown', e => s4CardPointerDown(e, c.id, el));
                     if (S4.selectedCard === c.id) el.classList.add('sel');
                 }
                 wrap.appendChild(el);
             });
+        }
+
+        /* 태블릿/스마트폰에서도 동작하는 포인터 기반 드래그(HTML5 dragstart를 보완) */
+        function s4CardPointerDown(e, cardId, cardEl) {
+            if (S4.filled.indexOf(cardId) !== -1) return;
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            const startX = e.clientX, startY = e.clientY;
+            const threshold = 8;
+            let dragging = false;
+            let ghost = null;
+
+            function clearSlotHighlights() {
+                document.querySelectorAll('#step4-activity .drop-slot').forEach(s => s.classList.remove('over'));
+            }
+            function slotUnder(x, y) {
+                const under = document.elementFromPoint(x, y);
+                return under ? under.closest('.drop-slot') : null;
+            }
+            function onMove(ev) {
+                const dx = ev.clientX - startX, dy = ev.clientY - startY;
+                if (!dragging && Math.hypot(dx, dy) > threshold) {
+                    dragging = true;
+                    S4.dragMoved = true;
+                    ghost = cardEl.cloneNode(true);
+                    ghost.style.position = 'fixed';
+                    ghost.style.top = '0px';
+                    ghost.style.left = '0px';
+                    ghost.style.zIndex = '9999';
+                    ghost.style.pointerEvents = 'none';
+                    ghost.style.opacity = '0.92';
+                    ghost.style.boxShadow = '0 8px 20px rgba(15,23,42,0.25)';
+                    ghost.classList.remove('cursor-grab');
+                    document.body.appendChild(ghost);
+                    cardEl.classList.add('opacity-30');
+                }
+                if (dragging && ghost) {
+                    ghost.style.transform = `translate(${ev.clientX}px, ${ev.clientY}px) translate(-50%, -50%) scale(1.06)`;
+                    clearSlotHighlights();
+                    const slot = slotUnder(ev.clientX, ev.clientY);
+                    if (slot) slot.classList.add('over');
+                }
+            }
+            function onUp(ev) {
+                document.removeEventListener('pointermove', onMove);
+                document.removeEventListener('pointerup', onUp);
+                document.removeEventListener('pointercancel', onCancel);
+                if (dragging) {
+                    cardEl.classList.remove('opacity-30');
+                    if (ghost) ghost.remove();
+                    clearSlotHighlights();
+                    const slot = slotUnder(ev.clientX, ev.clientY);
+                    if (slot) {
+                        const idx = parseInt(slot.dataset.slot, 10);
+                        s4PlaceCard(idx, cardId);
+                    }
+                    setTimeout(() => { S4.dragMoved = false; }, 0);
+                }
+            }
+            function onCancel() {
+                document.removeEventListener('pointermove', onMove);
+                document.removeEventListener('pointerup', onUp);
+                document.removeEventListener('pointercancel', onCancel);
+                if (ghost) ghost.remove();
+                if (dragging) cardEl.classList.remove('opacity-30');
+                clearSlotHighlights();
+                setTimeout(() => { S4.dragMoved = false; }, 0);
+            }
+
+            document.addEventListener('pointermove', onMove);
+            document.addEventListener('pointerup', onUp);
+            document.addEventListener('pointercancel', onCancel);
         }
 
         function s4PlaceCard(slotIdx, cardId) {
@@ -1748,13 +1828,6 @@
         function initStep4() {
             document.querySelectorAll('#step4-activity .drop-slot').forEach(slot => {
                 const idx = parseInt(slot.dataset.slot, 10);
-                slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('over'); });
-                slot.addEventListener('dragleave', () => slot.classList.remove('over'));
-                slot.addEventListener('drop', e => {
-                    e.preventDefault();
-                    slot.classList.remove('over');
-                    s4PlaceCard(idx, e.dataTransfer.getData('text/plain'));
-                });
                 slot.addEventListener('click', () => {
                     if (S4.selectedCard) { s4PlaceCard(idx, S4.selectedCard); }
                     else if (S4.filled[idx]) { S4.filled[idx] = null; playSound('click'); renderStep4Slots(); renderStep4Cards(); }
