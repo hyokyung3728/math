@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -72,10 +71,10 @@
                 <button id="tab-step1" onclick="switchStep(1)" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 bg-white text-indigo-700 shadow-md">
                     <i class="fa-solid fa-chair mr-1"></i><span class="hidden sm:inline">1단계: </span>세 의자
                 </button>
-                <button id="tab-step2" onclick="switchStep(2)" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50">
-                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i><span class="hidden sm:inline">2단계: </span>선의 비밀
+                <button id="tab-step2" onclick="switchStep(2)" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 text-indigo-100 opacity-80 hover:bg-indigo-700/50">
+                    <i id="tab-step2-icon" class="fa-solid fa-lock mr-1 text-amber-300"></i><span class="hidden sm:inline">2단계: </span>선의 비밀
                 </button>
-                <button id="tab-step3" onclick="switchStep(3)" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50">
+                <button id="tab-step3" onclick="switchStep(3)" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 text-indigo-100 opacity-80 hover:bg-indigo-700/50">
                     <i id="tab-step3-icon" class="fa-solid fa-lock mr-1 text-amber-300"></i><span class="hidden sm:inline">3단계: </span>완성하기
                 </button>
             </div>
@@ -86,6 +85,30 @@
     <div id="global-toast" class="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-slate-900/90 text-white text-xs sm:text-sm px-4 py-2 sm:py-2.5 rounded-2xl shadow-2xl transition-all duration-300 transform -translate-y-10 opacity-0 pointer-events-none flex items-center gap-2 border border-slate-700">
         <span id="global-toast-icon" class="text-amber-400 text-sm"><i class="fa-solid fa-triangle-exclamation"></i></span>
         <span id="global-toast-msg">안내 메시지</span>
+    </div>
+
+    <!-- Step 2 Unlock Password Modal -->
+    <div id="step2-unlock-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl p-4 sm:p-5 max-w-xs sm:max-w-md w-full my-auto flex flex-col gap-3 border border-slate-200">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-key text-amber-500"></i> 2단계 잠금 해제 암호
+                </h3>
+                <button onclick="closeStep2UnlockModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                2단계로 진입하기 위한 암호를 입력하세요!
+            </p>
+            <div class="flex gap-2">
+                <input type="text" id="step2-unlock-input" onkeydown="if(event.key==='Enter') submitStep2UnlockPassword()" placeholder="암호를 입력하세요" class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-800 text-xs sm:text-sm">
+                <button onclick="submitStep2UnlockPassword()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition shrink-0 text-xs sm:text-sm">
+                    확인
+                </button>
+            </div>
+            <p id="step2-unlock-feedback" class="hidden text-xs font-semibold px-2.5 py-1.5 rounded-lg"></p>
+        </div>
     </div>
 
     <!-- Main Content Container -->
@@ -396,6 +419,7 @@
 
         /* Global Application State */
         let currentStep = 1;
+        let step2Unlocked = false; // 2단계 잠금 상태 관리
         let globalToastTimer = null;
 
         function showNotification(msg, iconHtml = '<i class="fa-solid fa-triangle-exclamation"></i>') {
@@ -417,7 +441,60 @@
             }, 3000);
         }
 
+        /* 2단계 잠금 해제 모달 제어 함수 */
+        function openStep2UnlockModal() {
+            playSound('click');
+            const modal = document.getElementById('step2-unlock-modal');
+            const input = document.getElementById('step2-unlock-input');
+            const feedback = document.getElementById('step2-unlock-feedback');
+            
+            input.value = '';
+            feedback.className = "hidden text-xs font-semibold px-2.5 py-1.5 rounded-lg";
+            modal.classList.remove('hidden');
+            setTimeout(() => input.focus(), 100);
+        }
+
+        function closeStep2UnlockModal() {
+            document.getElementById('step2-unlock-modal').classList.add('hidden');
+        }
+
+        function submitStep2UnlockPassword() {
+            const input = document.getElementById('step2-unlock-input');
+            const feedback = document.getElementById('step2-unlock-feedback');
+            const val = input.value.trim();
+
+            if (val === '비밀') {
+                playSound('success');
+                closeStep2UnlockModal();
+                step2Unlocked = true;
+                
+                // 2단계 버튼 UI 업데이트
+                const tab2Icon = document.getElementById('tab-step2-icon');
+                if (tab2Icon) {
+                    tab2Icon.className = "fa-solid fa-wand-magic-sparkles mr-1 text-yellow-300";
+                }
+                const tab2Btn = document.getElementById('tab-step2');
+                if (tab2Btn) {
+                    tab2Btn.classList.remove('opacity-80');
+                }
+
+                showNotification("🎉 2단계가 해제되었습니다!", '<i class="fa-solid fa-unlock text-emerald-400"></i>');
+                switchStep(2);
+            } else {
+                playSound('click');
+                feedback.className = "text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-rose-100 text-rose-800 border border-rose-300 block";
+                feedback.textContent = "암호가 올바르지 않습니다. (힌트: '비밀')";
+            }
+        }
+
         function switchStep(step) {
+            // 2단계 잠금 체크
+            if (step === 2 && !step2Unlocked) {
+                openStep2UnlockModal();
+                return;
+            }
+
+            // 3단계 잠금 체크
             if (step === 3 && !step2State.secretRevealed) {
                 playSound('click');
                 showNotification("2단계 정답을 먼저 맞춰야 3단계로 이동할 수 있습니다!");
@@ -434,8 +511,10 @@
             const inactiveTab = "px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50";
             
             document.getElementById('tab-step1').className = step === 1 ? activeTab : inactiveTab;
-            document.getElementById('tab-step2').className = step === 2 ? activeTab : inactiveTab;
             
+            const tab2 = document.getElementById('tab-step2');
+            tab2.className = step === 2 ? activeTab : inactiveTab + (step2Unlocked ? "" : " opacity-80");
+
             const tab3 = document.getElementById('tab-step3');
             tab3.className = step === 3 ? activeTab : inactiveTab + (step2State.secretRevealed ? "" : " opacity-80");
 
