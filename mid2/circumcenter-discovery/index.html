@@ -51,6 +51,8 @@
         .drop-slot.over { background:#e0e7ff; border-color:#6366f1; }
         .cond-card.sel { outline:3px solid #6366f1; outline-offset:1px; }
         .cond-card { touch-action: none; }
+        .annot-color-btn { border:2px solid #ffffff; box-shadow:0 0 0 1px #cbd5e1; cursor:pointer; padding:0; transition:box-shadow .15s; }
+        .annot-color-btn.active { box-shadow:0 0 0 2px #4338ca; }
         .touch-board {
             touch-action: none;
             -webkit-touch-callout: none;
@@ -332,7 +334,7 @@
                 <div class="flex items-center space-x-2 text-xs sm:text-sm min-w-0">
                     <i class="fa-solid fa-compass-drafting text-purple-600 text-base sm:text-lg shrink-0"></i>
                     <p class="text-purple-900 font-medium truncate sm:whitespace-normal">
-                        <strong>1. 의자 두 개씩 클릭</strong>하여 수직이등분선 만들기 &nbsp;|&nbsp; <strong>2. 교점 클릭</strong>하여 명당 위치(외심) 완성하기
+                        <strong>1. 의자 두 개씩 클릭</strong>하여 수직이등분선 만들기 &nbsp;|&nbsp; <strong>2. 교점 클릭</strong>하여 명당 위치 완성하기
                     </p>
                 </div>
                 <button onclick="resetStep3()" class="px-2.5 py-1 bg-white border border-purple-300 hover:bg-purple-100 text-purple-800 font-medium text-xs rounded-lg shadow-sm transition flex items-center shrink-0">
@@ -484,6 +486,24 @@
                         <rect width="100%" height="100%" fill="url(#grid4)" />
                     </svg>
                     <svg id="svg-step4" class="absolute inset-0 w-full h-full" viewBox="0 0 500 430" preserveAspectRatio="xMidYMid meet"></svg>
+
+                    <!-- 필기(주석) 오버레이: 마우스/터치펜/손가락으로 그림 위에 필기 -->
+                    <canvas id="step4-annot" class="absolute inset-0 w-full h-full" style="touch-action:none; cursor:crosshair;"></canvas>
+
+                    <div id="step4-annot-toolbar" class="absolute top-1.5 right-1.5 z-20 flex items-center gap-1 bg-white/90 backdrop-blur rounded-lg shadow-md px-1.5 py-1 border border-slate-200">
+                        <button type="button" data-color="#1e293b" class="annot-color-btn w-5 h-5 rounded-full" style="background:#1e293b" title="검정"></button>
+                        <button type="button" data-color="#dc2626" class="annot-color-btn w-5 h-5 rounded-full" style="background:#dc2626" title="빨강"></button>
+                        <button type="button" data-color="#2563eb" class="annot-color-btn w-5 h-5 rounded-full" style="background:#2563eb" title="파랑"></button>
+                        <button type="button" data-color="#16a34a" class="annot-color-btn w-5 h-5 rounded-full" style="background:#16a34a" title="초록"></button>
+                        <button type="button" data-color="#f59e0b" class="annot-color-btn w-5 h-5 rounded-full" style="background:#f59e0b" title="주황"></button>
+                        <span class="w-px h-4 bg-slate-300 mx-0.5"></span>
+                        <button type="button" id="step4-annot-eraser" class="w-6 h-6 rounded-md flex items-center justify-center text-slate-600 hover:bg-slate-100" title="지우개">
+                            <i class="fa-solid fa-eraser text-[11px]"></i>
+                        </button>
+                        <button type="button" id="step4-annot-clear" class="w-6 h-6 rounded-md flex items-center justify-center text-slate-600 hover:bg-slate-100" title="전체 지우기">
+                            <i class="fa-solid fa-trash text-[11px]"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </section>
@@ -636,7 +656,7 @@
             tab4.className = step === 4 ? activeTab : inactiveTab + (step4Unlocked ? "" : " opacity-80");
 
             setupResponsiveCoordinates();
-            if (step === 4) renderStep4();
+            if (step === 4) { renderStep4(); s4AnnotResize(); }
             if (step === 1) renderStep1();
             if (step === 2) renderStep2();
             if (step === 3) renderStep3();
@@ -1840,6 +1860,128 @@
             if (done) playSound('success');
         }
 
+        /* ===== 4단계: 그림 위 필기(주석) 기능 ===== */
+        const S4Annot = {
+            canvas: null, ctx: null,
+            color: '#1e293b',
+            erasing: false,
+            drawing: false,
+            current: null,
+            strokes: []   // { points:[{x,y}], color, width, erase }
+        };
+
+        function s4AnnotInit() {
+            S4Annot.canvas = document.getElementById('step4-annot');
+            S4Annot.ctx = S4Annot.canvas.getContext('2d');
+
+            S4Annot.canvas.addEventListener('pointerdown', s4AnnotDown);
+            S4Annot.canvas.addEventListener('pointermove', s4AnnotMove);
+            window.addEventListener('pointerup', s4AnnotUp);
+            window.addEventListener('pointercancel', s4AnnotUp);
+
+            document.querySelectorAll('.annot-color-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    S4Annot.color = btn.dataset.color;
+                    S4Annot.erasing = false;
+                    s4AnnotUpdateToolbarUI();
+                });
+            });
+            document.getElementById('step4-annot-eraser').addEventListener('click', () => {
+                S4Annot.erasing = !S4Annot.erasing;
+                s4AnnotUpdateToolbarUI();
+            });
+            document.getElementById('step4-annot-clear').addEventListener('click', () => {
+                S4Annot.strokes = [];
+                s4AnnotRedraw();
+                playSound('click');
+            });
+
+            s4AnnotUpdateToolbarUI();
+        }
+
+        function s4AnnotUpdateToolbarUI() {
+            document.querySelectorAll('.annot-color-btn').forEach(btn => {
+                btn.classList.toggle('active', !S4Annot.erasing && btn.dataset.color === S4Annot.color);
+            });
+            const eraserBtn = document.getElementById('step4-annot-eraser');
+            eraserBtn.classList.toggle('bg-indigo-100', S4Annot.erasing);
+            eraserBtn.classList.toggle('text-indigo-600', S4Annot.erasing);
+        }
+
+        function s4AnnotResize() {
+            const canvas = S4Annot.canvas;
+            if (!canvas) return;
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = Math.round(rect.width * dpr);
+            canvas.height = Math.round(rect.height * dpr);
+            S4Annot.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            s4AnnotRedraw();
+        }
+
+        function s4AnnotPos(e) {
+            const rect = S4Annot.canvas.getBoundingClientRect();
+            return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        }
+
+        function s4AnnotDown(e) {
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            e.preventDefault();
+            S4Annot.drawing = true;
+            const p = s4AnnotPos(e);
+            S4Annot.current = { points:[p], color: S4Annot.color, width: S4Annot.erasing ? 20 : 3, erase: S4Annot.erasing };
+            S4Annot.strokes.push(S4Annot.current);
+            s4AnnotDrawSegment(p, p, S4Annot.current);
+        }
+        function s4AnnotMove(e) {
+            if (!S4Annot.drawing) return;
+            e.preventDefault();
+            const p = s4AnnotPos(e);
+            const pts = S4Annot.current.points;
+            const prev = pts[pts.length - 1];
+            pts.push(p);
+            s4AnnotDrawSegment(prev, p, S4Annot.current);
+        }
+        function s4AnnotUp() {
+            S4Annot.drawing = false;
+            S4Annot.current = null;
+        }
+        function s4AnnotDrawSegment(p1, p2, stroke) {
+            const ctx = S4Annot.ctx;
+            ctx.save();
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = stroke.width;
+            if (stroke.erase) {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.strokeStyle = 'rgba(0,0,0,1)';
+            } else {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = stroke.color;
+            }
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+            ctx.restore();
+        }
+        function s4AnnotRedraw() {
+            const ctx = S4Annot.ctx, canvas = S4Annot.canvas;
+            if (!ctx || !canvas) return;
+            const dpr = window.devicePixelRatio || 1;
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.restore();
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            S4Annot.strokes.forEach(stroke => {
+                const pts = stroke.points;
+                if (pts.length === 1) { s4AnnotDrawSegment(pts[0], pts[0], stroke); return; }
+                for (let i = 1; i < pts.length; i++) s4AnnotDrawSegment(pts[i - 1], pts[i], stroke);
+            });
+        }
+
         function initStep4() {
             document.querySelectorAll('#step4-activity .drop-slot').forEach(slot => {
                 const idx = parseInt(slot.dataset.slot, 10);
@@ -1872,6 +2014,7 @@
             initStep2();
             initStep3();
             initStep4();
+            s4AnnotInit();
             switchStep(1);
         });
 
@@ -1880,7 +2023,7 @@
             if (currentStep === 1) renderStep1();
             if (currentStep === 2) renderStep2();
             if (currentStep === 3) renderStep3();
-            if (currentStep === 4) renderStep4();
+            if (currentStep === 4) { renderStep4(); s4AnnotResize(); }
         });
     </script>
 </body>
