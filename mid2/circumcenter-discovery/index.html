@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -1295,17 +1296,19 @@
             const len = Math.sqrt(dx * dx + dy * dy);
             if (len === 0) return document.createElementNS("http://www.w3.org/2000/svg", "path");
 
-            const ux = dx / len;
-            const uy = dy / len;
-            const nx = -uy;
-            const ny = ux;
+            // 교점(중점)을 꼭짓점으로 하는 두 직선 사이에 정사각형 모서리를 표시한다.
+            // 첫 방향은 의자 연결선, 둘째 방향은 그 선의 수직이등분선이다.
+            const sx = dx / len;
+            const sy = dy / len;
+            const px = -sy;
+            const py = sx;
 
-            const x1 = mid.x;
-            const y1 = mid.y;
-            const x2 = mid.x + ux * size;
-            const y2 = mid.y + uy * size;
-            const x3 = mid.x + ux * size + nx * size;
-            const y3 = mid.y + uy * size + ny * size;
+            const x1 = mid.x + sx * size;
+            const y1 = mid.y + sy * size;
+            const x2 = mid.x + sx * size + px * size;
+            const y2 = mid.y + sy * size + py * size;
+            const x3 = mid.x + px * size;
+            const y3 = mid.y + py * size;
 
             const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
             path.setAttribute("d", `M ${x1} ${y1} L ${x2} ${y2} L ${x3} ${y3}`);
