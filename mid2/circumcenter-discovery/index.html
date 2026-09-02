@@ -483,7 +483,7 @@
             } else {
                 playSound('click');
                 feedback.className = "text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-rose-100 text-rose-800 border border-rose-300 block";
-                feedback.textContent = "암호가 올바르지 않습니다. (힌트: '비밀')";
+                feedback.textContent = "암호가 올바르지 않습니다.";
             }
         }
 
@@ -562,28 +562,44 @@
             return '';
         }
 
+        function getVisibleBoardSize(ids) {
+            for (const id of ids) {
+                const el = document.getElementById(id);
+                if (el && el.clientWidth > 0 && el.clientHeight > 0) {
+                    return { w: el.clientWidth, h: el.clientHeight };
+                }
+            }
+            return { w: 700, h: 450 };
+        }
+
         function setupResponsiveCoordinates() {
-            const board1 = document.getElementById('step1-board');
-            if (board1) {
-                const w = board1.clientWidth || 700;
-                const h = board1.clientHeight || 450;
-                
-                step1State.chairA = { x: Math.round(w * 0.22), y: Math.round(h * 0.28), label: 'A' };
-                step1State.chairB = { x: Math.round(w * 0.78), y: Math.round(h * 0.25), label: 'B' };
-                step1State.chairC = { x: Math.round(w * 0.50), y: Math.round(h * 0.72), label: 'C' };
+            // 1단계/3단계 보드는 동일한 레이아웃이므로 현재 보이는 보드 크기를 기준으로 계산
+            const { w, h } = getVisibleBoardSize(['step1-board', 'step3-board', 'step2-board']);
 
-                step3State.chairA = { ...step1State.chairA };
-                step3State.chairB = { ...step1State.chairB };
-                step3State.chairC = { ...step1State.chairC };
-            }
+            // 외접원이 화면 안에 완전히 들어오도록 반지름을 결정하고,
+            // 그 원 위에 세 의자를 배치 (모든 호가 180도 미만 → 예각삼각형)
+            const margin = 44;
+            const cx = w / 2;
+            const cy = h / 2 + 6;
+            const R = Math.max(40, Math.min(w, h) / 2 - margin);
+            const angles = { A: -150, B: -30, C: 100 }; // 도 단위 (y축 아래 방향 기준)
+            const onCircle = (deg, label) => ({
+                x: Math.round(cx + R * Math.cos(deg * Math.PI / 180)),
+                y: Math.round(cy + R * Math.sin(deg * Math.PI / 180)),
+                label
+            });
 
-            const board2 = document.getElementById('step2-board');
-            if (board2) {
-                const w = board2.clientWidth || 700;
-                const h = board2.clientHeight || 450;
-                step2State.pointA = { x: Math.round(w * 0.22), y: Math.round(h * 0.50), label: 'A' };
-                step2State.pointB = { x: Math.round(w * 0.78), y: Math.round(h * 0.50), label: 'B' };
-            }
+            step1State.chairA = onCircle(angles.A, 'A');
+            step1State.chairB = onCircle(angles.B, 'B');
+            step1State.chairC = onCircle(angles.C, 'C');
+
+            step3State.chairA = { ...step1State.chairA };
+            step3State.chairB = { ...step1State.chairB };
+            step3State.chairC = { ...step1State.chairC };
+
+            const b2 = getVisibleBoardSize(['step2-board', 'step1-board', 'step3-board']);
+            step2State.pointA = { x: Math.round(b2.w * 0.22), y: Math.round(b2.h * 0.50), label: 'A' };
+            step2State.pointB = { x: Math.round(b2.w * 0.78), y: Math.round(b2.h * 0.50), label: 'B' };
         }
 
         /* Geometry Helpers */
@@ -1108,8 +1124,6 @@
                             step3State.circleRevealed = true;
                             playSound('reveal');
 
-                            const toastText = document.getElementById('step3-toast-text');
-                            toastText.innerHTML = "✨ 세 수직이등분선의 교점은 <strong>외심</strong>, 이 원은 <strong>외접원</strong>입니다!";
                         }
 
                         renderStep3();
@@ -1245,16 +1259,6 @@
                         pMarker.setAttribute("stroke-width", "3");
                         svg.appendChild(pMarker);
 
-                        if (circleRevealed) {
-                            const labelP = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                            labelP.setAttribute("x", circum.x + 14);
-                            labelP.setAttribute("y", circum.y - 10);
-                            labelP.setAttribute("font-size", "15");
-                            labelP.setAttribute("font-weight", "900");
-                            labelP.setAttribute("fill", "#581c87");
-                            labelP.textContent = "외심";
-                            svg.appendChild(labelP);
-                        }
                     }
                 }
             }
