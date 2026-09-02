@@ -1867,7 +1867,7 @@
             erasing: false,
             drawing: false,
             current: null,
-            strokes: []   // { points:[{x,y}], color, width, erase }
+            strokes: []   // { points:[{nx,ny}], color, width, erase }  (nx,ny: 그림판 기준 0~1 비율 좌표)
         };
 
         function s4AnnotInit() {
@@ -1897,6 +1897,13 @@
             });
 
             s4AnnotUpdateToolbarUI();
+
+            // 수선 내리기 등으로 그림판 크기/위치가 바뀌는 경우까지 포함해서,
+            // 그림판 크기가 바뀔 때마다(원인 불문) 캔버스를 다시 맞춰 필기 싱크가 어긋나지 않게 함
+            if (window.ResizeObserver) {
+                const ro = new ResizeObserver(() => s4AnnotResize());
+                ro.observe(document.getElementById('step4-board'));
+            }
         }
 
         function s4AnnotUpdateToolbarUI() {
@@ -1914,15 +1921,22 @@
             const rect = canvas.getBoundingClientRect();
             if (rect.width === 0 || rect.height === 0) return;
             const dpr = window.devicePixelRatio || 1;
-            canvas.width = Math.round(rect.width * dpr);
-            canvas.height = Math.round(rect.height * dpr);
+            const newW = Math.round(rect.width * dpr);
+            const newH = Math.round(rect.height * dpr);
+            if (canvas.width === newW && canvas.height === newH) return; // 크기 변화 없으면 다시 그릴 필요 없음
+            canvas.width = newW;
+            canvas.height = newH;
             S4Annot.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             s4AnnotRedraw();
         }
 
+        /* 포인터의 화면 좌표 -> 그림판 기준 비율 좌표(0~1)로 변환 (그림판 크기가 바뀌어도 항상 손가락 위치와 일치) */
         function s4AnnotPos(e) {
             const rect = S4Annot.canvas.getBoundingClientRect();
-            return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            return { nx:(e.clientX - rect.left) / rect.width, ny:(e.clientY - rect.top) / rect.height, rect };
+        }
+        function s4AnnotToPx(p, rect) {
+            return { x: p.nx * rect.width, y: p.ny * rect.height };
         }
 
         function s4AnnotDown(e) {
@@ -1930,9 +1944,10 @@
             e.preventDefault();
             S4Annot.drawing = true;
             const p = s4AnnotPos(e);
-            S4Annot.current = { points:[p], color: S4Annot.color, width: S4Annot.erasing ? 20 : 3, erase: S4Annot.erasing };
+            S4Annot.current = { points:[{ nx:p.nx, ny:p.ny }], color: S4Annot.color, width: S4Annot.erasing ? 20 : 3, erase: S4Annot.erasing };
             S4Annot.strokes.push(S4Annot.current);
-            s4AnnotDrawSegment(p, p, S4Annot.current);
+            const q = s4AnnotToPx(p, p.rect);
+            s4AnnotDrawSegment(q, q, S4Annot.current);
         }
         function s4AnnotMove(e) {
             if (!S4Annot.drawing) return;
@@ -1940,14 +1955,14 @@
             const p = s4AnnotPos(e);
             const pts = S4Annot.current.points;
             const prev = pts[pts.length - 1];
-            pts.push(p);
-            s4AnnotDrawSegment(prev, p, S4Annot.current);
+            pts.push({ nx:p.nx, ny:p.ny });
+            s4AnnotDrawSegment(s4AnnotToPx(prev, p.rect), s4AnnotToPx(p, p.rect), S4Annot.current);
         }
         function s4AnnotUp() {
             S4Annot.drawing = false;
             S4Annot.current = null;
         }
-        function s4AnnotDrawSegment(p1, p2, stroke) {
+        function s4AnnotDrawSegment(q1, q2, stroke) {
             const ctx = S4Annot.ctx;
             ctx.save();
             ctx.lineCap = 'round';
@@ -1961,8 +1976,8 @@
                 ctx.strokeStyle = stroke.color;
             }
             ctx.beginPath();
-            ctx.moveTo(p1.x, p1.y);
-            ctx.lineTo(p2.x, p2.y);
+            ctx.moveTo(q1.x, q1.y);
+            ctx.lineTo(q2.x, q2.y);
             ctx.stroke();
             ctx.restore();
         }
@@ -1975,10 +1990,14 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.restore();
             ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
             S4Annot.strokes.forEach(stroke => {
                 const pts = stroke.points;
-                if (pts.length === 1) { s4AnnotDrawSegment(pts[0], pts[0], stroke); return; }
-                for (let i = 1; i < pts.length; i++) s4AnnotDrawSegment(pts[i - 1], pts[i], stroke);
+                if (pts.length === 1) { const q = s4AnnotToPx(pts[0], rect); s4AnnotDrawSegment(q, q, stroke); return; }
+                for (let i = 1; i < pts.length; i++) {
+                    s4AnnotDrawSegment(s4AnnotToPx(pts[i - 1], rect), s4AnnotToPx(pts[i], rect), stroke);
+                }
             });
         }
 
