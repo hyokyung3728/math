@@ -446,9 +446,15 @@
                             <span>)이다.</span>
                         </div>
 
-                        <div id="step4-conclusion" class="hidden p-2.5 rounded-xl bg-emerald-600 text-white text-xs sm:text-sm font-bold shadow">
-                            <i class="fa-solid fa-flag-checkered mr-1 text-amber-300"></i>
-                            따라서 <span class="ovl">AD</span> = <span class="ovl">BD</span> 이므로 <span class="ovl">OD</span>는 <span class="ovl">AB</span>의 수직이등분선이다.
+                        <div id="step4-conclusion" class="hidden p-2.5 rounded-xl bg-emerald-600 text-white text-xs sm:text-sm font-bold shadow space-y-1.5">
+                            <div>
+                                <i class="fa-solid fa-flag-checkered mr-1 text-amber-300"></i>
+                                따라서 <span class="ovl">AD</span> = <span class="ovl">BD</span> 이므로 <span class="ovl">OD</span>는 <span class="ovl">AB</span>의 수직이등분선이다.
+                            </div>
+                            <div class="pt-1.5 border-t border-emerald-400/50">
+                                <i class="fa-solid fa-circle-check mr-1 text-amber-300"></i>
+                                &#9651;ABC의 세 변의 수직이등분선은 한 점 O에서 만난다.
+                            </div>
                         </div>
 
                         <div>
@@ -1542,10 +1548,10 @@
         const S4 = { A:{x:60,y:300}, B:{x:440,y:340}, C:{x:260,y:60}, perpDrawn:false, filled:[null,null,null,null], selectedCard:null, dragMoved:false };
 
         const S4_CARDS = [
-            { id:'c1', html:'&#8736;ODA = &#8736;ODB = 90&#176;' },
             { id:'c2', html:'<span class="ovl">OA</span> = <span class="ovl">OB</span>' },
             { id:'c3', html:'<span class="ovl">AD</span> = <span class="ovl">BD</span>' },
             { id:'c4', html:'<span class="ovl">OD</span>는 공통인 변' },
+            { id:'c1', html:'&#8736;ODA = &#8736;ODB = 90&#176;' },
             { id:'c5', html:'&#8736;AOD = &#8736;BOD' },
             { id:'c6', html:'&#8736;OAD = &#8736;OBD' },
             { id:'c7', html:'SSS 합동' },
