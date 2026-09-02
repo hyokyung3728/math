@@ -1189,6 +1189,10 @@
                     bisector.setAttribute("stroke-width", "2.5");
                     bisector.setAttribute("class", "reveal-line");
                     svg.appendChild(bisector);
+
+                    const rightAngle = createRightAngleMarker(P1, P2, 12);
+                    rightAngle.setAttribute("class", "reveal-line");
+                    svg.appendChild(rightAngle);
                 });
             }
 
@@ -1236,18 +1240,6 @@
                             circle.setAttribute("stroke-dasharray", "6 4");
                             svg.appendChild(circle);
 
-                            const circleLabelAngle = -Math.PI / 4;
-                            const circleLabelX = circum.x + (dist + 16) * Math.cos(circleLabelAngle);
-                            const circleLabelY = circum.y + (dist + 16) * Math.sin(circleLabelAngle);
-
-                            const labelCircleText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                            labelCircleText.setAttribute("x", circleLabelX);
-                            labelCircleText.setAttribute("y", circleLabelY);
-                            labelCircleText.setAttribute("font-size", "15");
-                            labelCircleText.setAttribute("font-weight", "900");
-                            labelCircleText.setAttribute("fill", "#7e22ce");
-                            labelCircleText.textContent = "외접원";
-                            svg.appendChild(labelCircleText);
                         }
 
                         const pMarker = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -1294,6 +1286,35 @@
             line.setAttribute("x2", mid.x + nx * L);
             line.setAttribute("y2", mid.y + ny * L);
             return line;
+        }
+
+        function createRightAngleMarker(P1, P2, size) {
+            const mid = { x: (P1.x + P2.x) / 2, y: (P1.y + P2.y) / 2 };
+            const dx = P2.x - P1.x;
+            const dy = P2.y - P1.y;
+            const len = Math.sqrt(dx * dx + dy * dy);
+            if (len === 0) return document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+            const ux = dx / len;
+            const uy = dy / len;
+            const nx = -uy;
+            const ny = ux;
+
+            const x1 = mid.x;
+            const y1 = mid.y;
+            const x2 = mid.x + ux * size;
+            const y2 = mid.y + uy * size;
+            const x3 = mid.x + ux * size + nx * size;
+            const y3 = mid.y + uy * size + ny * size;
+
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", `M ${x1} ${y1} L ${x2} ${y2} L ${x3} ${y3}`);
+            path.setAttribute("fill", "none");
+            path.setAttribute("stroke", "#dc2626");
+            path.setAttribute("stroke-width", "2.5");
+            path.setAttribute("stroke-linecap", "round");
+            path.setAttribute("stroke-linejoin", "round");
+            return path;
         }
 
         function createDistanceTag(x, y, textVal, color) {
