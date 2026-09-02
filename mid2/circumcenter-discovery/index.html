@@ -47,6 +47,9 @@
             stroke-dasharray: 1000;
             animation: line-reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
+        .ovl { text-decoration: overline; }
+        .drop-slot.over { background:#e0e7ff; border-color:#6366f1; }
+        .cond-card.sel { outline:3px solid #6366f1; outline-offset:1px; }
         .touch-board {
             touch-action: none;
             -webkit-touch-callout: none;
@@ -77,6 +80,9 @@
                 </button>
                 <button id="tab-step3" onclick="switchStep(3)" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 text-indigo-100 opacity-80 hover:bg-indigo-700/50">
                     <i id="tab-step3-icon" class="fa-solid fa-lock mr-1 text-amber-300"></i><span class="hidden sm:inline">3단계: </span>완성하기
+                </button>
+                <button id="tab-step4" onclick="switchStep(4)" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 text-indigo-100 opacity-80 hover:bg-indigo-700/50">
+                    <i id="tab-step4-icon" class="fa-solid fa-lock mr-1 text-amber-300"></i><span class="hidden sm:inline">4단계: </span>증명하기
                 </button>
             </div>
         </div>
@@ -109,6 +115,26 @@
                 </button>
             </div>
             <p id="step2-unlock-feedback" class="hidden text-xs font-semibold px-2.5 py-1.5 rounded-lg"></p>
+        </div>
+    </div>
+
+    <!-- Step 4 Unlock Password Modal -->
+    <div id="step4-unlock-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl p-4 sm:p-5 max-w-xs sm:max-w-md w-full my-auto flex flex-col gap-3 border border-slate-200">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-key text-amber-500"></i> 4단계 잠금 해제 암호
+                </h3>
+                <button onclick="closeStep4UnlockModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">4단계로 진입하기 위한 암호를 입력하세요!</p>
+            <div class="flex gap-2">
+                <input type="text" id="step4-unlock-input" onkeydown="if(event.key==='Enter') submitStep4UnlockPassword()" placeholder="암호를 입력하세요" class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-800 text-xs sm:text-sm">
+                <button onclick="submitStep4UnlockPassword()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition shrink-0 text-xs sm:text-sm">확인</button>
+            </div>
+            <p id="step4-unlock-feedback" class="hidden text-xs font-semibold px-2.5 py-1.5 rounded-lg"></p>
         </div>
     </div>
 
@@ -382,6 +408,78 @@
 
             </div>
         </section>
+
+        <!-- ==================== STEP 4 SECTION ==================== -->
+        <section id="step4-container" class="hidden flex-1 min-h-0 flex flex-col gap-2 overflow-hidden">
+            <div class="bg-emerald-50 border-l-4 border-emerald-500 px-3 py-2 rounded-r-xl shadow-sm flex items-center justify-between shrink-0 gap-2">
+                <div class="flex items-center space-x-2 text-xs sm:text-sm min-w-0">
+                    <i class="fa-solid fa-scale-balanced text-emerald-600 text-base sm:text-lg shrink-0"></i>
+                    <p class="text-emerald-900 font-bold truncate sm:whitespace-normal">
+                        삼각형의 세 변의 수직이등분선의 교점이 진짜 한 점에서 만날까?
+                    </p>
+                </div>
+                <button onclick="resetStep4()" class="px-2.5 py-1 bg-white border border-emerald-300 hover:bg-emerald-100 text-emerald-800 font-medium text-xs rounded-lg shadow-sm transition flex items-center shrink-0">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> 다시하기
+                </button>
+            </div>
+
+            <div class="flex-1 min-h-0 bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden flex flex-col-reverse md:flex-row">
+
+                <!-- LEFT: proof activity -->
+                <div class="w-full md:w-[54%] lg:w-[52%] border-t md:border-t-0 md:border-r border-slate-200 bg-slate-50 p-2.5 sm:p-3.5 overflow-y-auto max-h-[55%] md:max-h-none">
+                    <div id="step4-question" class="hidden mb-2 p-2.5 rounded-xl bg-indigo-600 text-white font-bold text-xs sm:text-sm shadow">
+                        <i class="fa-solid fa-circle-question mr-1 text-amber-300"></i>
+                        &#9651;OAD와 &#9651;OBD가 합동일까?
+                    </div>
+
+                    <div id="step4-activity" class="hidden space-y-2">
+                        <div class="space-y-1.5">
+                            <div class="drop-slot flex items-center justify-center min-h-[38px] px-2 py-1.5 rounded-xl border-2 border-dashed border-slate-300 bg-white text-xs sm:text-sm font-bold text-slate-400" data-slot="0">여기에 조건을 끌어다 놓으세요</div>
+                            <div class="drop-slot flex items-center justify-center min-h-[38px] px-2 py-1.5 rounded-xl border-2 border-dashed border-slate-300 bg-white text-xs sm:text-sm font-bold text-slate-400" data-slot="1">여기에 조건을 끌어다 놓으세요</div>
+                            <div class="drop-slot flex items-center justify-center min-h-[38px] px-2 py-1.5 rounded-xl border-2 border-dashed border-slate-300 bg-white text-xs sm:text-sm font-bold text-slate-400" data-slot="2">여기에 조건을 끌어다 놓으세요</div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-1.5 text-xs sm:text-sm font-bold text-slate-800 p-2 rounded-xl bg-white border border-slate-200">
+                            <span>이므로 &#9651;OAD &#8801; &#9651;OBD (</span>
+                            <span class="drop-slot inline-flex items-center justify-center min-w-[110px] min-h-[32px] px-2 py-1 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400" data-slot="3">합동조건</span>
+                            <span>)이다.</span>
+                        </div>
+
+                        <div id="step4-conclusion" class="hidden p-2.5 rounded-xl bg-emerald-600 text-white text-xs sm:text-sm font-bold shadow">
+                            <i class="fa-solid fa-flag-checkered mr-1 text-amber-300"></i>
+                            따라서 <span class="ovl">AD</span> = <span class="ovl">BD</span> 이므로 <span class="ovl">OD</span>는 <span class="ovl">AB</span>의 수직이등분선이다.
+                        </div>
+
+                        <div>
+                            <h4 class="text-[11px] sm:text-xs font-bold text-slate-600 mb-1 flex items-center"><i class="fa-solid fa-clone mr-1.5 text-indigo-500"></i>조건 카드 (끌어다 놓기 / 카드를 누른 뒤 빈 칸을 눌러도 됩니다)</h4>
+                            <div id="step4-cards" class="flex flex-wrap gap-1.5"></div>
+                        </div>
+                    </div>
+
+                    <p id="step4-hint" class="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                        오른쪽 그림에서 점 O는 &#9651;ABC의 두 변 <span class="ovl">AC</span>, <span class="ovl">BC</span>의 수직이등분선의 교점입니다.<br>
+                        아래 버튼을 눌러 점 O에서 <span class="ovl">AB</span>에 수선을 내려 봅시다.
+                    </p>
+
+                    <button id="step4-draw-btn" onclick="step4DrawPerp()" class="mt-2 w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs sm:text-sm shadow-md transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-pen-ruler"></i> 점 O에서 <span class="ovl">AB</span>에 수선 내리기
+                    </button>
+                </div>
+
+                <!-- RIGHT: figure -->
+                <div class="relative flex-1 min-h-0 bg-slate-50 overflow-hidden" id="step4-board">
+                    <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" width="100%" height="100%">
+                        <defs>
+                            <pattern id="grid4" width="30" height="30" patternUnits="userSpaceOnUse">
+                                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#64748b" stroke-width="0.8"/>
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#grid4)" />
+                    </svg>
+                    <svg id="svg-step4" class="absolute inset-0 w-full h-full" viewBox="0 0 500 430" preserveAspectRatio="xMidYMid meet"></svg>
+                </div>
+            </div>
+        </section>
     </main>
 
     <!-- Footer -->
@@ -421,6 +519,7 @@
         /* Global Application State */
         let currentStep = 1;
         let step2Unlocked = false; // 2단계 잠금 상태 관리
+        let step4Unlocked = false; // 4단계 잠금 상태 관리
         let globalToastTimer = null;
 
         function showNotification(msg, iconHtml = '<i class="fa-solid fa-triangle-exclamation"></i>') {
@@ -495,6 +594,12 @@
                 return;
             }
 
+            // 4단계 잠금 체크
+            if (step === 4 && !step4Unlocked) {
+                openStep4UnlockModal();
+                return;
+            }
+
             // 3단계 잠금 체크
             if (step === 3 && !step2State.secretRevealed) {
                 playSound('click');
@@ -507,6 +612,7 @@
             document.getElementById('step1-container').classList.toggle('hidden', step !== 1);
             document.getElementById('step2-container').classList.toggle('hidden', step !== 2);
             document.getElementById('step3-container').classList.toggle('hidden', step !== 3);
+            document.getElementById('step4-container').classList.toggle('hidden', step !== 4);
             
             const activeTab = "px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 bg-white text-indigo-700 shadow-md";
             const inactiveTab = "px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50";
@@ -519,7 +625,11 @@
             const tab3 = document.getElementById('tab-step3');
             tab3.className = step === 3 ? activeTab : inactiveTab + (step2State.secretRevealed ? "" : " opacity-80");
 
+            const tab4 = document.getElementById('tab-step4');
+            tab4.className = step === 4 ? activeTab : inactiveTab + (step4Unlocked ? "" : " opacity-80");
+
             setupResponsiveCoordinates();
+            if (step === 4) renderStep4();
             if (step === 1) renderStep1();
             if (step === 2) renderStep2();
             if (step === 3) renderStep3();
@@ -1394,10 +1504,286 @@
             });
         }
 
+
+        /* ==================== STEP 4: 증명하기 ==================== */
+        function openStep4UnlockModal() {
+            playSound('click');
+            const modal = document.getElementById('step4-unlock-modal');
+            const input = document.getElementById('step4-unlock-input');
+            const feedback = document.getElementById('step4-unlock-feedback');
+            input.value = '';
+            feedback.className = "hidden text-xs font-semibold px-2.5 py-1.5 rounded-lg";
+            modal.classList.remove('hidden');
+            setTimeout(() => input.focus(), 100);
+        }
+        function closeStep4UnlockModal() {
+            document.getElementById('step4-unlock-modal').classList.add('hidden');
+        }
+        function submitStep4UnlockPassword() {
+            const input = document.getElementById('step4-unlock-input');
+            const feedback = document.getElementById('step4-unlock-feedback');
+            if (input.value.trim() === '증명') {
+                playSound('success');
+                closeStep4UnlockModal();
+                step4Unlocked = true;
+                const ic = document.getElementById('tab-step4-icon');
+                if (ic) ic.className = "fa-solid fa-scale-balanced mr-1 text-yellow-300";
+                document.getElementById('tab-step4').classList.remove('opacity-80');
+                showNotification("🎉 4단계가 해제되었습니다!", '<i class="fa-solid fa-unlock text-emerald-400"></i>');
+                switchStep(4);
+            } else {
+                playSound('click');
+                feedback.className = "text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-rose-100 text-rose-800 border border-rose-300 block";
+                feedback.textContent = "암호가 올바르지 않습니다.";
+            }
+        }
+
+        const S4 = { A:{x:95,y:330}, B:{x:415,y:330}, C:{x:250,y:80}, perpDrawn:false, filled:[null,null,null,null], selectedCard:null };
+
+        const S4_CARDS = [
+            { id:'c1', html:'&#8736;ODA = &#8736;ODB = 90&#176;' },
+            { id:'c2', html:'<span class="ovl">OA</span> = <span class="ovl">OB</span>' },
+            { id:'c3', html:'<span class="ovl">AD</span> = <span class="ovl">BD</span>' },
+            { id:'c4', html:'<span class="ovl">OD</span>는 공통인 변' },
+            { id:'c5', html:'&#8736;AOD = &#8736;BOD' },
+            { id:'c6', html:'&#8736;OAD = &#8736;OBD' },
+            { id:'c7', html:'SSS 합동' },
+            { id:'c8', html:'SAS 합동' },
+            { id:'c9', html:'ASA 합동' },
+            { id:'c10', html:'RHS 합동' },
+            { id:'c11', html:'RHA 합동' }
+        ];
+
+        function s4Circumcenter(A, B, C) {
+            const d = 2 * (A.x*(B.y-C.y) + B.x*(C.y-A.y) + C.x*(A.y-B.y));
+            const ux = ((A.x*A.x+A.y*A.y)*(B.y-C.y) + (B.x*B.x+B.y*B.y)*(C.y-A.y) + (C.x*C.x+C.y*C.y)*(A.y-B.y)) / d;
+            const uy = ((A.x*A.x+A.y*A.y)*(C.x-B.x) + (B.x*B.x+B.y*B.y)*(A.x-C.x) + (C.x*C.x+C.y*C.y)*(B.x-A.x)) / d;
+            return { x: ux, y: uy };
+        }
+        function s4Mid(P, Q) { return { x:(P.x+Q.x)/2, y:(P.y+Q.y)/2 }; }
+
+        function s4El(name, attrs) {
+            const e = document.createElementNS("http://www.w3.org/2000/svg", name);
+            for (const k in attrs) e.setAttribute(k, attrs[k]);
+            return e;
+        }
+        function s4Line(svg, P, Q, color, width, dash) {
+            const l = s4El('line', { x1:P.x, y1:P.y, x2:Q.x, y2:Q.y, stroke:color, 'stroke-width':width, 'stroke-linecap':'round' });
+            if (dash) l.setAttribute('stroke-dasharray', dash);
+            svg.appendChild(l);
+            return l;
+        }
+        function s4Text(svg, x, y, txt, color, size) {
+            const t = s4El('text', { x:x, y:y, 'text-anchor':'middle', 'font-size':size||15, 'font-weight':'bold', fill:color||'#0f172a' });
+            t.textContent = txt;
+            svg.appendChild(t);
+        }
+        function s4Dot(svg, P, color, r) {
+            svg.appendChild(s4El('circle', { cx:P.x, cy:P.y, r:r||5, fill:color, stroke:'#ffffff', 'stroke-width':2 }));
+        }
+        /* 두 선분 방향 u, v 사이의 직각 표시 (교점 V) */
+        function s4RightAngle(svg, V, P, Q, size) {
+            size = size || 14;
+            const n = (a, b) => { const dx=b.x-a.x, dy=b.y-a.y, L=Math.hypot(dx,dy)||1; return {x:dx/L, y:dy/L}; };
+            const u = n(V, P), v = n(V, Q);
+            const p1 = { x: V.x+u.x*size, y: V.y+u.y*size };
+            const p2 = { x: V.x+u.x*size+v.x*size, y: V.y+u.y*size+v.y*size };
+            const p3 = { x: V.x+v.x*size, y: V.y+v.y*size };
+            svg.appendChild(s4El('path', { d:`M ${p1.x} ${p1.y} L ${p2.x} ${p2.y} L ${p3.x} ${p3.y}`, fill:'none', stroke:'#dc2626', 'stroke-width':2.2, 'stroke-linejoin':'round' }));
+        }
+        /* 선분 위 특정 점에 같음 표시(빗금) */
+        function s4Ticks(svg, P, Q, count, color) {
+            const mid = s4Mid(P, Q);
+            const dx = Q.x-P.x, dy = Q.y-P.y, L = Math.hypot(dx,dy)||1;
+            const ux = dx/L, uy = dy/L;
+            const nx = -uy, ny = ux;
+            const gap = 5, half = 7;
+            for (let i = 0; i < count; i++) {
+                const off = (i - (count-1)/2) * gap;
+                const cx = mid.x + ux*off, cy = mid.y + uy*off;
+                svg.appendChild(s4El('line', {
+                    x1: cx - nx*half, y1: cy - ny*half,
+                    x2: cx + nx*half, y2: cy + ny*half,
+                    stroke: color, 'stroke-width': 2.2, 'stroke-linecap':'round'
+                }));
+            }
+        }
+        function s4Foot(P, A, B) {
+            const dx=B.x-A.x, dy=B.y-A.y;
+            const t = ((P.x-A.x)*dx + (P.y-A.y)*dy) / (dx*dx+dy*dy);
+            return { x: A.x+dx*t, y: A.y+dy*t };
+        }
+
+        function renderStep4() {
+            const svg = document.getElementById('svg-step4');
+            if (!svg) return;
+            svg.innerHTML = '';
+            const A = S4.A, B = S4.B, C = S4.C;
+            const O = s4Circumcenter(A, B, C);
+            const E = s4Foot(O, B, C);   // BC 위의 수선의 발
+            const F = s4Foot(O, A, C);   // AC 위의 수선의 발
+            const D = s4Mid(A, B);       // AB 위의 수선의 발
+
+            // 삼각형
+            const tri = s4El('polygon', { points:`${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`, fill:'#eef2ff', stroke:'#1e293b', 'stroke-width':3, 'stroke-linejoin':'round' });
+            svg.appendChild(tri);
+
+            // O에서 꼭짓점까지 선분
+            s4Line(svg, O, A, '#7c3aed', 2.4);
+            s4Line(svg, O, B, '#7c3aed', 2.4);
+            s4Line(svg, O, C, '#7c3aed', 2.4);
+
+            // O에서 AC, BC로의 수선
+            s4Line(svg, O, F, '#0ea5e9', 2.4);
+            s4Line(svg, O, E, '#0ea5e9', 2.4);
+            s4RightAngle(svg, F, O, C, 13);
+            s4RightAngle(svg, E, O, C, 13);
+
+            // 같은 길이 표시
+            s4Ticks(svg, A, F, 1, '#dc2626');
+            s4Ticks(svg, F, C, 1, '#dc2626');
+            s4Ticks(svg, B, E, 2, '#059669');
+            s4Ticks(svg, E, C, 2, '#059669');
+
+            // AB 수선 (버튼 누른 후)
+            if (S4.perpDrawn) {
+                const l = s4Line(svg, O, D, '#0ea5e9', 2.6);
+                l.setAttribute('class', 'reveal-line');
+                s4RightAngle(svg, D, O, B, 13);
+                s4Dot(svg, D, '#0ea5e9', 5);
+                s4Text(svg, D.x, D.y + 26, 'D', '#0369a1', 16);
+            }
+
+            // 점과 라벨
+            s4Dot(svg, O, '#7c3aed', 6);
+            s4Text(svg, O.x + 18, O.y + 6, 'O', '#6d28d9', 17);
+            s4Dot(svg, F, '#0ea5e9', 4.5);
+            s4Dot(svg, E, '#0ea5e9', 4.5);
+            s4Dot(svg, A, '#1e293b', 5);
+            s4Dot(svg, B, '#1e293b', 5);
+            s4Dot(svg, C, '#1e293b', 5);
+            s4Text(svg, A.x - 16, A.y + 16, 'A', '#0f172a', 17);
+            s4Text(svg, B.x + 16, B.y + 16, 'B', '#0f172a', 17);
+            s4Text(svg, C.x, C.y - 14, 'C', '#0f172a', 17);
+        }
+
+        function step4DrawPerp() {
+            if (S4.perpDrawn) return;
+            playSound('reveal');
+            S4.perpDrawn = true;
+            renderStep4();
+            document.getElementById('step4-hint').classList.add('hidden');
+            document.getElementById('step4-draw-btn').classList.add('hidden');
+            document.getElementById('step4-question').classList.remove('hidden');
+            document.getElementById('step4-activity').classList.remove('hidden');
+        }
+
+        function s4CardHtml(id) {
+            const c = S4_CARDS.find(c => c.id === id);
+            return c ? c.html : '';
+        }
+
+        function renderStep4Cards() {
+            const wrap = document.getElementById('step4-cards');
+            wrap.innerHTML = '';
+            S4_CARDS.forEach(c => {
+                const used = S4.filled.indexOf(c.id) !== -1;
+                const el = document.createElement('div');
+                el.className = "cond-card px-2.5 py-1.5 rounded-lg border text-[11px] sm:text-xs font-bold shadow-sm cursor-grab " +
+                    (used ? "bg-slate-200 border-slate-300 text-slate-400 opacity-50 pointer-events-none"
+                          : "bg-white border-indigo-300 text-slate-800 hover:bg-indigo-50");
+                el.innerHTML = c.html;
+                el.dataset.card = c.id;
+                if (!used) {
+                    el.draggable = true;
+                    el.addEventListener('dragstart', e => { e.dataTransfer.setData('text/plain', c.id); S4.selectedCard = c.id; });
+                    el.addEventListener('click', () => {
+                        S4.selectedCard = (S4.selectedCard === c.id) ? null : c.id;
+                        renderStep4Cards();
+                    });
+                    if (S4.selectedCard === c.id) el.classList.add('sel');
+                }
+                wrap.appendChild(el);
+            });
+        }
+
+        function s4PlaceCard(slotIdx, cardId) {
+            if (!cardId) return;
+            const existing = S4.filled.indexOf(cardId);
+            if (existing !== -1) S4.filled[existing] = null;
+            S4.filled[slotIdx] = cardId;
+            S4.selectedCard = null;
+            playSound('snap');
+            renderStep4Slots();
+            renderStep4Cards();
+        }
+
+        function renderStep4Slots() {
+            document.querySelectorAll('#step4-activity .drop-slot').forEach(slot => {
+                const idx = parseInt(slot.dataset.slot, 10);
+                const cardId = S4.filled[idx];
+                slot.classList.remove('over');
+                if (cardId) {
+                    slot.innerHTML = s4CardHtml(cardId);
+                    slot.className = slot.className
+                        .replace('border-dashed', 'border-solid')
+                        .replace('text-slate-400', 'text-indigo-900')
+                        .replace('bg-white', 'bg-indigo-50')
+                        .replace('bg-slate-50', 'bg-indigo-50')
+                        .replace('border-slate-300', 'border-indigo-400');
+                } else {
+                    slot.innerHTML = (idx === 3) ? '합동조건' : '여기에 조건을 끌어다 놓으세요';
+                    slot.className = slot.className
+                        .replace('border-solid', 'border-dashed')
+                        .replace('text-indigo-900', 'text-slate-400')
+                        .replace('bg-indigo-50', idx === 3 ? 'bg-slate-50' : 'bg-white')
+                        .replace('border-indigo-400', 'border-slate-300');
+                }
+            });
+            const done = S4.filled.every(v => v !== null);
+            document.getElementById('step4-conclusion').classList.toggle('hidden', !done);
+            if (done) playSound('success');
+        }
+
+        function initStep4() {
+            document.querySelectorAll('#step4-activity .drop-slot').forEach(slot => {
+                const idx = parseInt(slot.dataset.slot, 10);
+                slot.addEventListener('dragover', e => { e.preventDefault(); slot.classList.add('over'); });
+                slot.addEventListener('dragleave', () => slot.classList.remove('over'));
+                slot.addEventListener('drop', e => {
+                    e.preventDefault();
+                    slot.classList.remove('over');
+                    s4PlaceCard(idx, e.dataTransfer.getData('text/plain'));
+                });
+                slot.addEventListener('click', () => {
+                    if (S4.selectedCard) { s4PlaceCard(idx, S4.selectedCard); }
+                    else if (S4.filled[idx]) { S4.filled[idx] = null; playSound('click'); renderStep4Slots(); renderStep4Cards(); }
+                });
+            });
+            renderStep4Cards();
+            renderStep4Slots();
+        }
+
+        function resetStep4() {
+            S4.perpDrawn = false;
+            S4.filled = [null, null, null, null];
+            S4.selectedCard = null;
+            document.getElementById('step4-hint').classList.remove('hidden');
+            document.getElementById('step4-draw-btn').classList.remove('hidden');
+            document.getElementById('step4-question').classList.add('hidden');
+            document.getElementById('step4-activity').classList.add('hidden');
+            document.getElementById('step4-conclusion').classList.add('hidden');
+            renderStep4Slots();
+            renderStep4Cards();
+            renderStep4();
+            playSound('click');
+        }
+
         window.addEventListener('load', () => {
             initStep1();
             initStep2();
             initStep3();
+            initStep4();
             switchStep(1);
         });
 
@@ -1406,6 +1792,7 @@
             if (currentStep === 1) renderStep1();
             if (currentStep === 2) renderStep2();
             if (currentStep === 3) renderStep3();
+            if (currentStep === 4) renderStep4();
         });
     </script>
 </body>
