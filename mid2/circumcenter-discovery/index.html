@@ -1545,7 +1545,7 @@
             }
         }
 
-        const S4 = { A:{x:60,y:300}, B:{x:440,y:340}, C:{x:260,y:60}, perpDrawn:false, filled:[null,null,null,null], selectedCard:null, dragMoved:false };
+        const S4 = { A:{x:260,y:60}, B:{x:60,y:300}, C:{x:440,y:340}, perpDrawn:false, filled:[null,null,null,null], selectedCard:null, dragMoved:false };
 
         const S4_CARDS = [
             { id:'c2', html:'<span class="ovl">OA</span> = <span class="ovl">OB</span>' },
@@ -1584,6 +1584,14 @@
             const t = s4El('text', { x:x, y:y, 'text-anchor':'middle', 'font-size':size||15, 'font-weight':'bold', fill:color||'#0f172a' });
             t.textContent = txt;
             svg.appendChild(t);
+        }
+        /* 점 P에서 기준점 ref의 반대 방향(바깥쪽)으로 dist만큼 떨어진 자리에 라벨 표시 */
+        function s4LabelOutside(svg, P, ref, txt, color, size, dist) {
+            let dx = P.x - ref.x, dy = P.y - ref.y;
+            const len = Math.hypot(dx, dy) || 1;
+            dx /= len; dy /= len;
+            const d = dist || 20;
+            s4Text(svg, P.x + dx * d, P.y + dy * d + (size || 15) * 0.35, txt, color, size);
         }
         function s4Dot(svg, P, color, r) {
             svg.appendChild(s4El('circle', { cx:P.x, cy:P.y, r:r||5, fill:color, stroke:'#ffffff', 'stroke-width':2 }));
@@ -1666,7 +1674,7 @@
                 l.setAttribute('class', 'reveal-line');
                 s4RightAngle(svg, D, O, B, 13);
                 s4Dot(svg, D, '#0ea5e9', 5);
-                s4Text(svg, D.x, D.y + 26, 'D', '#0369a1', 16);
+                s4LabelOutside(svg, D, C, 'D', '#0369a1', 16, 18);
             }
 
             // 점과 라벨
@@ -1677,9 +1685,10 @@
             s4Dot(svg, A, '#1e293b', 5);
             s4Dot(svg, B, '#1e293b', 5);
             s4Dot(svg, C, '#1e293b', 5);
-            s4Text(svg, A.x - 16, A.y + 16, 'A', '#0f172a', 17);
-            s4Text(svg, B.x + 16, B.y + 16, 'B', '#0f172a', 17);
-            s4Text(svg, C.x, C.y - 14, 'C', '#0f172a', 17);
+            const G = { x:(A.x+B.x+C.x)/3, y:(A.y+B.y+C.y)/3 };
+            s4LabelOutside(svg, A, G, 'A', '#0f172a', 17, 20);
+            s4LabelOutside(svg, B, G, 'B', '#0f172a', 17, 20);
+            s4LabelOutside(svg, C, G, 'C', '#0f172a', 17, 20);
         }
 
         function step4DrawPerp() {
