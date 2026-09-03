@@ -3,7 +3,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>타르초 라틴방진</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,6 +14,11 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500;700&display=swap');
 
+        html, body {
+            height: 100%;
+            overscroll-behavior: none;
+        }
+
         body {
             font-family: 'Noto Sans KR', sans-serif;
             background: #f4ece1;
@@ -22,10 +27,119 @@
             color: #2c2825;
             user-select: none;
             -webkit-user-select: none;
+            /* Fill exactly one screen, never scroll */
+            height: 100dvh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         .font-serif-kr {
             font-family: 'Gowun Batang', serif;
+        }
+
+        /* ============ Responsive game layout ============ */
+        #app {
+            flex: 1 1 auto;
+            min-height: 0;
+            min-width: 0;
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: center;
+            gap: clamp(0.4rem, 1.5vh, 0.9rem);
+        }
+
+        #board-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 0;
+            min-width: 0;
+            flex: 1 1 auto;
+            width: 100%;
+        }
+
+        #board-slot {
+            flex: 1 1 0%;
+            min-height: 0;
+            min-width: 0;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #control-panel {
+            width: 100%;
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(0.4rem, 1.5vh, 0.75rem);
+            min-height: 0;
+        }
+
+        #header-landscape {
+            display: none;
+        }
+
+        /* Wide / landscape screens (desktop, tablet landscape, rotated phones):
+           board on the left, controls + flags moved to a right sidebar */
+        @media (orientation: landscape) {
+            #app {
+                flex-direction: row;
+                align-items: center;
+                justify-content: center;
+                gap: clamp(1rem, 3vw, 2.5rem);
+            }
+            #board-panel {
+                flex: 1 1 0%;
+                height: 100%;
+                min-width: 0;
+            }
+            #header-portrait {
+                display: none;
+            }
+            #header-landscape {
+                display: flex;
+            }
+            #control-panel {
+                width: clamp(200px, 22vw, 280px);
+                flex: 0 0 auto;
+                height: 100%;
+                justify-content: center;
+                overflow-y: auto;
+            }
+        }
+
+        /* Very short landscape (rotated phones): trim the header further */
+        @media (orientation: landscape) and (max-height: 480px) {
+            #header-landscape .lsq-desc {
+                display: none;
+            }
+            #header-landscape .lsq-garland {
+                height: 1.5rem !important;
+            }
+        }
+
+        /* Short portrait viewports: tighten vertical spacing */
+        @media (orientation: portrait) and (max-height: 620px) {
+            #header-portrait .lsq-garland {
+                height: 1.75rem !important;
+                margin-bottom: 0.25rem !important;
+            }
+            #header-portrait .lsq-desc {
+                display: none;
+            }
         }
 
         /* 3x3 Memo Subgrid layout inside cell */
@@ -75,113 +189,138 @@
             background: #ffffff;
             border: 8px solid #6e4e37;
             box-shadow: 0 12px 30px rgba(0,0,0,0.15), inset 0 0 10px rgba(0,0,0,0.05);
+            flex: 0 0 auto;
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-between p-3 sm:p-6">
+<body class="p-2 sm:p-4">
 
-    <!-- Header Section -->
-    <header class="w-full max-w-lg flex flex-col items-center mb-2">
-        <!-- Hanging Bunting Garland -->
-        <div class="w-full flex justify-between items-center px-4 mb-2 overflow-hidden h-10 border-b border-amber-900/10">
-            <div class="garland-flag w-6 h-7 bg-blue-600 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-white font-bold opacity-90">༄</div>
-            <div class="garland-flag w-6 h-7 bg-slate-100 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-slate-800 font-bold opacity-90" style="animation-delay: 0.4s;">༅</div>
-            <div class="garland-flag w-6 h-7 bg-red-600 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-white font-bold opacity-90" style="animation-delay: 0.8s;">༆</div>
-            <div class="garland-flag w-6 h-7 bg-green-600 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-white font-bold opacity-90" style="animation-delay: 1.2s;">ༀ</div>
-            <div class="garland-flag w-6 h-7 bg-amber-400 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-amber-950 font-bold opacity-90" style="animation-delay: 1.6s;">མ</div>
-        </div>
+    <div id="app">
 
-        <h1 class="text-2xl sm:text-3xl font-bold font-serif-kr text-amber-950 tracking-tight flex items-center gap-2">
-            <span>타르초 라틴방진</span>
-        </h1>
-        <p class="text-xs sm:text-sm text-stone-600 mt-1 text-center">
-            가로, 세로 모든 줄에 5가지 색상의 깃발이 중복 없이 하나씩 들어가도록 채워보세요.
-        </p>
-    </header>
+        <!-- Board column: header (portrait only) + puzzle board -->
+        <div id="board-panel">
+            <!-- Header shown above the board in portrait / mobile layout -->
+            <header id="header-portrait" class="w-full flex flex-col items-center flex-shrink-0">
+                <div class="lsq-garland w-full flex justify-between items-center px-4 mb-1 overflow-hidden h-8 sm:h-10 border-b border-amber-900/10 transition-all">
+                    <div class="garland-flag w-5 h-6 sm:w-6 sm:h-7 bg-blue-600 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-white font-bold opacity-90">༄</div>
+                    <div class="garland-flag w-5 h-6 sm:w-6 sm:h-7 bg-slate-100 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-slate-800 font-bold opacity-90" style="animation-delay: 0.4s;">༅</div>
+                    <div class="garland-flag w-5 h-6 sm:w-6 sm:h-7 bg-red-600 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-white font-bold opacity-90" style="animation-delay: 0.8s;">༆</div>
+                    <div class="garland-flag w-5 h-6 sm:w-6 sm:h-7 bg-green-600 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-white font-bold opacity-90" style="animation-delay: 1.2s;">ༀ</div>
+                    <div class="garland-flag w-5 h-6 sm:w-6 sm:h-7 bg-amber-400 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-amber-950 font-bold opacity-90" style="animation-delay: 1.6s;">མ</div>
+                </div>
 
-    <!-- Main Puzzle Container -->
-    <main class="w-full max-w-md flex flex-col items-center">
-        <!-- 5x5 Puzzle Board -->
-        <div class="wood-board rounded-xl p-2 sm:p-3 w-full aspect-square mb-4">
-            <div id="board" class="grid grid-cols-5 grid-rows-5 gap-1.5 w-full h-full bg-stone-900 p-1 rounded-lg">
-                <!-- Cells rendered dynamically via JS -->
+                <h1 class="text-lg sm:text-2xl font-bold font-serif-kr text-amber-950 tracking-tight flex items-center gap-2">
+                    <span>타르초 라틴방진</span>
+                </h1>
+                <p class="lsq-desc text-[11px] sm:text-sm text-stone-600 mt-0.5 text-center px-2">
+                    가로, 세로 모든 줄에 5가지 색상의 깃발이 중복 없이 하나씩 들어가도록 채워보세요.
+                </p>
+            </header>
+
+            <div id="board-slot">
+                <!-- 5x5 Puzzle Board (square size computed by JS to fit available space) -->
+                <div id="board-container" class="wood-board rounded-xl p-2 sm:p-3">
+                    <div id="board" class="grid grid-cols-5 grid-rows-5 gap-1.5 w-full h-full bg-stone-900 p-1 rounded-lg">
+                        <!-- Cells rendered dynamically via JS -->
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Action Control Buttons -->
-        <div class="grid grid-cols-4 gap-2 w-full mb-4">
-            <button id="btn-undo" onclick="handleUndo()" class="flex flex-col items-center justify-center py-2 px-1 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl border-2 border-stone-300 shadow-sm active:scale-95 transition-all">
-                <i class="fa-solid font-bold fa-rotate-left text-base sm:text-lg mb-1 text-amber-800"></i>
-                <span class="text-xs sm:text-sm font-bold">실행취소</span>
-            </button>
+        <!-- Control column: buttons + flag palette (sidebar in landscape) -->
+        <div id="control-panel">
 
-            <button id="btn-erase" onclick="handleErase()" class="flex flex-col items-center justify-center py-2 px-1 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl border-2 border-stone-300 shadow-sm active:scale-95 transition-all">
-                <i class="fa-solid font-bold fa-eraser text-base sm:text-lg mb-1 text-rose-600"></i>
-                <span class="text-xs sm:text-sm font-bold">지우기</span>
-            </button>
+            <!-- Compact header shown in the sidebar for landscape / wide screens -->
+            <header id="header-landscape" class="w-full flex-col items-center flex-shrink-0">
+                <div class="lsq-garland w-full flex justify-between items-center px-2 mb-1 overflow-hidden h-8 border-b border-amber-900/10 transition-all">
+                    <div class="garland-flag w-5 h-6 bg-blue-600 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-white font-bold opacity-90">༄</div>
+                    <div class="garland-flag w-5 h-6 bg-slate-100 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-slate-800 font-bold opacity-90" style="animation-delay: 0.4s;">༅</div>
+                    <div class="garland-flag w-5 h-6 bg-red-600 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-white font-bold opacity-90" style="animation-delay: 0.8s;">༆</div>
+                    <div class="garland-flag w-5 h-6 bg-green-600 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-white font-bold opacity-90" style="animation-delay: 1.2s;">ༀ</div>
+                    <div class="garland-flag w-5 h-6 bg-amber-400 rounded-b-sm shadow-sm flex items-center justify-center text-[8px] text-amber-950 font-bold opacity-90" style="animation-delay: 1.6s;">མ</div>
+                </div>
+                <h1 class="text-lg font-bold font-serif-kr text-amber-950 tracking-tight text-center">타르초 라틴방진</h1>
+                <p class="lsq-desc text-[11px] text-stone-600 mt-0.5 text-center leading-snug">
+                    가로, 세로 모든 줄에 5가지 색상의 깃발이 중복 없이 하나씩!
+                </p>
+            </header>
 
-            <button id="btn-memo" onclick="toggleMemoMode()" class="flex flex-col items-center justify-center py-2 px-1 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl border-2 border-stone-300 shadow-sm active:scale-95 transition-all relative overflow-hidden">
-                <div id="memo-indicator" class="absolute top-1 right-1 w-2 h-2 rounded-full bg-slate-400"></div>
-                <i class="fa-solid font-bold fa-pen-to-square text-base sm:text-lg mb-1 text-blue-600"></i>
-                <span class="text-xs sm:text-sm font-bold flex items-center gap-1">
-                    메모 <span id="memo-status-text" class="text-[10px] px-1 bg-stone-300 text-stone-700 rounded font-normal">OFF</span>
-                </span>
-            </button>
-
-            <button id="btn-reset" onclick="handleReset()" class="flex flex-col items-center justify-center py-2 px-1 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl border-2 border-stone-300 shadow-sm active:scale-95 transition-all">
-                <i class="fa-solid font-bold fa-arrows-rotate text-base sm:text-lg mb-1 text-emerald-600"></i>
-                <span class="text-xs sm:text-sm font-bold">다시하기</span>
-            </button>
-        </div>
-
-        <!-- Flag Selection Palette -->
-        <div class="w-full bg-amber-950/5 border-2 border-amber-900/20 p-2.5 sm:p-3 rounded-2xl shadow-inner">
-            <div class="text-xs text-center font-bold text-stone-600 mb-2">
-                깃발 선택 (<span id="palette-mode-desc" class="text-blue-700">원래 크기 채우기</span>)
-            </div>
-            <div class="grid grid-cols-5 gap-2 sm:gap-3">
-                <!-- Blue Flag -->
-                <button onclick="handleFlagSelect('blue')" class="flag-hover flex flex-col items-center p-1.5 bg-white rounded-xl border-2 border-stone-200 shadow hover:border-blue-500 transition-all active:scale-90">
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
-                        <svg class="w-full h-full" viewBox="0 0 100 100" id="svg-flag-blue"></svg>
-                    </div>
-                    <span class="text-xs font-bold text-stone-700 mt-1">파랑</span>
+            <!-- Action Control Buttons -->
+            <div class="grid grid-cols-4 gap-2 w-full flex-shrink-0">
+                <button id="btn-undo" onclick="handleUndo()" class="flex flex-col items-center justify-center py-2 px-1 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl border-2 border-stone-300 shadow-sm active:scale-95 transition-all">
+                    <i class="fa-solid font-bold fa-rotate-left text-base sm:text-lg mb-1 text-amber-800"></i>
+                    <span class="text-xs sm:text-sm font-bold">실행취소</span>
                 </button>
 
-                <!-- White Flag -->
-                <button onclick="handleFlagSelect('white')" class="flag-hover flex flex-col items-center p-1.5 bg-white rounded-xl border-2 border-stone-200 shadow hover:border-slate-400 transition-all active:scale-90">
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
-                        <svg class="w-full h-full" viewBox="0 0 100 100" id="svg-flag-white"></svg>
-                    </div>
-                    <span class="text-xs font-bold text-stone-700 mt-1">하양</span>
+                <button id="btn-erase" onclick="handleErase()" class="flex flex-col items-center justify-center py-2 px-1 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl border-2 border-stone-300 shadow-sm active:scale-95 transition-all">
+                    <i class="fa-solid font-bold fa-eraser text-base sm:text-lg mb-1 text-rose-600"></i>
+                    <span class="text-xs sm:text-sm font-bold">지우기</span>
                 </button>
 
-                <!-- Red Flag -->
-                <button onclick="handleFlagSelect('red')" class="flag-hover flex flex-col items-center p-1.5 bg-white rounded-xl border-2 border-stone-200 shadow hover:border-red-500 transition-all active:scale-90">
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
-                        <svg class="w-full h-full" viewBox="0 0 100 100" id="svg-flag-red"></svg>
-                    </div>
-                    <span class="text-xs font-bold text-stone-700 mt-1">빨강</span>
+                <button id="btn-memo" onclick="toggleMemoMode()" class="flex flex-col items-center justify-center py-2 px-1 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl border-2 border-stone-300 shadow-sm active:scale-95 transition-all relative overflow-hidden">
+                    <div id="memo-indicator" class="absolute top-1 right-1 w-2 h-2 rounded-full bg-slate-400"></div>
+                    <i class="fa-solid font-bold fa-pen-to-square text-base sm:text-lg mb-1 text-blue-600"></i>
+                    <span class="text-xs sm:text-sm font-bold flex items-center gap-1">
+                        메모 <span id="memo-status-text" class="text-[10px] px-1 bg-stone-300 text-stone-700 rounded font-normal">OFF</span>
+                    </span>
                 </button>
 
-                <!-- Green Flag -->
-                <button onclick="handleFlagSelect('green')" class="flag-hover flex flex-col items-center p-1.5 bg-white rounded-xl border-2 border-stone-200 shadow hover:border-green-500 transition-all active:scale-90">
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
-                        <svg class="w-full h-full" viewBox="0 0 100 100" id="svg-flag-green"></svg>
-                    </div>
-                    <span class="text-xs font-bold text-stone-700 mt-1">초록</span>
-                </button>
-
-                <!-- Yellow Flag -->
-                <button onclick="handleFlagSelect('yellow')" class="flag-hover flex flex-col items-center p-1.5 bg-white rounded-xl border-2 border-stone-200 shadow hover:border-yellow-500 transition-all active:scale-90">
-                    <div class="w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center">
-                        <svg class="w-full h-full" viewBox="0 0 100 100" id="svg-flag-yellow"></svg>
-                    </div>
-                    <span class="text-xs font-bold text-stone-700 mt-1">노랑</span>
+                <button id="btn-reset" onclick="handleReset()" class="flex flex-col items-center justify-center py-2 px-1 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded-xl border-2 border-stone-300 shadow-sm active:scale-95 transition-all">
+                    <i class="fa-solid font-bold fa-arrows-rotate text-base sm:text-lg mb-1 text-emerald-600"></i>
+                    <span class="text-xs sm:text-sm font-bold">다시하기</span>
                 </button>
             </div>
+
+            <!-- Flag Selection Palette -->
+            <div class="w-full bg-amber-950/5 border-2 border-amber-900/20 p-2 sm:p-3 rounded-2xl shadow-inner flex-shrink-0">
+                <div class="text-[11px] sm:text-xs text-center font-bold text-stone-600 mb-1.5 sm:mb-2">
+                    깃발 선택 (<span id="palette-mode-desc" class="text-blue-700">원래 크기 채우기</span>)
+                </div>
+                <div class="grid grid-cols-5 gap-1.5 sm:gap-2">
+                    <!-- Blue Flag -->
+                    <button onclick="handleFlagSelect('blue')" class="flag-hover flex flex-col items-center p-1 sm:p-1.5 bg-white rounded-xl border-2 border-stone-200 shadow hover:border-blue-500 transition-all active:scale-90">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
+                            <svg class="w-full h-full" viewBox="0 0 100 100" id="svg-flag-blue"></svg>
+                        </div>
+                        <span class="text-[10px] sm:text-xs font-bold text-stone-700 mt-0.5 sm:mt-1">파랑</span>
+                    </button>
+
+                    <!-- White Flag -->
+                    <button onclick="handleFlagSelect('white')" class="flag-hover flex flex-col items-center p-1 sm:p-1.5 bg-white rounded-xl border-2 border-stone-200 shadow hover:border-slate-400 transition-all active:scale-90">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
+                            <svg class="w-full h-full" viewBox="0 0 100 100" id="svg-flag-white"></svg>
+                        </div>
+                        <span class="text-[10px] sm:text-xs font-bold text-stone-700 mt-0.5 sm:mt-1">하양</span>
+                    </button>
+
+                    <!-- Red Flag -->
+                    <button onclick="handleFlagSelect('red')" class="flag-hover flex flex-col items-center p-1 sm:p-1.5 bg-white rounded-xl border-2 border-stone-200 shadow hover:border-red-500 transition-all active:scale-90">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
+                            <svg class="w-full h-full" viewBox="0 0 100 100" id="svg-flag-red"></svg>
+                        </div>
+                        <span class="text-[10px] sm:text-xs font-bold text-stone-700 mt-0.5 sm:mt-1">빨강</span>
+                    </button>
+
+                    <!-- Green Flag -->
+                    <button onclick="handleFlagSelect('green')" class="flag-hover flex flex-col items-center p-1 sm:p-1.5 bg-white rounded-xl border-2 border-stone-200 shadow hover:border-green-500 transition-all active:scale-90">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
+                            <svg class="w-full h-full" viewBox="0 0 100 100" id="svg-flag-green"></svg>
+                        </div>
+                        <span class="text-[10px] sm:text-xs font-bold text-stone-700 mt-0.5 sm:mt-1">초록</span>
+                    </button>
+
+                    <!-- Yellow Flag -->
+                    <button onclick="handleFlagSelect('yellow')" class="flag-hover flex flex-col items-center p-1 sm:p-1.5 bg-white rounded-xl border-2 border-stone-200 shadow hover:border-yellow-500 transition-all active:scale-90">
+                        <div class="w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center">
+                            <svg class="w-full h-full" viewBox="0 0 100 100" id="svg-flag-yellow"></svg>
+                        </div>
+                        <span class="text-[10px] sm:text-xs font-bold text-stone-700 mt-0.5 sm:mt-1">노랑</span>
+                    </button>
+                </div>
+            </div>
         </div>
-    </main>
+
+    </div>
 
     <!-- SUCCESS Modal -->
     <div id="success-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden transition-opacity duration-300">
@@ -265,12 +404,12 @@
                 <circle cx="94" cy="12" r="3" fill="#78350f" />
 
                 <!-- Flag Cloth -->
-                <path d="M 12 14 L 88 14 C 88 14 86 52 88 90 L 12 90 C 14 52 12 14 12 14 Z" 
+                <path d="M 12 14 L 88 14 C 88 14 86 52 88 90 L 12 90 C 14 52 12 14 12 14 Z"
                       fill="${pal.bg}" stroke="${pal.border}" stroke-width="2.5" stroke-linejoin="round"/>
 
                 <!-- Inner Mantra / Deity Graphics (Tibetan Prayer Flag style outline) -->
                 <rect x="22" y="24" width="56" height="54" fill="none" stroke="${pal.text}" stroke-width="1" stroke-dasharray="2,2" opacity="0.6"/>
-                
+
                 <!-- Center Horse Symbol / Mantra Silhouette -->
                 <g fill="${pal.text}" opacity="0.8" transform="translate(34, 34) scale(0.32)">
                     <path d="M50 10 C30 10 20 30 20 50 C20 70 30 90 50 90 C70 90 80 70 80 50 C80 30 70 10 50 10 Z M50 25 C60 25 65 35 65 50 C65 65 60 75 50 75 C40 75 35 65 35 50 C35 35 40 25 50 25 Z"/>
@@ -289,8 +428,9 @@
         function initApp() {
             // Render palette SVGs
             COLORS.forEach(c => {
-                const el = document.getElementById(`svg-flag-${c}`);
-                if (el) el.innerHTML = getFlagSVG(c);
+                document.querySelectorAll(`#svg-flag-${c}`).forEach(el => {
+                    el.innerHTML = getFlagSVG(c);
+                });
             });
 
             // Initialize Grid State
@@ -330,7 +470,7 @@
                 for (let c = 0; c < 5; c++) {
                     const cellData = gridState[r][c];
                     const cellEl = document.createElement('div');
-                    
+
                     cellEl.className = `relative flex items-center justify-center rounded-lg cursor-pointer transition-all duration-150 select-none overflow-hidden ${
                         cellData.isFixed ? 'bg-amber-50/90' : 'bg-white hover:bg-amber-50'
                     }`;
@@ -542,9 +682,50 @@
             }, 200);
         }
 
+        // ============ Fit the square board to whatever space is available ============
+        // Ensures the whole game (header, board, buttons, flag palette) always
+        // fits within a single screen, with no vertical/horizontal scrolling,
+        // on both wide (landscape) and mobile (portrait) screens.
+        function fitBoard() {
+            const slot = document.getElementById('board-slot');
+            const container = document.getElementById('board-container');
+            if (!slot || !container) return;
+
+            const availW = slot.clientWidth;
+            const availH = slot.clientHeight;
+            if (availW <= 0 || availH <= 0) return;
+
+            let size = Math.min(availW, availH) - 4; // small breathing room
+            size = Math.max(160, Math.min(size, 620)); // sane min/max bounds
+
+            container.style.width = size + 'px';
+            container.style.height = size + 'px';
+        }
+
+        let fitBoardRaf = null;
+        function scheduleFitBoard() {
+            if (fitBoardRaf) cancelAnimationFrame(fitBoardRaf);
+            fitBoardRaf = requestAnimationFrame(fitBoard);
+        }
+
+        window.addEventListener('resize', scheduleFitBoard);
+        window.addEventListener('orientationchange', () => setTimeout(fitBoard, 60));
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(() => scheduleFitBoard());
+        }
+
+        if ('ResizeObserver' in window) {
+            const ro = new ResizeObserver(() => scheduleFitBoard());
+            window.addEventListener('DOMContentLoaded', () => {
+                const slot = document.getElementById('board-slot');
+                if (slot) ro.observe(slot);
+            });
+        }
+
         // Initialize on page load
         window.onload = function() {
             initApp();
+            fitBoard();
         };
     </script>
 </body>
