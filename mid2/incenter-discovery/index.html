@@ -593,10 +593,10 @@
             const uBC = { x: vBC.x / lenBC, y: vBC.y / lenBC };
             const uBis = getAngleBisectorRay(B, A, C);
 
-            const topMargin = 56, bottomMargin = 50, sideMargin = 36;
+            const topMargin = 48, bottomMargin = 48, sideMargin = 26;
             const usableW = Math.max(140, w - sideMargin * 2);
             const usableH = Math.max(140, h - topMargin - bottomMargin);
-            const rayLen = Math.min(usableW, usableH) * 0.62;
+            const rayLen = Math.min(usableW, usableH) * 0.78;
 
             const pA = { x: uBA.x * rayLen, y: uBA.y * rayLen };
             const pC = { x: uBC.x * rayLen, y: uBC.y * rayLen };
