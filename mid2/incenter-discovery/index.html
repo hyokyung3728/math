@@ -51,6 +51,30 @@
             touch-action: none;
             -webkit-touch-callout: none;
         }
+        .ovl {
+            text-decoration: overline;
+        }
+        .drop-slot.over {
+            background: #e0e7ff;
+            border-color: #6366f1;
+        }
+        .cond-card.sel {
+            outline: 3px solid #6366f1;
+            outline-offset: 1px;
+        }
+        .cond-card {
+            touch-action: none;
+        }
+        .annot-color-btn {
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 0 1px #cbd5e1;
+            cursor: pointer;
+            padding: 0;
+            transition: box-shadow .15s;
+        }
+        .annot-color-btn.active {
+            box-shadow: 0 0 0 2px #4338ca;
+        }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 h-full h-[100dvh] flex flex-col justify-between overflow-hidden">
@@ -73,10 +97,13 @@
                     <i class="fa-solid fa-chair mr-1"></i><span class="hidden sm:inline">1단계: </span>세 변
                 </button>
                 <button id="tab-step2" onclick="switchStep(2)" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50">
-                    <i class="fa-solid fa-wand-magic-sparkles mr-1"></i><span class="hidden sm:inline">2단계: </span>선의 비밀
+                    <i id="tab-step2-icon" class="fa-solid fa-lock mr-1 text-amber-300"></i><span class="hidden sm:inline">2단계: </span>선의 비밀
                 </button>
                 <button id="tab-step3" onclick="switchStep(3)" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50">
                     <i id="tab-step3-icon" class="fa-solid fa-lock mr-1 text-amber-300"></i><span class="hidden sm:inline">3단계: </span>완성하기
+                </button>
+                <button id="tab-step4" onclick="switchStep(4)" class="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 text-indigo-100 hover:bg-indigo-700/50">
+                    <i id="tab-step4-icon" class="fa-solid fa-lock mr-1 text-amber-300"></i><span class="hidden sm:inline">4단계: </span>증명하기
                 </button>
             </div>
         </div>
@@ -86,6 +113,30 @@
     <div id="global-toast" class="fixed top-14 left-1/2 -translate-x-1/2 z-50 bg-slate-900/90 text-white text-xs sm:text-sm px-4 py-2 sm:py-2.5 rounded-2xl shadow-2xl transition-all duration-300 transform -translate-y-10 opacity-0 pointer-events-none flex items-center gap-2 border border-slate-700">
         <span id="global-toast-icon" class="text-amber-400 text-sm"><i class="fa-solid fa-triangle-exclamation"></i></span>
         <span id="global-toast-msg">안내 메시지</span>
+    </div>
+
+    <!-- Step-Gate Password Modal -->
+    <div id="password-modal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 overflow-y-auto">
+        <div class="bg-white rounded-2xl shadow-2xl p-4 sm:p-5 max-w-xs sm:max-w-md w-full my-auto flex flex-col gap-3 border border-slate-200">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 id="password-modal-title" class="text-sm sm:text-base font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-key text-amber-500"></i> 잠금 해제 암호
+                </h3>
+                <button onclick="closePasswordModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <p id="password-modal-desc" class="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                다음 단계로 진입하기 위한 암호를 입력하세요!
+            </p>
+            <div class="flex gap-2">
+                <input type="text" id="password-input" onkeydown="if(event.key==='Enter') submitPassword()" placeholder="암호를 입력하세요" class="w-full px-3 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 font-bold text-slate-800 text-xs sm:text-sm">
+                <button onclick="submitPassword()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition shrink-0 text-xs sm:text-sm">
+                    확인
+                </button>
+            </div>
+            <p id="password-feedback" class="hidden text-xs font-semibold px-2.5 py-1.5 rounded-lg"></p>
+        </div>
     </div>
 
     <!-- Main Content Container (Fills remaining height without scroll) -->
@@ -351,11 +402,107 @@
                     </div>
 
                     <!-- Navigation Action -->
-                    <button onclick="switchStep(1)" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs sm:text-sm shadow-md transition duration-200 flex items-center justify-center gap-1.5 shrink-0">
-                        <i class="fa-solid fa-rotate-left"></i> 1단계로 돌아가기
+                    <button onclick="switchStep(4)" class="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl font-bold text-xs sm:text-sm shadow-md transition duration-200 flex items-center justify-center gap-1.5 shrink-0">
+                        4단계: 증명하기 <i class="fa-solid fa-arrow-right"></i>
                     </button>
                 </div>
 
+            </div>
+        </section>
+
+        <!-- ==================== STEP 4 SECTION ==================== -->
+        <section id="step4-container" class="hidden flex-1 min-h-0 flex flex-col gap-2 overflow-hidden">
+            <div class="bg-emerald-50 border-l-4 border-emerald-500 px-3 py-2 rounded-r-xl shadow-sm flex items-center justify-between shrink-0 gap-2">
+                <div class="flex items-center space-x-2 text-xs sm:text-sm min-w-0">
+                    <i class="fa-solid fa-scale-balanced text-emerald-600 text-base sm:text-lg shrink-0"></i>
+                    <p class="text-emerald-900 font-bold truncate sm:whitespace-normal">
+                        삼각형의 세 내각의 이등분선의 교점이 진짜 한 점에서 만날까?
+                    </p>
+                </div>
+                <button onclick="resetStep4()" class="px-2.5 py-1 bg-white border border-emerald-300 hover:bg-emerald-100 text-emerald-800 font-medium text-xs rounded-lg shadow-sm transition flex items-center shrink-0">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> 다시하기
+                </button>
+            </div>
+
+            <div class="flex-1 min-h-0 bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden flex flex-col-reverse md:flex-row">
+
+                <!-- LEFT: proof activity -->
+                <div class="w-full md:w-[54%] lg:w-[52%] border-t md:border-t-0 md:border-r border-slate-200 bg-slate-50 p-2.5 sm:p-3.5 overflow-y-auto max-h-[55%] md:max-h-none">
+                    <div id="step4-question" class="hidden mb-2 p-2.5 rounded-xl bg-indigo-600 text-white font-bold text-xs sm:text-sm shadow">
+                        <i class="fa-solid fa-circle-question mr-1 text-amber-300"></i>
+                        &#9651;ICE와 &#9651;ICF가 합동일까?
+                    </div>
+
+                    <div id="step4-activity" class="hidden space-y-2">
+                        <div class="space-y-1.5">
+                            <div class="drop-slot flex items-center justify-center min-h-[38px] px-2 py-1.5 rounded-xl border-2 border-dashed border-slate-300 bg-white text-xs sm:text-sm font-bold text-slate-400" data-slot="0">여기에 조건을 끌어다 놓으세요</div>
+                            <div class="drop-slot flex items-center justify-center min-h-[38px] px-2 py-1.5 rounded-xl border-2 border-dashed border-slate-300 bg-white text-xs sm:text-sm font-bold text-slate-400" data-slot="1">여기에 조건을 끌어다 놓으세요</div>
+                            <div class="drop-slot flex items-center justify-center min-h-[38px] px-2 py-1.5 rounded-xl border-2 border-dashed border-slate-300 bg-white text-xs sm:text-sm font-bold text-slate-400" data-slot="2">여기에 조건을 끌어다 놓으세요</div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-1.5 text-xs sm:text-sm font-bold text-slate-800 p-2 rounded-xl bg-white border border-slate-200">
+                            <span>이므로 &#9651;ICE &#8801; &#9651;ICF (</span>
+                            <span class="drop-slot inline-flex items-center justify-center min-w-[110px] min-h-[32px] px-2 py-1 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 text-slate-400" data-slot="3">합동조건</span>
+                            <span>)이다.</span>
+                        </div>
+
+                        <div id="step4-conclusion" class="hidden p-2.5 rounded-xl bg-emerald-600 text-white text-xs sm:text-sm font-bold shadow space-y-1.5">
+                            <div>
+                                <i class="fa-solid fa-flag-checkered mr-1 text-amber-300"></i>
+                                따라서 &#8736;ICE = &#8736;ICF이므로 <span class="ovl">IC</span>는 &#8736;C의 이등분선이다.
+                            </div>
+                            <div class="pt-1.5 border-t border-emerald-400/50">
+                                <i class="fa-solid fa-circle-check mr-1 text-amber-300"></i>
+                                &#9651;ABC의 세 내각의 이등분선은 한 점 I에서 만난다.
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-[11px] sm:text-xs font-bold text-slate-600 mb-1 flex items-center"><i class="fa-solid fa-clone mr-1.5 text-indigo-500"></i>조건 카드 (끌어다 놓기 / 카드를 누른 뒤 빈 칸을 눌러도 됩니다)</h4>
+                            <div id="step4-cards" class="flex flex-wrap gap-1.5"></div>
+                        </div>
+                    </div>
+
+                    <p id="step4-hint" class="text-xs sm:text-sm text-slate-500 leading-relaxed">
+                        오른쪽 그림에서 점 I는 &#9651;ABC의 두 내각 A, B의 이등분선의 교점입니다.<br>
+                        아래 버튼을 눌러 점 I와 꼭짓점 C를 연결해 봅시다.
+                    </p>
+
+                    <button id="step4-draw-btn" onclick="step4ConnectIC()" class="mt-2 w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold text-xs sm:text-sm shadow-md transition flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-link"></i> 점 I와 꼭짓점 C를 연결하기
+                    </button>
+                </div>
+
+                <!-- RIGHT: figure -->
+                <div class="relative flex-1 min-h-0 bg-slate-50 overflow-hidden" id="step4-board">
+                    <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-20" width="100%" height="100%">
+                        <defs>
+                            <pattern id="grid4" width="30" height="30" patternUnits="userSpaceOnUse">
+                                <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#64748b" stroke-width="0.8"/>
+                            </pattern>
+                        </defs>
+                        <rect width="100%" height="100%" fill="url(#grid4)" />
+                    </svg>
+                    <svg id="svg-step4" class="absolute inset-0 w-full h-full" viewBox="0 0 400 380" preserveAspectRatio="xMidYMid meet"></svg>
+
+                    <!-- 필기(주석) 오버레이: 마우스/터치펜/손가락으로 그림 위에 필기 -->
+                    <canvas id="step4-annot" class="absolute inset-0 w-full h-full" style="touch-action:none; cursor:crosshair;"></canvas>
+
+                    <div id="step4-annot-toolbar" class="absolute top-1.5 right-1.5 z-20 flex items-center gap-1 bg-white/90 backdrop-blur rounded-lg shadow-md px-1.5 py-1 border border-slate-200">
+                        <button type="button" data-color="#1e293b" class="annot-color-btn w-5 h-5 rounded-full" style="background:#1e293b" title="검정"></button>
+                        <button type="button" data-color="#dc2626" class="annot-color-btn w-5 h-5 rounded-full" style="background:#dc2626" title="빨강"></button>
+                        <button type="button" data-color="#2563eb" class="annot-color-btn w-5 h-5 rounded-full" style="background:#2563eb" title="파랑"></button>
+                        <button type="button" data-color="#16a34a" class="annot-color-btn w-5 h-5 rounded-full" style="background:#16a34a" title="초록"></button>
+                        <button type="button" data-color="#f59e0b" class="annot-color-btn w-5 h-5 rounded-full" style="background:#f59e0b" title="주황"></button>
+                        <span class="w-px h-4 bg-slate-300 mx-0.5"></span>
+                        <button type="button" id="step4-annot-eraser" class="w-6 h-6 rounded-md flex items-center justify-center text-slate-600 hover:bg-slate-100" title="지우개">
+                            <i class="fa-solid fa-eraser text-[11px]"></i>
+                        </button>
+                        <button type="button" id="step4-annot-clear" class="w-6 h-6 rounded-md flex items-center justify-center text-slate-600 hover:bg-slate-100" title="전체 지우기">
+                            <i class="fa-solid fa-trash text-[11px]"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
@@ -411,6 +558,8 @@
             }, 2600);
         }
 
+        const SVG_NS = "http://www.w3.org/2000/svg";
+
         // Geometry Vertices A, B, C for Triangle
         let triangleABC = {
             A: { x: 300, y: 90, label: 'A' },
@@ -418,17 +567,73 @@
             C: { x: 500, y: 400, label: 'C' }
         };
 
-        // Calculates responsive triangle coordinates matching the active board container size
-        function setupResponsiveCoordinates() {
-            const board = document.getElementById('step1-board') || document.getElementById('step2-board') || document.getElementById('step3-board');
+        // Localized, self-centering geometry used only for Step 2's single-angle view
+        let step2Points = {
+            V: { x: 150, y: 300 },
+            A: { x: 300, y: 100 },
+            C: { x: 350, y: 300 }
+        };
+
+        // Computes a version of vertex B's angle (rays toward A and C) that is scaled and
+        // re-centered so the whole angle - including the revealed bisector - fits within
+        // whichever board is currently visible (mobile, tablet, or desktop).
+        function setupStep2Geometry() {
+            const board = document.getElementById('step2-board');
             if (!board) return;
             const rect = board.getBoundingClientRect();
             const w = rect.width > 0 ? rect.width : 600;
             const h = rect.height > 0 ? rect.height : 400;
 
-            triangleABC.A = { x: w * 0.5, y: h * 0.16, label: 'A' };
-            triangleABC.B = { x: w * 0.15, y: h * 0.82, label: 'B' };
-            triangleABC.C = { x: w * 0.85, y: h * 0.82, label: 'C' };
+            const { A, B, C } = triangleABC;
+            const vBA = { x: A.x - B.x, y: A.y - B.y };
+            const vBC = { x: C.x - B.x, y: C.y - B.y };
+            const lenBA = Math.hypot(vBA.x, vBA.y) || 1;
+            const lenBC = Math.hypot(vBC.x, vBC.y) || 1;
+            const uBA = { x: vBA.x / lenBA, y: vBA.y / lenBA };
+            const uBC = { x: vBC.x / lenBC, y: vBC.y / lenBC };
+            const uBis = getAngleBisectorRay(B, A, C);
+
+            const topMargin = 56, bottomMargin = 50, sideMargin = 36;
+            const usableW = Math.max(140, w - sideMargin * 2);
+            const usableH = Math.max(140, h - topMargin - bottomMargin);
+            const rayLen = Math.min(usableW, usableH) * 0.62;
+
+            const pA = { x: uBA.x * rayLen, y: uBA.y * rayLen };
+            const pC = { x: uBC.x * rayLen, y: uBC.y * rayLen };
+            const pBis = { x: uBis.x * rayLen, y: uBis.y * rayLen };
+
+            const xs = [0, pA.x, pC.x, pBis.x];
+            const ys = [0, pA.y, pC.y, pBis.y];
+            const bboxCx = (Math.min(...xs) + Math.max(...xs)) / 2;
+            const bboxCy = (Math.min(...ys) + Math.max(...ys)) / 2;
+
+            const targetCx = w / 2;
+            const targetCy = topMargin + usableH / 2;
+            const offsetX = targetCx - bboxCx;
+            const offsetY = targetCy - bboxCy;
+
+            step2Points.V = { x: offsetX, y: offsetY };
+            step2Points.A = { x: pA.x + offsetX, y: pA.y + offsetY };
+            step2Points.C = { x: pC.x + offsetX, y: pC.y + offsetY };
+        }
+
+        // Calculates responsive triangle coordinates matching the currently active board container size
+        function setupResponsiveCoordinates() {
+            let boardId = 'step1-board';
+            if (currentStep === 2) boardId = 'step2-board';
+            else if (currentStep === 3) boardId = 'step3-board';
+
+            const board = document.getElementById(boardId);
+            if (!board) return;
+            const rect = board.getBoundingClientRect();
+            const w = rect.width > 0 ? rect.width : 600;
+            const h = rect.height > 0 ? rect.height : 400;
+
+            triangleABC.A = { x: w * 0.5, y: h * 0.12, label: 'A' };
+            triangleABC.B = { x: w * 0.10, y: h * 0.88, label: 'B' };
+            triangleABC.C = { x: w * 0.90, y: h * 0.88, label: 'C' };
+
+            if (currentStep === 2) setupStep2Geometry();
         }
 
         // Distance between two points
@@ -508,11 +713,28 @@
 
         let currentStep = 1;
 
+        // Password gates: 1→2단계 requires '탐구', 3→4단계 requires '증명'
+        const gateState = { step2Unlocked: false, step4Unlocked: false };
+        const stepPasswords = { 2: '탐구', 4: '증명' };
+        let pendingPasswordTarget = null;
+
         function switchStep(step) {
+            // Gate check: password required to enter Step 2
+            if (step === 2 && !gateState.step2Unlocked) {
+                openPasswordModal(2);
+                return;
+            }
+
             // Gate check: Block access to Step 3 if Step 2 answer was not correctly solved!
             if (step === 3 && !step2State.secretRevealed) {
                 playSound('click');
                 showGlobalToast("2단계 정답을 먼저 맞춰야 3단계로 이동할 수 있습니다!", "fa-solid fa-lock text-amber-400");
+                return;
+            }
+
+            // Gate check: password required to enter Step 4
+            if (step === 4 && !gateState.step4Unlocked) {
+                openPasswordModal(4);
                 return;
             }
 
@@ -522,6 +744,7 @@
             document.getElementById('step1-container').classList.toggle('hidden', step !== 1);
             document.getElementById('step2-container').classList.toggle('hidden', step !== 2);
             document.getElementById('step3-container').classList.toggle('hidden', step !== 3);
+            document.getElementById('step4-container').classList.toggle('hidden', step !== 4);
             
             // Update active tab styles
             const activeTabClass = "px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold transition-all duration-200 bg-white text-indigo-700 shadow-md";
@@ -530,12 +753,64 @@
             document.getElementById('tab-step1').className = step === 1 ? activeTabClass : inactiveTabClass;
             document.getElementById('tab-step2').className = step === 2 ? activeTabClass : inactiveTabClass;
             document.getElementById('tab-step3').className = step === 3 ? activeTabClass : inactiveTabClass;
+            document.getElementById('tab-step4').className = step === 4 ? activeTabClass : inactiveTabClass;
 
             // Recalculate coordinates and render current step
             setupResponsiveCoordinates();
             if (step === 1) renderStep1();
             if (step === 2) renderStep2();
             if (step === 3) renderStep3();
+            if (step === 4) { renderStep4(); s4AnnotResize(); }
+        }
+
+        function openPasswordModal(step) {
+            pendingPasswordTarget = step;
+            playSound('click');
+            const modal = document.getElementById('password-modal');
+            const title = document.getElementById('password-modal-title');
+            const desc = document.getElementById('password-modal-desc');
+            const input = document.getElementById('password-input');
+            const feedback = document.getElementById('password-feedback');
+
+            title.innerHTML = `<i class="fa-solid fa-key text-amber-500"></i> ${step}단계 잠금 해제 암호`;
+            desc.textContent = `${step}단계로 진입하기 위한 암호를 입력하세요!`;
+
+            input.value = '';
+            feedback.className = "hidden text-xs font-semibold px-2.5 py-1.5 rounded-lg";
+            modal.classList.remove('hidden');
+            setTimeout(() => input.focus(), 100);
+        }
+
+        function closePasswordModal() {
+            document.getElementById('password-modal').classList.add('hidden');
+            pendingPasswordTarget = null;
+        }
+
+        function submitPassword() {
+            const input = document.getElementById('password-input');
+            const feedback = document.getElementById('password-feedback');
+            const val = input.value.trim();
+            const target = pendingPasswordTarget;
+
+            if (target && val === stepPasswords[target]) {
+                playSound('success');
+                if (target === 2) {
+                    gateState.step2Unlocked = true;
+                    const lockIcon2 = document.getElementById('tab-step2-icon');
+                    if (lockIcon2) lockIcon2.className = "fa-solid fa-wand-magic-sparkles mr-1";
+                }
+                if (target === 4) {
+                    gateState.step4Unlocked = true;
+                    const lockIcon = document.getElementById('tab-step4-icon');
+                    if (lockIcon) lockIcon.className = "fa-solid fa-compass-drafting mr-1 text-yellow-300";
+                }
+                closePasswordModal();
+                switchStep(target);
+            } else {
+                playSound('click');
+                feedback.className = "text-xs font-semibold px-2.5 py-1.5 rounded-lg bg-rose-100 text-rose-800 border border-rose-300 block";
+                feedback.textContent = "암호가 올바르지 않습니다. 다시 시도해보세요.";
+            }
         }
 
         // Step 1 State
@@ -744,7 +1019,7 @@
 
                 if (step2State.lineDrawn) return;
 
-                const { A, B, C } = triangleABC;
+                const { A, C, V: B } = step2Points;
                 const projPt = projectToAngleBisector(clickPt, B, A, C);
                 projPt.id = Date.now();
                 step2State.userPoints.push(projPt);
@@ -875,8 +1150,9 @@
             const svg = document.getElementById('svg-step2');
             if (!svg) return;
             svg.innerHTML = '';
+            setupStep2Geometry();
 
-            const { A, B, C } = triangleABC;
+            const { A, C, V: B } = step2Points;
             const { userPoints, lineDrawn, isDraggingLine, dragStartPoint, dragCurrentPos } = step2State;
 
             // Render Two Sides forming angle B
@@ -929,7 +1205,7 @@
 
             } else {
                 const dir = getAngleBisectorRay(B, A, C);
-                const maxLen = 500;
+                const maxLen = Math.hypot(A.x - B.x, A.y - B.y);
                 const endPt = { x: B.x + dir.x * maxLen, y: B.y + dir.y * maxLen };
 
                 const bisector = createLine(B, endPt, "#059669", "3.5", "8 4");
@@ -1044,7 +1320,7 @@
                             playSound('reveal');
 
                             const toastText = document.getElementById('step3-toast-text');
-                            toastText.innerHTML = "✨ 세 각의 이등분선의 교점은 <strong>내심</strong>, 이 원은 <strong>내접원</strong>입니다!";
+                            toastText.innerHTML = "✨ 완성! 세 각의 이등분선이 한 점에서 만나고, 그 점에서 세 변까지의 거리가 모두 같습니다!";
                         }
 
                         renderStep3();
@@ -1116,22 +1392,34 @@
                 svg.appendChild(activeSide);
             }
 
-            if (!circleRevealed) {
-                drawnBisectors.forEach(vKey => {
-                    let V, P1, P2;
-                    if (vKey === 'B') { V = B; P1 = A; P2 = C; }
-                    else if (vKey === 'C') { V = C; P1 = B; P2 = A; }
-                    else if (vKey === 'A') { V = A; P1 = B; P2 = C; }
+            const incenterPoint = calculateIncenter(A, B, C);
 
-                    const dir = getAngleBisectorRay(V, P1, P2);
-                    const bisectorLine = createLine(V, { x: V.x + dir.x * 500, y: V.y + dir.y * 500 }, "#9333ea", "2.5", "6 4");
-                    bisectorLine.setAttribute("class", "reveal-line");
-                    svg.appendChild(bisectorLine);
-                });
-            }
+            drawnBisectors.forEach(vKey => {
+                let V, P1, P2, markType;
+                if (vKey === 'A') { V = A; P1 = B; P2 = C; markType = 'filledCircle'; }
+                else if (vKey === 'B') { V = B; P1 = A; P2 = C; markType = 'x'; }
+                else if (vKey === 'C') { V = C; P1 = B; P2 = A; markType = 'circle'; }
+
+                // Extend the bisector a little past the incenter so it visibly crosses
+                // through the intersection point rather than stopping exactly at it
+                const dirToI = { x: incenterPoint.x - V.x, y: incenterPoint.y - V.y };
+                const lenToI = Math.hypot(dirToI.x, dirToI.y) || 1;
+                const overshoot = 22;
+                const bisectorEnd = {
+                    x: incenterPoint.x + (dirToI.x / lenToI) * overshoot,
+                    y: incenterPoint.y + (dirToI.y / lenToI) * overshoot
+                };
+
+                const bisectorLine = createLine(V, bisectorEnd, "#7e22ce", "2.5");
+                bisectorLine.setAttribute("class", "reveal-line");
+                svg.appendChild(bisectorLine);
+
+                // Mark the two divided angles as equal, using a distinct symbol per vertex
+                appendEqualAngleMarks(svg, V, P1, P2, incenterPoint, 20, markType);
+            });
 
             if (drawnBisectors.size >= 2) {
-                const incenter = calculateIncenter(A, B, C);
+                const incenter = incenterPoint;
 
                 if (!userPointP) {
                     const hintCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -1172,17 +1460,9 @@
                         incircle.setAttribute("fill", "rgba(168, 85, 247, 0.1)");
                         incircle.setAttribute("stroke", "#a855f7");
                         incircle.setAttribute("stroke-width", "3");
-                        incircle.setAttribute("class", "reveal-line");
+                        incircle.setAttribute("stroke-dasharray", "6 4");
                         svg.appendChild(incircle);
 
-                        const labelCircle = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                        labelCircle.setAttribute("x", incenter.x + incenter.r * 0.7);
-                        labelCircle.setAttribute("y", incenter.y - incenter.r * 0.7 - 6);
-                        labelCircle.setAttribute("font-size", "14");
-                        labelCircle.setAttribute("font-weight", "900");
-                        labelCircle.setAttribute("fill", "#7e22ce");
-                        labelCircle.textContent = "내접원";
-                        svg.appendChild(labelCircle);
                     }
 
                     const pMarker = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -1193,15 +1473,6 @@
                     pMarker.setAttribute("stroke", "white");
                     pMarker.setAttribute("stroke-width", "2.5");
                     svg.appendChild(pMarker);
-
-                    const labelP = document.createElementNS("http://www.w3.org/2000/svg", "text");
-                    labelP.setAttribute("x", incenter.x + 12);
-                    labelP.setAttribute("y", incenter.y - 8);
-                    labelP.setAttribute("font-size", "14");
-                    labelP.setAttribute("font-weight", "900");
-                    labelP.setAttribute("fill", "#581c87");
-                    labelP.textContent = circleRevealed ? "내심" : "점 P";
-                    svg.appendChild(labelP);
                 }
             }
 
@@ -1248,23 +1519,142 @@
             return path;
         }
 
-        function createAngleArc(center, startAngle, endAngle, radius, color) {
+        function createAngleArc(center, startAngle, endAngle, radius, color, strokeWidth) {
             const x1 = center.x + radius * Math.cos(startAngle);
             const y1 = center.y + radius * Math.sin(startAngle);
             const x2 = center.x + radius * Math.cos(endAngle);
             const y2 = center.y + radius * Math.sin(endAngle);
 
+            // Normalize to the shortest signed rotation (-π, π] so we always sweep the
+            // minor arc in the correct direction, no matter which order start/end are given in.
             let diff = endAngle - startAngle;
-            while (diff < 0) diff += 2 * Math.PI;
-            const largeArcFlag = diff > Math.PI ? 1 : 0;
+            while (diff <= -Math.PI) diff += 2 * Math.PI;
+            while (diff > Math.PI) diff -= 2 * Math.PI;
+            const sweepFlag = diff >= 0 ? 1 : 0;
+            const largeArcFlag = 0;
 
             const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            path.setAttribute("d", `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`);
+            path.setAttribute("d", `M ${x1} ${y1} A ${radius} ${radius} 0 ${largeArcFlag} ${sweepFlag} ${x2} ${y2}`);
             path.setAttribute("fill", "none");
             path.setAttribute("stroke", color);
-            path.setAttribute("stroke-width", "2");
+            path.setAttribute("stroke-width", strokeWidth || "2");
 
             return path;
+        }
+
+        // Draws a short tick mark crossing an arc at the given angle, used to show two angles are equal
+        function createEqualTick(center, angle, radius) {
+            const tickLen = 7;
+            const px = center.x + radius * Math.cos(angle);
+            const py = center.y + radius * Math.sin(angle);
+            const perp = { x: -Math.sin(angle), y: Math.cos(angle) };
+            const line = document.createElementNS(SVG_NS, "line");
+            line.setAttribute("x1", px - perp.x * tickLen / 2);
+            line.setAttribute("y1", py - perp.y * tickLen / 2);
+            line.setAttribute("x2", px + perp.x * tickLen / 2);
+            line.setAttribute("y2", py + perp.y * tickLen / 2);
+            line.setAttribute("stroke", "#1e293b");
+            line.setAttribute("stroke-width", "1.4");
+            line.setAttribute("stroke-linecap", "round");
+            return line;
+        }
+
+        // Draws 1 or 2 short tick marks (hatch marks) placed side-by-side along the arc,
+        // the standard textbook symbol for "these angles are equal"
+        function createArcTicks(center, midAngle, radius, count) {
+            const g = document.createElementNS(SVG_NS, "g");
+            const angSpacing = 0.11;
+            for (let i = 0; i < count; i++) {
+                const a = midAngle + (i - (count - 1) / 2) * angSpacing;
+                g.appendChild(createEqualTick(center, a, radius));
+            }
+            return g;
+        }
+
+        // Draws a small open (unfilled) circle mark at the given arc position
+        function createArcCircleMark(center, angle, radius) {
+            const px = center.x + radius * Math.cos(angle);
+            const py = center.y + radius * Math.sin(angle);
+            const circle = document.createElementNS(SVG_NS, "circle");
+            circle.setAttribute("cx", px);
+            circle.setAttribute("cy", py);
+            circle.setAttribute("r", "3");
+            circle.setAttribute("fill", "none");
+            circle.setAttribute("stroke", "#1e293b");
+            circle.setAttribute("stroke-width", "1.3");
+            return circle;
+        }
+
+        // Draws a small filled (solid) circle mark at the given arc position
+        function createArcFilledCircleMark(center, angle, radius) {
+            const px = center.x + radius * Math.cos(angle);
+            const py = center.y + radius * Math.sin(angle);
+            const circle = document.createElementNS(SVG_NS, "circle");
+            circle.setAttribute("cx", px);
+            circle.setAttribute("cy", py);
+            circle.setAttribute("r", "2.8");
+            circle.setAttribute("fill", "#1e293b");
+            circle.setAttribute("stroke", "none");
+            return circle;
+        }
+
+        // Draws a small "x" cross mark at the given arc position
+        function createArcXMark(center, angle, radius) {
+            const px = center.x + radius * Math.cos(angle);
+            const py = center.y + radius * Math.sin(angle);
+            const s = 3.4;
+            const g = document.createElementNS(SVG_NS, "g");
+            const l1 = document.createElementNS(SVG_NS, "line");
+            l1.setAttribute("x1", px - s); l1.setAttribute("y1", py - s);
+            l1.setAttribute("x2", px + s); l1.setAttribute("y2", py + s);
+            l1.setAttribute("stroke", "#1e293b"); l1.setAttribute("stroke-width", "1.4"); l1.setAttribute("stroke-linecap", "round");
+            const l2 = document.createElementNS(SVG_NS, "line");
+            l2.setAttribute("x1", px - s); l2.setAttribute("y1", py + s);
+            l2.setAttribute("x2", px + s); l2.setAttribute("y2", py - s);
+            l2.setAttribute("stroke", "#1e293b"); l2.setAttribute("stroke-width", "1.4"); l2.setAttribute("stroke-linecap", "round");
+            g.appendChild(l1);
+            g.appendChild(l2);
+            return g;
+        }
+
+        // Returns the angular midpoint between a and b, taking the shorter arc direction
+        function averageAngle(a, b) {
+            let diff = b - a;
+            while (diff > Math.PI) diff -= 2 * Math.PI;
+            while (diff < -Math.PI) diff += 2 * Math.PI;
+            return a + diff / 2;
+        }
+
+        // Appends two small thin arcs + equality marks at vertex V showing that the angle
+        // between V->P1 and V->Pmid equals the angle between V->Pmid and V->P2.
+        // markType: 'single' | 'double' | 'circle' - lets each vertex use a distinct symbol,
+        // matching the textbook convention (dot / cross / small circle per vertex).
+        function appendEqualAngleMarks(svg, V, P1, P2, Pmid, radius, markType) {
+            const toUnit = (from, to) => {
+                const dx = to.x - from.x, dy = to.y - from.y;
+                const len = Math.hypot(dx, dy) || 1;
+                return { x: dx / len, y: dy / len };
+            };
+            const d1 = toUnit(V, P1), d2 = toUnit(V, P2), dm = toUnit(V, Pmid);
+            const a1 = Math.atan2(d1.y, d1.x), a2 = Math.atan2(d2.y, d2.x), am = Math.atan2(dm.y, dm.x);
+
+            const mid1 = averageAngle(a1, am);
+            const mid2 = averageAngle(am, a2);
+
+            if (markType === 'circle') {
+                svg.appendChild(createArcCircleMark(V, mid1, radius));
+                svg.appendChild(createArcCircleMark(V, mid2, radius));
+            } else if (markType === 'filledCircle') {
+                svg.appendChild(createArcFilledCircleMark(V, mid1, radius));
+                svg.appendChild(createArcFilledCircleMark(V, mid2, radius));
+            } else if (markType === 'x') {
+                svg.appendChild(createArcXMark(V, mid1, radius));
+                svg.appendChild(createArcXMark(V, mid2, radius));
+            } else {
+                const count = markType === 'double' ? 2 : 1;
+                svg.appendChild(createArcTicks(V, mid1, radius, count));
+                svg.appendChild(createArcTicks(V, mid2, radius, count));
+            }
         }
 
         function createDistanceTag(x, y, textVal, color) {
@@ -1316,7 +1706,7 @@
                 const angleRad = Math.atan2(p2.y - p1.y, p2.x - p1.x);
                 const angleDeg = angleRad * (180 / Math.PI);
 
-                const benchLen = 110;
+                const benchLen = 190;
                 const benchWidth = 12;
 
                 const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -1388,10 +1778,451 @@
             });
         }
 
+        // ==================== STEP 4: PROOF ACTIVITY (format ported from the 외심 reference app) ====================
+
+        const S4 = {
+            A: { x: 230, y: 45 },
+            B: { x: 55, y: 320 },
+            C: { x: 345, y: 295 },
+            icDrawn: false,
+            filled: [null, null, null, null],
+            selectedCard: null,
+            dragMoved: false
+        };
+
+        const S4_CARDS = [
+            { id: 'c1', html: '<span class="ovl">IE</span> = <span class="ovl">IF</span>' },
+            { id: 'c2', html: '<span class="ovl">CE</span> = <span class="ovl">CF</span>' },
+            { id: 'c3', html: '<span class="ovl">IC</span>는 공통인 변' },
+            { id: 'c4', html: '&#8736;IEC = &#8736;IFC = 90&#176;' },
+            { id: 'c5', html: '&#8736;CIE = &#8736;CIF' },
+            { id: 'c6', html: '&#8736;ICE = &#8736;ICF' },
+            { id: 'c7', html: 'SSS 합동' },
+            { id: 'c8', html: 'SAS 합동' },
+            { id: 'c9', html: 'ASA 합동' },
+            { id: 'c10', html: 'RHS 합동' },
+            { id: 'c11', html: 'RHA 합동' }
+        ];
+
+        function renderStep4() {
+            const svg = document.getElementById('svg-step4');
+            if (!svg) return;
+            svg.innerHTML = '';
+
+            const { A, B, C } = S4;
+            const I = calculateIncenter(A, B, C);
+            const D = projectToLineSegment(I, A, B).foot;
+            const E = projectToLineSegment(I, B, C).foot;
+            const F = projectToLineSegment(I, C, A).foot;
+
+            // Triangle
+            const tri = document.createElementNS(SVG_NS, "polygon");
+            tri.setAttribute("points", `${A.x},${A.y} ${B.x},${B.y} ${C.x},${C.y}`);
+            tri.setAttribute("fill", "#eef2ff");
+            tri.setAttribute("stroke", "#1e293b");
+            tri.setAttribute("stroke-width", "3");
+            tri.setAttribute("stroke-linejoin", "round");
+            svg.appendChild(tri);
+
+            // △ICE, △ICF highlighted once IC is connected
+            if (S4.icDrawn) {
+                const triICE = document.createElementNS(SVG_NS, "polygon");
+                triICE.setAttribute("points", `${I.x},${I.y} ${C.x},${C.y} ${E.x},${E.y}`);
+                triICE.setAttribute("fill", "#fbbf24");
+                triICE.setAttribute("fill-opacity", "0.4");
+                triICE.setAttribute("stroke", "#f59e0b");
+                triICE.setAttribute("stroke-width", "1.5");
+                triICE.setAttribute("stroke-linejoin", "round");
+                svg.appendChild(triICE);
+
+                const triICF = document.createElementNS(SVG_NS, "polygon");
+                triICF.setAttribute("points", `${I.x},${I.y} ${C.x},${C.y} ${F.x},${F.y}`);
+                triICF.setAttribute("fill", "#34d399");
+                triICF.setAttribute("fill-opacity", "0.4");
+                triICF.setAttribute("stroke", "#059669");
+                triICF.setAttribute("stroke-width", "1.5");
+                triICF.setAttribute("stroke-linejoin", "round");
+                svg.appendChild(triICF);
+            }
+
+            // I to A, I to B (angle bisector segments)
+            svg.appendChild(createLine(A, I, "#7c3aed", "2.4"));
+            svg.appendChild(createLine(B, I, "#7c3aed", "2.4"));
+
+            // Perpendiculars from I to AC, BC, AB (always visible)
+            svg.appendChild(createLine(I, F, "#0ea5e9", "2.4"));
+            svg.appendChild(createLine(I, E, "#0ea5e9", "2.4"));
+            svg.appendChild(createLine(I, D, "#0ea5e9", "2.4"));
+            svg.appendChild(createRightAngleSymbol(I, F, C, "#0ea5e9"));
+            svg.appendChild(createRightAngleSymbol(I, E, C, "#0ea5e9"));
+            svg.appendChild(createRightAngleSymbol(I, D, A, "#0ea5e9"));
+
+            // Equal-angle marks at A, B (same symbol convention as Step 3)
+            appendEqualAngleMarks(svg, A, B, C, I, 22, "filledCircle");
+            appendEqualAngleMarks(svg, B, A, C, I, 22, "x");
+
+            // Segment IC (revealed by the connect button)
+            if (S4.icDrawn) {
+                const icLine = createLine(I, C, "#dc2626", "2.6");
+                icLine.setAttribute("class", "reveal-line");
+                svg.appendChild(icLine);
+            }
+
+            // Point I
+            const iDot = document.createElementNS(SVG_NS, "circle");
+            iDot.setAttribute("cx", I.x);
+            iDot.setAttribute("cy", I.y);
+            iDot.setAttribute("r", "6");
+            iDot.setAttribute("fill", "#7c3aed");
+            iDot.setAttribute("stroke", "white");
+            iDot.setAttribute("stroke-width", "2");
+            svg.appendChild(iDot);
+
+            // Vertex dots
+            [A, B, C].forEach(P => {
+                const dot = document.createElementNS(SVG_NS, "circle");
+                dot.setAttribute("cx", P.x);
+                dot.setAttribute("cy", P.y);
+                dot.setAttribute("r", "5");
+                dot.setAttribute("fill", "#1e293b");
+                dot.setAttribute("stroke", "white");
+                dot.setAttribute("stroke-width", "2");
+                svg.appendChild(dot);
+            });
+
+            // Labels
+            renderText(svg, A.x, A.y - 12, "A", "16", "#0f172a", "bold", "middle");
+            renderText(svg, B.x - 16, B.y + 6, "B", "16", "#0f172a", "bold", "middle");
+            renderText(svg, C.x + 16, C.y + 6, "C", "16", "#0f172a", "bold", "middle");
+            renderText(svg, I.x + 13, I.y - 9, "I", "15", "#6d28d9", "bold", "middle");
+            renderText(svg, E.x, E.y + 17, "E", "12", "#0369a1", "bold", "middle");
+            renderText(svg, F.x + 13, F.y, "F", "12", "#0369a1", "bold", "middle");
+            renderText(svg, D.x - 5, D.y - 9, "D", "12", "#0369a1", "bold", "middle");
+        }
+
+        function step4ConnectIC() {
+            if (S4.icDrawn) return;
+            playSound('reveal');
+            S4.icDrawn = true;
+            renderStep4();
+
+            document.getElementById('step4-hint').classList.add('hidden');
+            document.getElementById('step4-draw-btn').classList.add('hidden');
+            document.getElementById('step4-question').classList.remove('hidden');
+            document.getElementById('step4-activity').classList.remove('hidden');
+        }
+
+        function s4CardHtml(id) {
+            const c = S4_CARDS.find(c => c.id === id);
+            return c ? c.html : '';
+        }
+
+        function renderStep4Cards() {
+            const wrap = document.getElementById('step4-cards');
+            wrap.innerHTML = '';
+            S4_CARDS.forEach(c => {
+                const used = S4.filled.indexOf(c.id) !== -1;
+                const el = document.createElement('div');
+                el.className = "cond-card px-2.5 py-1.5 rounded-lg border text-[11px] sm:text-xs font-bold shadow-sm cursor-grab " +
+                    (used ? "bg-slate-200 border-slate-300 text-slate-400 opacity-50 pointer-events-none"
+                          : "bg-white border-indigo-300 text-slate-800 hover:bg-indigo-50");
+                el.innerHTML = c.html;
+                el.dataset.card = c.id;
+                if (!used) {
+                    el.addEventListener('click', () => {
+                        if (S4.dragMoved) { S4.dragMoved = false; return; }
+                        S4.selectedCard = (S4.selectedCard === c.id) ? null : c.id;
+                        renderStep4Cards();
+                    });
+                    el.addEventListener('pointerdown', e => s4CardPointerDown(e, c.id, el));
+                    if (S4.selectedCard === c.id) el.classList.add('sel');
+                }
+                wrap.appendChild(el);
+            });
+        }
+
+        // Pointer-based drag (works on tablets/phones too, unlike plain HTML5 dragstart)
+        function s4CardPointerDown(e, cardId, cardEl) {
+            if (S4.filled.indexOf(cardId) !== -1) return;
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            const startX = e.clientX, startY = e.clientY;
+            const threshold = 8;
+            let dragging = false;
+            let ghost = null;
+
+            function clearSlotHighlights() {
+                document.querySelectorAll('#step4-activity .drop-slot').forEach(s => s.classList.remove('over'));
+            }
+            function slotUnder(x, y) {
+                const under = document.elementFromPoint(x, y);
+                return under ? under.closest('.drop-slot') : null;
+            }
+            function onMove(ev) {
+                const dx = ev.clientX - startX, dy = ev.clientY - startY;
+                if (!dragging && Math.hypot(dx, dy) > threshold) {
+                    dragging = true;
+                    S4.dragMoved = true;
+                    ghost = cardEl.cloneNode(true);
+                    ghost.style.position = 'fixed';
+                    ghost.style.top = '0px';
+                    ghost.style.left = '0px';
+                    ghost.style.zIndex = '9999';
+                    ghost.style.pointerEvents = 'none';
+                    ghost.style.opacity = '0.92';
+                    ghost.style.boxShadow = '0 8px 20px rgba(15,23,42,0.25)';
+                    ghost.classList.remove('cursor-grab');
+                    document.body.appendChild(ghost);
+                    cardEl.classList.add('opacity-30');
+                }
+                if (dragging && ghost) {
+                    ghost.style.transform = `translate(${ev.clientX}px, ${ev.clientY}px) translate(-50%, -50%) scale(1.06)`;
+                    clearSlotHighlights();
+                    const slot = slotUnder(ev.clientX, ev.clientY);
+                    if (slot) slot.classList.add('over');
+                }
+            }
+            function onUp(ev) {
+                document.removeEventListener('pointermove', onMove);
+                document.removeEventListener('pointerup', onUp);
+                document.removeEventListener('pointercancel', onCancel);
+                if (dragging) {
+                    cardEl.classList.remove('opacity-30');
+                    if (ghost) ghost.remove();
+                    clearSlotHighlights();
+                    const slot = slotUnder(ev.clientX, ev.clientY);
+                    if (slot) {
+                        const idx = parseInt(slot.dataset.slot, 10);
+                        s4PlaceCard(idx, cardId);
+                    }
+                    setTimeout(() => { S4.dragMoved = false; }, 0);
+                }
+            }
+            function onCancel() {
+                document.removeEventListener('pointermove', onMove);
+                document.removeEventListener('pointerup', onUp);
+                document.removeEventListener('pointercancel', onCancel);
+                if (ghost) ghost.remove();
+                if (dragging) cardEl.classList.remove('opacity-30');
+                clearSlotHighlights();
+                setTimeout(() => { S4.dragMoved = false; }, 0);
+            }
+
+            document.addEventListener('pointermove', onMove);
+            document.addEventListener('pointerup', onUp);
+            document.addEventListener('pointercancel', onCancel);
+        }
+
+        function s4PlaceCard(slotIdx, cardId) {
+            if (!cardId) return;
+            const existing = S4.filled.indexOf(cardId);
+            if (existing !== -1) S4.filled[existing] = null;
+            S4.filled[slotIdx] = cardId;
+            S4.selectedCard = null;
+            playSound('snap');
+            renderStep4Slots();
+            renderStep4Cards();
+        }
+
+        function renderStep4Slots() {
+            document.querySelectorAll('#step4-activity .drop-slot').forEach(slot => {
+                const idx = parseInt(slot.dataset.slot, 10);
+                const cardId = S4.filled[idx];
+                slot.classList.remove('over');
+                if (cardId) {
+                    slot.innerHTML = s4CardHtml(cardId);
+                    slot.className = slot.className
+                        .replace('border-dashed', 'border-solid')
+                        .replace('text-slate-400', 'text-indigo-900')
+                        .replace('bg-white', 'bg-indigo-50')
+                        .replace('bg-slate-50', 'bg-indigo-50')
+                        .replace('border-slate-300', 'border-indigo-400');
+                } else {
+                    slot.innerHTML = (idx === 3) ? '합동조건' : '여기에 조건을 끌어다 놓으세요';
+                    slot.className = slot.className
+                        .replace('border-solid', 'border-dashed')
+                        .replace('text-indigo-900', 'text-slate-400')
+                        .replace('bg-indigo-50', idx === 3 ? 'bg-slate-50' : 'bg-white')
+                        .replace('border-indigo-400', 'border-slate-300');
+                }
+            });
+            const done = S4.filled.every(v => v !== null);
+            document.getElementById('step4-conclusion').classList.toggle('hidden', !done);
+            if (done) playSound('success');
+        }
+
+        /* ===== 4단계: 그림 위 필기(주석) 기능 ===== */
+        const S4Annot = {
+            canvas: null, ctx: null,
+            color: '#1e293b',
+            erasing: false,
+            drawing: false,
+            current: null,
+            strokes: []   // { points:[{nx,ny}], color, width, erase }  (nx,ny: 그림판 기준 0~1 비율 좌표)
+        };
+
+        function s4AnnotInit() {
+            S4Annot.canvas = document.getElementById('step4-annot');
+            S4Annot.ctx = S4Annot.canvas.getContext('2d');
+
+            S4Annot.canvas.addEventListener('pointerdown', s4AnnotDown);
+            S4Annot.canvas.addEventListener('pointermove', s4AnnotMove);
+            window.addEventListener('pointerup', s4AnnotUp);
+            window.addEventListener('pointercancel', s4AnnotUp);
+
+            document.querySelectorAll('.annot-color-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    S4Annot.color = btn.dataset.color;
+                    S4Annot.erasing = false;
+                    s4AnnotUpdateToolbarUI();
+                });
+            });
+            document.getElementById('step4-annot-eraser').addEventListener('click', () => {
+                S4Annot.erasing = !S4Annot.erasing;
+                s4AnnotUpdateToolbarUI();
+            });
+            document.getElementById('step4-annot-clear').addEventListener('click', () => {
+                S4Annot.strokes = [];
+                s4AnnotRedraw();
+                playSound('click');
+            });
+
+            s4AnnotUpdateToolbarUI();
+
+            // 그림판 크기가 바뀔 때마다(원인 불문) 캔버스를 다시 맞춰 필기 싱크가 어긋나지 않게 함
+            if (window.ResizeObserver) {
+                const ro = new ResizeObserver(() => s4AnnotResize());
+                ro.observe(document.getElementById('step4-board'));
+            }
+        }
+
+        function s4AnnotUpdateToolbarUI() {
+            document.querySelectorAll('.annot-color-btn').forEach(btn => {
+                btn.classList.toggle('active', !S4Annot.erasing && btn.dataset.color === S4Annot.color);
+            });
+            const eraserBtn = document.getElementById('step4-annot-eraser');
+            eraserBtn.classList.toggle('bg-indigo-100', S4Annot.erasing);
+            eraserBtn.classList.toggle('text-indigo-600', S4Annot.erasing);
+        }
+
+        function s4AnnotResize() {
+            const canvas = S4Annot.canvas;
+            if (!canvas) return;
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
+            const dpr = window.devicePixelRatio || 1;
+            const newW = Math.round(rect.width * dpr);
+            const newH = Math.round(rect.height * dpr);
+            if (canvas.width === newW && canvas.height === newH) return;
+            canvas.width = newW;
+            canvas.height = newH;
+            S4Annot.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            s4AnnotRedraw();
+        }
+
+        function s4AnnotPos(e) {
+            const rect = S4Annot.canvas.getBoundingClientRect();
+            return { nx: (e.clientX - rect.left) / rect.width, ny: (e.clientY - rect.top) / rect.height, rect };
+        }
+        function s4AnnotToPx(p, rect) {
+            return { x: p.nx * rect.width, y: p.ny * rect.height };
+        }
+
+        function s4AnnotDown(e) {
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+            e.preventDefault();
+            S4Annot.drawing = true;
+            const p = s4AnnotPos(e);
+            S4Annot.current = { points: [{ nx: p.nx, ny: p.ny }], color: S4Annot.color, width: S4Annot.erasing ? 20 : 3, erase: S4Annot.erasing };
+            S4Annot.strokes.push(S4Annot.current);
+            const q = s4AnnotToPx(p, p.rect);
+            s4AnnotDrawSegment(q, q, S4Annot.current);
+        }
+        function s4AnnotMove(e) {
+            if (!S4Annot.drawing) return;
+            e.preventDefault();
+            const p = s4AnnotPos(e);
+            const pts = S4Annot.current.points;
+            const prev = pts[pts.length - 1];
+            pts.push({ nx: p.nx, ny: p.ny });
+            s4AnnotDrawSegment(s4AnnotToPx(prev, p.rect), s4AnnotToPx(p, p.rect), S4Annot.current);
+        }
+        function s4AnnotUp() {
+            S4Annot.drawing = false;
+            S4Annot.current = null;
+        }
+        function s4AnnotDrawSegment(q1, q2, stroke) {
+            const ctx = S4Annot.ctx;
+            ctx.save();
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = stroke.width;
+            if (stroke.erase) {
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.strokeStyle = 'rgba(0,0,0,1)';
+            } else {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = stroke.color;
+            }
+            ctx.beginPath();
+            ctx.moveTo(q1.x, q1.y);
+            ctx.lineTo(q2.x, q2.y);
+            ctx.stroke();
+            ctx.restore();
+        }
+        function s4AnnotRedraw() {
+            const ctx = S4Annot.ctx, canvas = S4Annot.canvas;
+            if (!ctx || !canvas) return;
+            const dpr = window.devicePixelRatio || 1;
+            ctx.save();
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.restore();
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) return;
+            S4Annot.strokes.forEach(stroke => {
+                const pts = stroke.points;
+                if (pts.length === 1) { const q = s4AnnotToPx(pts[0], rect); s4AnnotDrawSegment(q, q, stroke); return; }
+                for (let i = 1; i < pts.length; i++) {
+                    s4AnnotDrawSegment(s4AnnotToPx(pts[i - 1], rect), s4AnnotToPx(pts[i], rect), stroke);
+                }
+            });
+        }
+
+        function initStep4() {
+            document.querySelectorAll('#step4-activity .drop-slot').forEach(slot => {
+                const idx = parseInt(slot.dataset.slot, 10);
+                slot.addEventListener('click', () => {
+                    if (S4.selectedCard) { s4PlaceCard(idx, S4.selectedCard); }
+                    else if (S4.filled[idx]) { S4.filled[idx] = null; playSound('click'); renderStep4Slots(); renderStep4Cards(); }
+                });
+            });
+            renderStep4Cards();
+            renderStep4Slots();
+            renderStep4();
+        }
+
+        function resetStep4() {
+            S4.icDrawn = false;
+            S4.filled = [null, null, null, null];
+            S4.selectedCard = null;
+            document.getElementById('step4-hint').classList.remove('hidden');
+            document.getElementById('step4-draw-btn').classList.remove('hidden');
+            document.getElementById('step4-question').classList.add('hidden');
+            document.getElementById('step4-activity').classList.add('hidden');
+            document.getElementById('step4-conclusion').classList.add('hidden');
+            renderStep4Slots();
+            renderStep4Cards();
+            renderStep4();
+            playSound('click');
+        }
+
         window.addEventListener('load', () => {
             initStep1();
             initStep2();
             initStep3();
+            initStep4();
+            s4AnnotInit();
             switchStep(1);
         });
 
@@ -1400,6 +2231,7 @@
             if (currentStep === 1) renderStep1();
             if (currentStep === 2) renderStep2();
             if (currentStep === 3) renderStep3();
+            if (currentStep === 4) { renderStep4(); s4AnnotResize(); }
         });
     </script>
 </body>
