@@ -1706,7 +1706,8 @@
                 const angleRad = Math.atan2(p2.y - p1.y, p2.x - p1.x);
                 const angleDeg = angleRad * (180 / Math.PI);
 
-                const benchLen = 190;
+                const sideLen = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+                const benchLen = Math.min(Math.max(sideLen * 0.52, 190), 420);
                 const benchWidth = 12;
 
                 const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
