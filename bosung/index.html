@@ -113,11 +113,71 @@
                 display: flex;
             }
             #control-panel {
-                width: clamp(200px, 22vw, 280px);
+                width: clamp(360px, 34vw, 460px);
                 flex: 0 0 auto;
                 height: 100%;
                 justify-content: center;
                 overflow-y: auto;
+                gap: clamp(1rem, 3vh, 2rem);
+            }
+
+            /* Sidebar now has more room, so scale its contents up to match
+               the (smaller) board instead of leaving them tiny + padded */
+            #header-landscape .lsq-garland {
+                height: clamp(2.25rem, 4.5vh, 3.25rem);
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            #header-landscape .garland-flag {
+                width: clamp(1.5rem, 2.4vw, 2.25rem);
+                height: clamp(1.8rem, 2.9vw, 2.7rem);
+                font-size: 10px;
+            }
+            #header-landscape h1 {
+                font-size: clamp(1.5rem, 2.3vw, 2.1rem);
+            }
+            #header-landscape .lsq-desc {
+                font-size: clamp(0.85rem, 1.1vw, 1.05rem);
+                line-height: 1.5;
+                margin-top: 0.5rem;
+            }
+
+            #control-panel .grid-cols-4 {
+                gap: clamp(0.6rem, 1.2vw, 1rem);
+            }
+            #control-panel .grid-cols-4 button {
+                padding-top: clamp(0.75rem, 1.8vh, 1.25rem);
+                padding-bottom: clamp(0.75rem, 1.8vh, 1.25rem);
+            }
+            #control-panel .grid-cols-4 button i {
+                font-size: clamp(1.35rem, 2vw, 1.75rem);
+                margin-bottom: 0.4rem;
+            }
+            #control-panel .grid-cols-4 button span {
+                font-size: clamp(0.85rem, 1.1vw, 1.05rem);
+            }
+            #control-panel #memo-status-text {
+                font-size: clamp(0.6rem, 0.85vw, 0.75rem);
+            }
+
+            #control-panel .grid-cols-5.gap-1\.5,
+            #control-panel .grid-cols-5.sm\:gap-2 {
+                gap: clamp(0.6rem, 1.2vw, 1rem);
+            }
+            #control-panel .bg-amber-950\/5 {
+                padding: clamp(0.85rem, 1.8vh, 1.4rem);
+            }
+            #control-panel .bg-amber-950\/5 > div:first-child {
+                font-size: clamp(0.85rem, 1.1vw, 1.05rem);
+                margin-bottom: clamp(0.5rem, 1.2vh, 0.9rem);
+            }
+            #control-panel .grid-cols-5 button > div:first-child {
+                width: clamp(2.75rem, 4.2vw, 3.75rem);
+                height: clamp(2.75rem, 4.2vw, 3.75rem);
+            }
+            #control-panel .grid-cols-5 button span {
+                font-size: clamp(0.8rem, 1.05vw, 1rem);
+                margin-top: 0.35rem;
             }
         }
 
@@ -695,8 +755,13 @@
             const availH = slot.clientHeight;
             if (availW <= 0 || availH <= 0) return;
 
+            // Cap the board's max size so it stays visually balanced with the
+            // sidebar instead of dwarfing it on wide desktop/tablet screens.
+            const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+            const maxSize = isLandscape ? 460 : 620;
+
             let size = Math.min(availW, availH) - 4; // small breathing room
-            size = Math.max(160, Math.min(size, 620)); // sane min/max bounds
+            size = Math.max(160, Math.min(size, maxSize)); // sane min/max bounds
 
             container.style.width = size + 'px';
             container.style.height = size + 'px';
