@@ -1,0 +1,734 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>칼각매치</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
+:root{
+  --ink:#12181F;
+  --bg:#EEEAE0;
+  --panel:#FFFFFF;
+  --line:#D9D3C4;
+  --rayA:#3A6FF7;
+  --rayB:#F0653C;
+  --rayC:#8B5CF6;
+  --match:#1FAE7A;
+  --muted:#6B6659;
+  --gold:#E4A93B;
+  --radius:18px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:
+    linear-gradient(var(--line) 1px, transparent 1px) 0 0/40px 40px,
+    linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0/40px 40px,
+    var(--bg);
+  color:var(--ink);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  -webkit-tap-highlight-color: transparent;
+}
+h1,h2,h3,.disp{font-family:'Space Grotesk',sans-serif;}
+button{font-family:inherit;cursor:pointer;border:none;}
+button:focus-visible, input:focus-visible{outline:3px solid var(--rayA); outline-offset:2px;}
+.wrap{max-width:1040px;margin:0 auto;padding:12px 14px 20px;}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
+.brand{display:flex;align-items:center;gap:10px;}
+.brand .mark{width:34px;height:34px;flex:0 0 auto;}
+.brand span{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px;letter-spacing:-0.01em;}
+.home-link{background:none;color:var(--muted);font-size:14px;padding:6px 4px;}
+
+/* Home */
+.home-hero{padding:38px 6px 8px;}
+.home-hero h1{font-size:clamp(28px,6vw,44px);line-height:1.15;margin:0 0 10px;font-weight:700;letter-spacing:-0.01em;}
+.home-hero p{color:var(--muted);font-size:16px;max-width:480px;line-height:1.6;margin:0 0 30px;}
+.role-cards{display:grid;grid-template-columns:1fr;gap:14px;max-width:520px;}
+@media(min-width:640px){.role-cards{grid-template-columns:1fr 1fr;}}
+.role-card{background:var(--panel);border:1.5px solid var(--line);border-radius:var(--radius);padding:24px 22px;text-align:left;transition:transform .15s ease, border-color .15s ease;}
+.role-card:hover{border-color:var(--ink);transform:translateY(-2px);}
+.role-card .icon{font-size:26px;margin-bottom:10px;display:block;}
+.role-card h3{margin:0 0 6px;font-size:19px;}
+.role-card p{margin:0;color:var(--muted);font-size:14px;line-height:1.5;}
+
+/* Panels */
+.panel{background:var(--panel);border:1.5px solid var(--line);border-radius:var(--radius);padding:16px;}
+.grid2{display:grid;grid-template-columns:1fr;gap:16px;}
+@media(min-width:820px){.grid2{grid-template-columns:340px 1fr;align-items:start;}}
+
+/* Teacher */
+.code-box{text-align:center;}
+.code-box .label{color:var(--muted);font-size:13px;margin-bottom:6px;}
+.code-value{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:clamp(34px,8vw,48px);letter-spacing:0.12em;margin:4px 0 16px;}
+#qrcode{display:flex;justify-content:center;margin:0 auto 16px;}
+#qrcode img,#qrcode canvas{border-radius:10px;}
+.join-url{font-size:12px;color:var(--muted);word-break:break-all;background:#F6F4EE;border-radius:10px;padding:8px 10px;margin-bottom:16px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;padding:11px 18px;font-weight:600;font-size:15px;}
+.btn-primary{background:var(--ink);color:#fff;width:100%;}
+.btn-primary:active{transform:scale(0.98);}
+.btn-danger{background:none;color:#C24C34;border:1.5px solid #E7C9BE;width:100%;margin-top:10px;}
+.btn-danger:hover{background:#FBEFEA;}
+.btn-ghost{background:none;color:var(--ink);border:1.5px solid var(--line);}
+
+.lb-title{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;}
+.lb-title h3{margin:0;font-size:16px;}
+.lb-title .count{font-size:13px;color:var(--muted);}
+.lb-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto;}
+.lb-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:#F6F4EE;}
+.lb-rank{width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+.lb-row:nth-child(1) .lb-rank{background:var(--gold);}
+.lb-row:nth-child(2) .lb-rank{background:#9BA3AE;}
+.lb-row:nth-child(3) .lb-rank{background:#C1854F;}
+.lb-name{flex:1;font-weight:600;font-size:14.5px;}
+.lb-score{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;}
+.lb-empty{color:var(--muted);font-size:14px;padding:18px 4px;text-align:center;}
+
+/* Student join */
+.join-panel{max-width:420px;margin:30px auto 0;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;}
+.field input{width:100%;padding:13px 14px;border-radius:12px;border:1.5px solid var(--line);font-size:16px;background:#fff;color:var(--ink);}
+.field input:focus{border-color:var(--ink);}
+.err-msg{color:#C24C34;font-size:13px;margin:-4px 0 12px;min-height:16px;}
+
+/* Game */
+.round-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.round-tag{font-size:13px;color:var(--muted);font-weight:600;}
+.timer-track{flex:1;height:6px;background:#E5E0D3;border-radius:4px;margin:0 14px;overflow:hidden;}
+.timer-fill{height:100%;background:var(--ink);border-radius:4px;transition:width .1s linear;}
+.score-tag{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;}
+.svg-wrap{display:flex;justify-content:center;touch-action:none;user-select:none;}
+.game-panel{max-width:560px;margin:0 auto;}
+.step-msg{text-align:center;font-size:14.5px;font-weight:600;margin:2px 0 8px;}
+.step-msg .who{color:var(--rayB);}
+.count-choice{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;}
+.count-btn{background:#F6F4EE;border:1.5px solid var(--line);border-radius:14px;padding:18px 10px;text-align:center;transition:border-color .15s;}
+.count-btn:hover{border-color:var(--ink);}
+.count-btn .n{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:26px;display:block;}
+.count-btn .d{font-size:12.5px;color:var(--muted);margin-top:4px;}
+.lock-btn{width:100%;margin-top:8px;background:var(--match);color:#fff;}
+.lock-btn:disabled{opacity:0.5;}
+.locked-tag{display:inline-block;font-size:12px;background:#E7F6EF;color:var(--match);border-radius:8px;padding:3px 9px;font-weight:600;margin-left:6px;}
+.place-hint{text-align:center;font-size:13.5px;color:var(--muted);margin:10px 0 4px;}
+.svg-click{cursor:crosshair;}
+.reveal-row{display:flex;justify-content:center;gap:18px;margin:14px 0 4px;flex-wrap:wrap;}
+.reveal-chip{background:#F6F4EE;border-radius:10px;padding:8px 14px;text-align:center;}
+.reveal-chip .v{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:19px;}
+.reveal-chip .l{font-size:11.5px;color:var(--muted);}
+.round-total{text-align:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:34px;margin:10px 0 2px;}
+
+.feedback{text-align:center;padding:6px 10px 0;}
+.feedback .big{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:26px;}
+
+/* Result */
+.result-panel{max-width:440px;margin:26px auto 0;text-align:center;}
+.result-panel .total{font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:56px;margin:6px 0 2px;}
+.result-panel .rounds{display:flex;justify-content:center;gap:6px;margin:16px 0 22px;flex-wrap:wrap;}
+.chip{background:#F6F4EE;border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:600;}
+
+.hint{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:8px;text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ---------- storage helpers ---------- */
+async function sGet(key, shared){ try{ const r = await window.storage.get(key, shared); return r ? r.value : null; }catch(e){ return null; } }
+async function sSet(key, value, shared){ try{ return await window.storage.set(key, value, shared); }catch(e){ return null; } }
+async function sDel(key, shared){ try{ return await window.storage.delete(key, shared); }catch(e){ return null; } }
+async function sList(prefix, shared){ try{ const r = await window.storage.list(prefix, shared); return r ? r.keys : []; }catch(e){ return []; } }
+
+/* ---------- utils ---------- */
+function randCode(len){
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  let s = "";
+  for(let i=0;i<len;i++) s += chars[Math.floor(Math.random()*chars.length)];
+  return s;
+}
+function randId(){ return 'p'+Math.random().toString(36).slice(2,10)+Date.now().toString(36); }
+function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
+function deg2rad(d){ return d*Math.PI/180; }
+function dist(p,q){ return Math.hypot(p.x-q.x, p.y-q.y); }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------- triangle / geometry ---------- */
+function normAngle(a){ while(a>180)a-=360; while(a<=-180)a+=360; return a; }
+function dirAngle(from,to){ return Math.atan2(to.y-from.y, to.x-from.x)*180/Math.PI; }
+function ptAtRaw(V,R,angleDeg){ const r=deg2rad(angleDeg); return { x:V.x+R*Math.cos(r), y:V.y+R*Math.sin(r) }; }
+function sweepFlag(V,P1,P2){ const cross=(P1.x-V.x)*(P2.y-V.y)-(P1.y-V.y)*(P2.x-V.x); return cross>0?1:0; }
+function starPoints(cx,cy,rOuter,rInner,n){
+  const pts=[];
+  for(let i=0;i<n*2;i++){
+    const r = i%2===0 ? rOuter : rInner;
+    const a = (Math.PI/n)*i - Math.PI/2;
+    pts.push(`${cx+r*Math.cos(a)},${cy+r*Math.sin(a)}`);
+  }
+  return pts.join(' ');
+}
+
+function randomTriangle(){
+  const shapes = [
+    [{x:0,y:-95},{x:-85,y:60},{x:85,y:60}],
+    [{x:-25,y:-95},{x:-95,y:55},{x:100,y:45}],
+    [{x:-110,y:10},{x:95,y:-25},{x:35,y:85}],
+    [{x:10,y:-100},{x:-90,y:40},{x:70,y:75}]
+  ];
+  const base = pick(shapes);
+  const rot = Math.random()*360;
+  const scale = 1.3 + Math.random()*0.2;
+  const cx=210, cy=190;
+  const pts = base.map(p=>{
+    const j = { x: p.x + (Math.random()*16-8), y: p.y + (Math.random()*16-8) };
+    const rad = deg2rad(rot);
+    const r = { x: j.x*Math.cos(rad)-j.y*Math.sin(rad), y: j.x*Math.sin(rad)+j.y*Math.cos(rad) };
+    return { x: cx + r.x*scale, y: cy + r.y*scale };
+  });
+  return { A: pts[0], B: pts[1], C: pts[2] };
+}
+function otherTwo(letter, tri){ const keys=['A','B','C'].filter(k=>k!==letter); return { P: tri[keys[0]], Q: tri[keys[1]] }; }
+function incenter(tri){
+  const a = dist(tri.B, tri.C), b = dist(tri.A, tri.C), c = dist(tri.A, tri.B);
+  const s = a+b+c;
+  return { x:(a*tri.A.x+b*tri.B.x+c*tri.C.x)/s, y:(a*tri.A.y+b*tri.B.y+c*tri.C.y)/s };
+}
+function inradius(tri){
+  const a = dist(tri.B, tri.C), b = dist(tri.A, tri.C), c = dist(tri.A, tri.B);
+  const s = (a+b+c)/2;
+  const area = Math.abs((tri.B.x-tri.A.x)*(tri.C.y-tri.A.y) - (tri.C.x-tri.A.x)*(tri.B.y-tri.A.y))/2;
+  return area/s;
+}
+function pointInTriangle(p, tri){
+  const s1 = sweepFlag(tri.A, tri.B, p) ? 1 : -1;
+  const s2 = sweepFlag(tri.B, tri.C, p) ? 1 : -1;
+  const s3 = sweepFlag(tri.C, tri.A, p) ? 1 : -1;
+  return s1===s2 && s2===s3;
+}
+
+/* ---------- app state ---------- */
+const app = document.getElementById('app');
+const state = {
+  view: 'home',
+  code: null,
+  joinUrl: null,
+  lbInterval: null,
+  student: { code:'', nickname:'', id:null },
+  game: null
+};
+
+function setView(v){ state.view = v; render(); }
+
+(function initFromUrl(){
+  try{
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const role = params.get('role');
+    if(code){ state.student.code = code.toUpperCase(); }
+    if(role === 'student' || code){ state.view = 'student-join'; }
+  }catch(e){}
+})();
+
+/* ============ RENDER ROUTER ============ */
+function render(){
+  if(state.lbInterval){ clearInterval(state.lbInterval); state.lbInterval = null; }
+  if(state.game && state.game.timerHandle){ clearInterval(state.game.timerHandle); state.game.timerHandle = null; }
+
+  if(state.view === 'home') return renderHome();
+  if(state.view === 'teacher') return renderTeacher();
+  if(state.view === 'student-join') return renderStudentJoin();
+  if(state.view === 'student-play') return renderGame();
+  if(state.view === 'student-done') return renderResult();
+  if(state.view === 'demo-done') return renderDemoDone();
+}
+
+function topBar(onHome){
+  return `<div class="top">
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 34 34"><path d="M17 3 L30 29 L4 29 Z" fill="none" stroke="#12181F" stroke-width="2"/><circle cx="17" cy="21" r="3.2" fill="#3A6FF7"/></svg>
+      <span>칼각매치</span>
+    </div>
+    ${onHome ? `<button class="home-link" data-action="go-home">처음으로</button>` : ''}
+  </div>`;
+}
+
+function bindGlobalNav(){
+  app.querySelectorAll('[data-action="go-home"]').forEach(b=>b.addEventListener('click',()=>setView('home')));
+  const t = app.querySelector('[data-action="go-teacher"]'); if(t) t.addEventListener('click',()=>setView('teacher'));
+  const s = app.querySelector('[data-action="go-student"]'); if(s) s.addEventListener('click',()=>setView('student-join'));
+}
+
+/* ============ HOME ============ */
+function renderHome(){
+  app.innerHTML = `
+    ${topBar()}
+    <div class="home-hero">
+      <h1>세 변에서 같은 거리에<br>있는 점을 찾아라</h1>
+      <p>삼각형 내심 수업 마무리용 미니게임입니다. 선생님은 수업 코드를 만들고, 학생은 각의 이등분선을 손으로 맞춰가며 내심을 직접 찍습니다.</p>
+      <div class="role-cards">
+        <button class="role-card" data-action="go-teacher">
+          <span class="icon">🧑‍🏫</span>
+          <h3>선생님</h3>
+          <p>수업 코드와 QR을 발급하고, 실시간 순위를 확인합니다.</p>
+        </button>
+        <button class="role-card" data-action="go-student">
+          <span class="icon">✏️</span>
+          <h3>학생</h3>
+          <p>선생님이 알려준 코드로 입장해 게임을 플레이합니다.</p>
+        </button>
+      </div>
+    </div>
+  `;
+  bindGlobalNav();
+}
+
+/* ============ TEACHER ============ */
+function renderTeacher(){
+  if(!state.code){
+    app.innerHTML = `
+      ${topBar(true)}
+      <div class="panel" style="max-width:440px;margin:40px auto 0;text-align:center;">
+        <h2 style="margin:0 0 8px;font-size:20px;">새 수업 시작하기</h2>
+        <p style="color:var(--muted);font-size:14px;margin:0 0 20px;">버튼을 누르면 이번 수업만의 코드와 QR이 생성됩니다.</p>
+        <button class="btn btn-primary" data-action="create-session">수업 코드 만들기</button>
+        <button class="btn btn-ghost" style="width:100%;margin-top:10px;" data-action="start-demo">🎬 학생들에게 미리 보여주기 (데모, 1라운드)</button>
+      </div>
+    `;
+    bindGlobalNav();
+    app.querySelector('[data-action="create-session"]').addEventListener('click', createSession);
+    app.querySelector('[data-action="start-demo"]').addEventListener('click', ()=>startGame(true));
+    return;
+  }
+
+  const url = state.joinUrl;
+  app.innerHTML = `
+    ${topBar(true)}
+    <div class="grid2">
+      <div class="panel code-box">
+        <div class="label">수업 코드</div>
+        <div class="code-value">${state.code}</div>
+        <div id="qrcode"></div>
+        <div class="join-url">${url}</div>
+        <button class="btn btn-danger" data-action="delete-session">이 수업 기록 삭제하고 종료</button>
+      </div>
+      <div class="panel">
+        <div class="lb-title"><h3>실시간 순위</h3><span class="count" id="lb-count">0명 참여</span></div>
+        <ul class="lb-list" id="lb-list"><li class="lb-empty">아직 참여한 학생이 없어요</li></ul>
+      </div>
+    </div>
+    <p class="hint">학생은 QR을 스캔하거나 코드를 직접 입력해 참여할 수 있어요. 순위는 몇 초마다 자동으로 갱신됩니다.</p>
+  `;
+  bindGlobalNav();
+  app.querySelector('[data-action="delete-session"]').addEventListener('click', deleteSession);
+
+  const qrEl = document.getElementById('qrcode');
+  if(window.QRCode && qrEl){
+    new QRCode(qrEl, { text: url, width: 200, height: 200, colorDark:"#12181F", colorLight:"#ffffff" });
+  }
+  refreshLeaderboard();
+  state.lbInterval = setInterval(refreshLeaderboard, 2500);
+}
+
+async function createSession(){
+  const code = randCode(5);
+  await sSet(`session:${code}`, JSON.stringify({ createdAt: Date.now(), active:true }), true);
+  state.code = code;
+  const base = window.location.origin + window.location.pathname;
+  state.joinUrl = `${base}?code=${code}&role=student`;
+  render();
+}
+
+async function deleteSession(){
+  if(!state.code) return;
+  const ok = window.confirm(`수업 코드 [${state.code}]의 모든 기록을 삭제할까요? 되돌릴 수 없습니다.`);
+  if(!ok) return;
+  const keys = await sList(`score:${state.code}:`, true);
+  for(const k of keys){ await sDel(k, true); }
+  await sDel(`session:${state.code}`, true);
+  state.code = null;
+  state.joinUrl = null;
+  render();
+}
+
+async function refreshLeaderboard(){
+  if(!state.code) return;
+  const keys = await sList(`score:${state.code}:`, true);
+  const listEl = document.getElementById('lb-list');
+  const countEl = document.getElementById('lb-count');
+  if(!listEl) return;
+  const entries = [];
+  for(const k of keys){
+    const v = await sGet(k, true);
+    if(v){ try{ entries.push(JSON.parse(v)); }catch(e){} }
+  }
+  entries.sort((a,b)=> b.score - a.score);
+  if(countEl) countEl.textContent = `${entries.length}명 참여`;
+  if(entries.length === 0){ listEl.innerHTML = `<li class="lb-empty">아직 참여한 학생이 없어요</li>`; return; }
+  listEl.innerHTML = entries.slice(0,30).map((e,i)=>`
+    <li class="lb-row"><span class="lb-rank">${i+1}</span><span class="lb-name">${escapeHtml(e.nickname)}</span><span class="lb-score">${e.score}</span></li>
+  `).join('');
+}
+
+/* ============ STUDENT JOIN ============ */
+function renderStudentJoin(){
+  app.innerHTML = `
+    ${topBar(true)}
+    <div class="panel join-panel">
+      <h2 style="margin:0 0 4px;font-size:20px;">게임 참여하기</h2>
+      <p style="color:var(--muted);font-size:14px;margin:0 0 20px;">선생님이 알려준 수업 코드를 입력하세요.</p>
+      <div class="field">
+        <label for="in-code">수업 코드</label>
+        <input id="in-code" maxlength="5" autocapitalize="characters" placeholder="예: 7QKX2" value="${state.student.code || ''}">
+      </div>
+      <div class="field">
+        <label for="in-nick">닉네임</label>
+        <input id="in-nick" maxlength="10" placeholder="예: 삼각형요정">
+      </div>
+      <div class="err-msg" id="join-err"></div>
+      <button class="btn btn-primary" data-action="join">게임 시작</button>
+    </div>
+  `;
+  bindGlobalNav();
+  const btn = app.querySelector('[data-action="join"]');
+  btn.addEventListener('click', tryJoin);
+  app.querySelector('#in-nick').addEventListener('keydown', e=>{ if(e.key==='Enter') tryJoin(); });
+}
+
+async function tryJoin(){
+  const codeEl = document.getElementById('in-code');
+  const nickEl = document.getElementById('in-nick');
+  const errEl = document.getElementById('join-err');
+  const code = (codeEl.value || '').trim().toUpperCase();
+  const nick = (nickEl.value || '').trim();
+  if(!code || !nick){ errEl.textContent = '코드와 닉네임을 모두 입력해주세요.'; return; }
+  errEl.textContent = '확인 중...';
+  const session = await sGet(`session:${code}`, true);
+  if(!session){ errEl.textContent = '코드를 찾을 수 없어요. 다시 확인해주세요.'; return; }
+  state.student.code = code;
+  state.student.nickname = nick;
+  state.student.id = randId();
+  startGame(false);
+}
+
+/* ============ GAME ============ */
+const ROUND_TIME = 9;
+const RAY_COLORS = { 0:'var(--rayA)', 1:'var(--rayB)', 2:'var(--rayC)' };
+
+function startGame(demo){
+  state.game = { round:0, totalRounds: demo?1:5, score:0, roundScores:[], demo:!!demo, timerHandle:null };
+  nextRound();
+}
+
+function nextRound(){
+  const g = state.game;
+  g.round += 1;
+  if(g.round > g.totalRounds){ finishGame(); return; }
+  g.tri = randomTriangle();
+  g.order = shuffle(['A','B','C']);
+  g.stepIndex = 0;
+  g.results = {};
+  g.phase = 'bisecting';
+  g.pointGuess = null;
+  g.pointScore = null;
+  setView('student-play');
+}
+
+function polyPoints(tri){ return `${tri.A.x},${tri.A.y} ${tri.B.x},${tri.B.y} ${tri.C.x},${tri.C.y}`; }
+
+function renderGame(){
+  const g = state.game;
+  if(g.phase === 'bisecting') return renderBisecting();
+  if(g.phase === 'placing-point') return renderPlacing();
+  if(g.phase === 'round-result') return renderRoundResult();
+}
+
+function gameTop(){
+  const g = state.game;
+  return `<div class="top">
+    <div class="brand"><span>칼각매치</span>${g.demo ? ' <span style="color:var(--rayB);font-weight:600;font-size:13px;">· 데모</span>' : ''}</div>
+    ${g.demo ? `<button class="home-link" data-action="stop-demo">데모 그만하기</button>` : `<div class="score-tag">누적 ${g.score}점</div>`}
+  </div>`;
+}
+function bindGameTop(){
+  bindGlobalNav();
+  const stopBtn = app.querySelector('[data-action="stop-demo"]');
+  if(stopBtn) stopBtn.addEventListener('click', ()=>setView('teacher'));
+}
+
+/* ---- phase: bisecting current vertex ---- */
+function renderBisecting(){
+  const g = state.game;
+  const letter = g.order[g.stepIndex];
+  const V = g.tri[letter];
+  const { P, Q } = otherTwo(letter, g.tri);
+  const thetaP = dirAngle(V,P);
+  const thetaQRaw = dirAngle(V,Q);
+  const delta = normAngle(thetaQRaw - thetaP);
+  const minLen = Math.min(dist(V,P), dist(V,Q));
+  const Rvis = clamp(minLen*0.55, 40, 92);
+
+  let t0 = 0.5 + (Math.random()<0.5?-1:1)*(0.18+Math.random()*0.22);
+  t0 = clamp(t0, 0.06, 0.94);
+  g._cur = { letter, V, P, Q, thetaP, delta, Rvis, guessAngle: thetaP + delta*t0, locked:false, timeLeft: ROUND_TIME };
+
+  app.innerHTML = `
+    ${gameTop()}
+    <div class="panel game-panel">
+      <div class="round-bar">
+        <span class="round-tag">라운드 ${g.round} / ${g.totalRounds} · ${g.stepIndex+1}/${g.order.length}번째 각</span>
+        <div class="timer-track"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
+      </div>
+      <div class="svg-wrap">
+        <svg id="game-svg" viewBox="0 0 420 380" width="100%" style="max-width:min(90vw, 58vh, 460px);">
+          <polygon points="${polyPoints(g.tri)}" fill="#F6F4EE" stroke="#12181F" stroke-width="2"/>
+          ${renderLockedLines(g)}
+          <path id="wedgeA" fill="rgba(58,111,247,0.18)" d=""></path>
+          <path id="wedgeB" fill="rgba(240,101,60,0.18)" d=""></path>
+          <line id="side-p" x1="${V.x}" y1="${V.y}" x2="${ptAtRaw(V,Rvis,thetaP).x}" y2="${ptAtRaw(V,Rvis,thetaP).y}" stroke="var(--rayA)" stroke-width="4" stroke-linecap="round"/>
+          <line id="side-q" x1="${V.x}" y1="${V.y}" x2="${ptAtRaw(V,Rvis,thetaQRaw).x}" y2="${ptAtRaw(V,Rvis,thetaQRaw).y}" stroke="var(--rayB)" stroke-width="4" stroke-linecap="round"/>
+          <line id="guess-line" x1="${V.x}" y1="${V.y}" x2="${V.x}" y2="${V.y}" stroke="#12181F" stroke-width="3" stroke-dasharray="1 6" stroke-linecap="round"/>
+          <circle id="handle" cx="${V.x}" cy="${V.y}" r="14" fill="#12181F"/>
+          <circle cx="${V.x}" cy="${V.y}" r="5" fill="#12181F"/>
+        </svg>
+      </div>
+      <button class="btn lock-btn" id="lock-btn">이 위치로 고정!</button>
+      <p class="hint">가운데 점을 드래그해서 각을 나눠보세요.</p>
+    </div>
+  `;
+  bindGameTop();
+  setupDrag();
+  updateBisectVisual();
+  document.getElementById('lock-btn').addEventListener('click', lockBisect);
+  startBisectTimer();
+}
+
+function renderLockedLines(g){
+  const clipId = 'clip'+g.round+'-'+g.stepIndex;
+  const lines = Object.keys(g.results).map(letter=>{
+    const r = g.results[letter];
+    const far = ptAtRaw(r.V, 320, r.angle);
+    const colorIdx = g.order.indexOf(letter);
+    const color = RAY_COLORS[colorIdx] || 'var(--ink)';
+    return `<line x1="${r.V.x}" y1="${r.V.y}" x2="${far.x}" y2="${far.y}" stroke="${color}" stroke-width="2" stroke-dasharray="5 6" opacity="0.45"/>`;
+  }).join('');
+  if(!lines) return '';
+  return `<defs><clipPath id="${clipId}"><polygon points="${polyPoints(g.tri)}"/></clipPath></defs><g clip-path="url(#${clipId})">${lines}</g>`;
+}
+
+function angleFromEvent(evt, svgEl){
+  const rect = svgEl.getBoundingClientRect();
+  const scaleX = 420/rect.width, scaleY = 380/rect.height;
+  const px = (evt.clientX - rect.left) * scaleX;
+  const py = (evt.clientY - rect.top) * scaleY;
+  return { x:px, y:py };
+}
+
+function setupDrag(){
+  const svg = document.getElementById('game-svg');
+  const g = state.game;
+  let dragging = false;
+  function onMove(evt){
+    if(!dragging || g._cur.locked) return;
+    const pt = angleFromEvent(evt, svg);
+    const thetaPtr = dirAngle(g._cur.V, pt);
+    let d2 = normAngle(thetaPtr - g._cur.thetaP);
+    d2 = clamp(d2, Math.min(0,g._cur.delta), Math.max(0,g._cur.delta));
+    g._cur.guessAngle = g._cur.thetaP + d2;
+    updateBisectVisual();
+  }
+  function onDown(evt){
+    if(g._cur.locked) return;
+    dragging = true;
+    try{ svg.setPointerCapture(evt.pointerId); }catch(e){}
+    onMove(evt);
+  }
+  function onUp(){ dragging = false; }
+  svg.addEventListener('pointerdown', onDown);
+  svg.addEventListener('pointermove', onMove);
+  svg.addEventListener('pointerup', onUp);
+  svg.addEventListener('pointercancel', onUp);
+}
+
+function updateBisectVisual(){
+  const g = state.game;
+  const cur = g._cur;
+  const handle = document.getElementById('handle');
+  const guessLine = document.getElementById('guess-line');
+  const wedgeA = document.getElementById('wedgeA');
+  const wedgeB = document.getElementById('wedgeB');
+  if(!handle) return;
+  const p = ptAtRaw(cur.V, cur.Rvis, cur.guessAngle);
+  handle.setAttribute('cx', p.x); handle.setAttribute('cy', p.y);
+  guessLine.setAttribute('x2', p.x); guessLine.setAttribute('y2', p.y);
+
+  const pP = ptAtRaw(cur.V, cur.Rvis, cur.thetaP);
+  const pQ = ptAtRaw(cur.V, cur.Rvis, cur.thetaP + cur.delta);
+  wedgeA.setAttribute('d', `M${cur.V.x},${cur.V.y} L${pP.x},${pP.y} A${cur.Rvis},${cur.Rvis} 0 0 ${sweepFlag(cur.V,pP,p)} ${p.x},${p.y} Z`);
+  wedgeB.setAttribute('d', `M${cur.V.x},${cur.V.y} L${pQ.x},${pQ.y} A${cur.Rvis},${cur.Rvis} 0 0 ${sweepFlag(cur.V,pQ,p)} ${p.x},${p.y} Z`);
+}
+
+function startBisectTimer(){
+  const g = state.game;
+  const fill = document.getElementById('timer-fill');
+  g.timerHandle = setInterval(()=>{
+    g._cur.timeLeft -= 0.1;
+    if(fill) fill.style.width = Math.max(0,(g._cur.timeLeft/ROUND_TIME)*100) + '%';
+    if(g._cur.timeLeft <= 0){ clearInterval(g.timerHandle); lockBisect(); }
+  }, 100);
+}
+
+function lockBisect(){
+  const g = state.game;
+  const cur = g._cur;
+  if(cur.locked) return;
+  cur.locked = true;
+  if(g.timerHandle) clearInterval(g.timerHandle);
+
+  const subP = Math.abs(cur.guessAngle - cur.thetaP);
+  const subQ = Math.abs((cur.thetaP+cur.delta) - cur.guessAngle);
+  const total = subP+subQ || 1;
+  const errorRatio = Math.abs(subP-subQ)/total;
+  const accuracy = Math.round(Math.max(0, 100 - errorRatio*150));
+
+  g.results[cur.letter] = { V:cur.V, angle:cur.guessAngle, accuracy };
+
+  const lockBtn = document.getElementById('lock-btn');
+  if(lockBtn){ lockBtn.disabled = true; lockBtn.textContent = '고정됨'; }
+
+  setTimeout(()=>{
+    g.stepIndex += 1;
+    if(g.stepIndex < g.order.length){ render(); }
+    else{ g.phase = 'placing-point'; render(); }
+  }, 700);
+}
+
+/* ---- phase: place the incenter guess ---- */
+function renderPlacing(){
+  const g = state.game;
+  app.innerHTML = `
+    ${gameTop()}
+    <div class="panel game-panel">
+      <div class="round-bar"><span class="round-tag">라운드 ${g.round} / ${g.totalRounds} · 내심 찍기</span></div>
+      <div class="svg-wrap">
+        <svg id="place-svg" class="svg-click" viewBox="0 0 420 380" width="100%" style="max-width:min(90vw, 58vh, 460px);">
+          <polygon points="${polyPoints(g.tri)}" fill="#F6F4EE" stroke="#12181F" stroke-width="2"/>
+          ${renderLockedLines(g)}
+        </svg>
+      </div>
+      <p class="place-hint" id="place-err"></p>
+      <p class="step-msg">삼각형 안쪽에서, 내심이라고 생각하는 곳을 탭해서 찍어보세요</p>
+    </div>
+  `;
+  bindGameTop();
+  const svg = document.getElementById('place-svg');
+  svg.addEventListener('pointerdown', (evt)=>{
+    const pt = angleFromEvent(evt, svg);
+    if(!pointInTriangle(pt, g.tri)){
+      document.getElementById('place-err').textContent = '삼각형 안쪽을 눌러주세요';
+      return;
+    }
+    g.pointGuess = pt;
+    finishRound();
+  });
+}
+
+function finishRound(){
+  const g = state.game;
+  const I = incenter(g.tri);
+  const r = inradius(g.tri);
+  const d = dist(g.pointGuess, I);
+  const pointAccuracy = Math.round(Math.max(0, 100 - (d/Math.max(r,1))*70));
+  const accSum = g.order.reduce((s,letter)=> s + g.results[letter].accuracy, 0);
+  const avgBisect = Math.round(accSum / g.order.length);
+  const roundScore = Math.round(0.5*avgBisect + 0.5*pointAccuracy);
+
+  g.pointScore = pointAccuracy;
+  g.avgBisect = avgBisect;
+  g.score += roundScore;
+  g.roundScores.push(roundScore);
+  g.trueIncenter = I;
+  g.phase = 'round-result';
+  render();
+}
+
+/* ---- phase: reveal round result ---- */
+function renderRoundResult(){
+  const g = state.game;
+  const I = g.trueIncenter;
+  const guess = g.pointGuess;
+  app.innerHTML = `
+    ${gameTop()}
+    <div class="panel game-panel">
+      <div class="round-bar"><span class="round-tag">라운드 ${g.round} / ${g.totalRounds} · 결과</span></div>
+      <div class="svg-wrap">
+        <svg viewBox="0 0 420 380" width="100%" style="max-width:min(90vw, 58vh, 460px);">
+          <polygon points="${polyPoints(g.tri)}" fill="#F6F4EE" stroke="#12181F" stroke-width="2"/>
+          ${renderLockedLines(g)}
+          <line x1="${guess.x}" y1="${guess.y}" x2="${I.x}" y2="${I.y}" stroke="#B9B2A0" stroke-width="2" stroke-dasharray="3 5"/>
+          <circle cx="${I.x}" cy="${I.y}" r="9" fill="var(--match)" opacity="0.35" stroke="#fff" stroke-width="1.6"/>
+          <polygon points="${starPoints(guess.x,guess.y,10,4.5,5)}" fill="var(--rayB)" stroke="#fff" stroke-width="1.6"/>
+        </svg>
+      </div>
+      <div class="round-total">${g.roundScores[g.roundScores.length-1]}점</div>
+      <p class="hint">★ 주황 별 = 내가 찍은 위치 · 연한 초록 원 = 실제 내심</p>
+      <button class="btn btn-primary" id="next-btn" style="margin-top:12px;">${g.round < g.totalRounds ? '다음 라운드' : '결과 보기'}</button>
+    </div>
+  `;
+  bindGameTop();
+  document.getElementById('next-btn').addEventListener('click', nextRound);
+}
+
+/* ---- finish ---- */
+function finishGame(){
+  if(state.game.demo){ setView('demo-done'); return; }
+  saveScore();
+  setView('student-done');
+}
+async function saveScore(){
+  const g = state.game;
+  const s = state.student;
+  const payload = JSON.stringify({ nickname: s.nickname, score: g.score, ts: Date.now() });
+  await sSet(`score:${s.code}:${s.id}`, payload, true);
+}
+
+function renderDemoDone(){
+  const g = state.game;
+  app.innerHTML = `
+    ${topBar(true)}
+    <div class="panel result-panel">
+      <div class="label" style="color:var(--muted);font-size:14px;">데모 완료!</div>
+      <div class="total">${g.score}</div>
+      <div class="rounds">${g.roundScores.map((s,i)=>`<span class="chip">R${i+1} · ${s}점</span>`).join('')}</div>
+      <p class="hint" style="margin-top:0;">이 점수는 저장되지 않아요. 학생들이 감을 잡았다면, 이제 진짜 수업 코드를 만들어볼까요?</p>
+      <button class="btn btn-primary" data-action="to-teacher">수업 코드 만들러 가기</button>
+    </div>
+  `;
+  bindGlobalNav();
+  app.querySelector('[data-action="to-teacher"]').addEventListener('click', ()=>setView('teacher'));
+}
+
+function renderResult(){
+  const g = state.game;
+  app.innerHTML = `
+    ${topBar(true)}
+    <div class="panel result-panel">
+      <div class="label" style="color:var(--muted);font-size:14px;">${escapeHtml(state.student.nickname)}님의 최종 점수</div>
+      <div class="total">${g.score}</div>
+      <div class="rounds">${g.roundScores.map((s,i)=>`<span class="chip">R${i+1} · ${s}점</span>`).join('')}</div>
+      <p class="hint" style="margin-top:0;">선생님 화면의 실시간 순위에 곧 반영됩니다.</p>
+      <button class="btn btn-ghost" data-action="go-home" style="margin-top:6px;">처음으로</button>
+    </div>
+  `;
+  bindGlobalNav();
+}
+
+render();
+</script>
+</body>
+</html>
