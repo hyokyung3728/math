@@ -1625,6 +1625,7 @@ function renderTeacher(){
         <div class="code-value">${state.code}</div>
         <div id="qrcode"></div>
         <div class="join-url">${url}</div>
+        <button class="btn btn-ghost" style="width:100%;margin-top:10px;" data-action="download-records">📥 기록 저장 (CSV)</button>
         <button class="btn btn-danger" data-action="delete-session">이 수업 기록 삭제하고 종료</button>
       </div>
       <div class="panel">
@@ -1636,6 +1637,7 @@ function renderTeacher(){
   `;
   bindGlobalNav();
   app.querySelector('[data-action="delete-session"]').addEventListener('click', deleteSession);
+  app.querySelector('[data-action="download-records"]').addEventListener('click', downloadRecords);
 
   renderQRCodeSVG(document.getElementById('qrcode'), url);
   refreshLeaderboard();
@@ -1667,6 +1669,28 @@ async function deleteSession(){
   state.code = null;
   state.joinUrl = null;
   render();
+}
+
+async function downloadRecords(){
+  if(!state.code) return;
+  const keys = await sList(`score:${state.code}:`, true);
+  const entries = [];
+  for(const k of keys){
+    const v = await sGet(k, true);
+    if(v){ entries.push(v); }
+  }
+  entries.sort((a,b)=> b.score - a.score);
+  let csv = '순위,닉네임,점수\n';
+  entries.forEach((e,i)=>{ csv += `${i+1},${String(e.nickname||'').replace(/,/g,' ')},${e.score}\n`; });
+  const blob = new Blob(['\uFEFF'+csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `칼각매치_${state.code}_기록.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 async function refreshLeaderboard(){
@@ -1701,7 +1725,7 @@ function renderStudentJoin(){
       </div>
       <div class="field">
         <label for="in-nick">닉네임</label>
-        <input id="in-nick" maxlength="10" placeholder="예: 홍길동">
+        <input id="in-nick" maxlength="10">
       </div>
       <div class="err-msg" id="join-err"></div>
       <button class="btn btn-primary" data-action="join">게임 시작</button>
@@ -2066,6 +2090,16 @@ function renderResult(){
   bindGlobalNav();
   app.querySelector('[data-action="restart"]').addEventListener('click', ()=>startGame(false));
 }
+
+/* ---- 창을 닫을 때 자동으로 수업 기록 삭제 시도 (최선의 노력 - 100% 보장은 아님) ---- */
+window.addEventListener('pagehide', function(){
+  if(!state.code) return;
+  const code = state.code;
+  try{
+    fetch(`${FIREBASE_DB_URL}/${fbPath('session:'+code)}.json`, { method:'DELETE', keepalive:true });
+    fetch(`${FIREBASE_DB_URL}/${fbPath('score:'+code)}.json`, { method:'DELETE', keepalive:true });
+  }catch(e){}
+});
 
 render();
 </script>
