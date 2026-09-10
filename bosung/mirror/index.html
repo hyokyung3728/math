@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>거울 속 수학</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Noto Sans KR -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            touch-action: manipulation;
+        }
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        canvas {
+            touch-action: none;
+        }
+        .btn-interactive {
+            transition: all 0.15s ease;
+        }
+        .btn-interactive:active {
+            transform: scale(0.96);
+        }
+    </style>
+</head>
+<body class="h-screen h-[100dvh] w-screen overflow-hidden flex flex-col items-center justify-between p-2 sm:p-4 bg-slate-50 text-slate-800">
+
+    <header class="w-full max-w-lg text-center shrink-0 space-y-1">
+        <h1 class="text-lg sm:text-2xl font-black tracking-tight text-slate-900 leading-tight">
+            거울 속 수학 🔦
+        </h1>
+        <div id="levelDescription" class="text-xs sm:text-sm text-slate-600 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm leading-snug">
+            <!-- Level Description injected via JS -->
+        </div>
+    </header>
+
+    <nav class="w-full max-w-lg flex justify-center my-1 shrink-0">
+        <div class="flex bg-slate-200 p-1 rounded-xl w-full max-w-xs space-x-1 border border-slate-300">
+            <button id="tabLevel1" onclick="selectLevel(1)" class="flex-1 py-1.5 rounded-lg font-bold text-xs sm:text-sm transition-all duration-200">
+                1단계 (3x3 탐구)
+            </button>
+            <button id="tabLevel2" onclick="selectLevel(2)" class="flex-1 py-1.5 rounded-lg font-bold text-xs sm:text-sm transition-all duration-200">
+                2단계 (4x4 실전)
+            </button>
+        </div>
+    </nav>
+
+    <main class="w-full max-w-lg flex-1 min-h-0 flex flex-col items-center justify-center relative my-1">
+        <div id="boardContainer" class="w-full h-full flex items-center justify-center relative">
+            <canvas id="gameCanvas" class="bg-white rounded-2xl shadow-md border-2 border-slate-200 cursor-pointer"></canvas>
+        </div>
+    </main>
+
+    <div class="w-full max-w-lg shrink-0 my-1">
+        <div class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 flex items-center justify-between text-xs sm:text-sm shadow-sm">
+            <div id="legendArea" class="flex items-center space-x-3">
+                <span class="flex items-center space-x-1">
+                    <span class="w-3 h-3 rounded-full bg-sky-600 inline-block shadow-sm"></span>
+                    <span class="font-bold text-slate-700">고정 거울</span>
+                </span>
+                <span id="userMirrorLegend" class="flex items-center space-x-1">
+                    <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block shadow-sm"></span>
+                    <span class="font-bold text-slate-700">내 거울 (<span id="userMirrorCount" class="text-emerald-600 font-black">0</span>/<span id="maxUserMirrorCount" class="text-emerald-600 font-black">2</span>)</span>
+                </span>
+            </div>
+            <div id="guideText" class="text-amber-700 font-bold flex items-center space-x-1">
+                <i class="fa-solid fa-hand-pointer text-xs"></i>
+                <span>칸을 클릭하여 방향 변경</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 하단 버튼 및 보성 Math Tour 브랜딩 -->
+    <footer class="w-full max-w-lg shrink-0 flex flex-col items-center gap-1.5 pt-1 pb-1">
+        <div class="w-full flex items-center justify-between gap-2">
+            <button onclick="resetBoard()" class="flex-1 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-slate-200 hover:bg-slate-300 active:bg-slate-400 text-slate-700 shadow-sm border border-slate-300 btn-interactive flex items-center justify-center space-x-1">
+                <i class="fa-solid fa-rotate-left"></i>
+                <span>초기화</span>
+            </button>
+            <button onclick="toggleHint()" class="flex-1 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-amber-100 hover:bg-amber-200 active:bg-amber-300 text-amber-800 shadow-sm border border-amber-300 btn-interactive flex items-center justify-center space-x-1">
+                <i class="fa-solid fa-lightbulb"></i>
+                <span>힌트</span>
+            </button>
+            <button onclick="fireLaser()" class="flex-[1.4] py-2.5 rounded-xl font-black text-xs sm:text-sm bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-500 hover:to-yellow-500 text-slate-900 shadow-md border border-amber-300 btn-interactive flex items-center justify-center space-x-1.5">
+                <i class="fa-solid fa-bolt text-amber-800"></i>
+                <span>빛 보내기!</span>
+            </button>
+        </div>
+        <div class="text-[11px] sm:text-xs font-bold text-slate-400 tracking-wider">
+            보성 Math Tour
+        </div>
+    </footer>
+
+    <div id="resultModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-3xl p-5 sm:p-6 max-w-sm w-full shadow-2xl text-center border border-slate-100 transform transition-all space-y-4">
+            <div id="modalIcon" class="w-14 h-14 rounded-full flex items-center justify-center mx-auto text-2xl">
+            </div>
+            <div>
+                <h3 id="modalTitle" class="text-xl font-black text-slate-900 mb-1">결과 안내</h3>
+                <p id="modalMessage" class="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                    메시지 내용
+                </p>
+            </div>
+            <button onclick="closeModal()" class="w-full py-2.5 bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-bold text-sm rounded-xl shadow-md btn-interactive">
+                확인
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Global Game State
+        let currentLevel = 1;
+        let userMirrors = {};
+        let isAnimating = false;
+        let laserPath = [];
+        let animationFrameId = null;
+
+        // Level Configuration Specifications
+        const LEVELS = {
+            1: {
+                N: 3,
+                flashlightEntry: { row: 0, col: 0, side: 'LEFT' },
+                targetExit: 6,
+                fixedMirrors: {
+                    "0_0": '\\',
+                    "2_0": '\\',
+                    "2_2": '/'
+                },
+                labels: {
+                    left: [3, 2, 1],
+                    top: [4, 5, 6],
+                    right: [7, 8, 9],
+                    bottom: [12, 11, 10]
+                },
+                isExample: true,
+                maxUserMirrors: 0,
+                description: '1단계: <b class="text-amber-600">[빛 보내기!]</b>를 눌러 빛의 반사 경로를 관찰해보세요.',
+                hintText: "1단계는 탐구 예시 단계입니다. '빛 보내기' 버튼을 누르면 빛이 거울 3개에 반사되어 6번 출구로 빠져나갑니다."
+            },
+            2: {
+                N: 4,
+                flashlightEntry: { row: 3, col: 3, side: 'RIGHT' }, // Right of Row 3
+                targetExit: 1, // Target Exit Label 1 (Left of Row 3)
+                fixedMirrors: {
+                    "0_0": '/',
+                    "1_0": '\\',
+                    "1_1": '\\',
+                    "3_2": '\\'
+                },
+                labels: {
+                    left: [4, 3, 2, 1],       // Row 0=4, Row 1=3, Row 2=2, Row 3=1
+                    top: [5, 6, 7, 8],        // Col 0=5, Col 1=6, Col 2=7, Col 3=8
+                    right: [9, 10, 11, ''],   // Row 0=9, Row 1=10, Row 2=11, Row 3=Flashlight
+                    bottom: [16, 15, 14, 13]  // Col 0=16, Col 1=15, Col 2=14, Col 3=13
+                },
+                isExample: false,
+                maxUserMirrors: 2,
+                description: '2단계: 빛이 <b class="text-amber-600 underline">1번 출구</b>로 나가도록 사라진 <b class="text-emerald-600">거울 2개</b>를 찾아 클릭하여 배치해보세요.',
+                hintText: "손전등 빛을 1번 출구로 보내려면 거울 2개를 추가하면 됩니다!<br><br>1. <b>1행 3열 (7번 아래)</b>에 <b>'\\'</b> 거울<br>2. <b>4행 2열 (15번 위)</b>에 <b>'/'</b> 거울을 배치해보세요!"
+            }
+        };
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playBeep(freq = 523.25, duration = 0.1, type = 'sine') {
+            try {
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) {}
+        }
+
+        function playSuccessSound() {
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((freq, idx) => {
+                setTimeout(() => playBeep(freq, 0.18, 'triangle'), idx * 90);
+            });
+        }
+
+        window.onload = function() {
+            selectLevel(1);
+            window.addEventListener('resize', render);
+        };
+
+        function selectLevel(lvl) {
+            currentLevel = lvl;
+            userMirrors = {};
+            isAnimating = false;
+            laserPath = [];
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+
+            const level = LEVELS[lvl];
+            document.getElementById('levelDescription').innerHTML = level.description;
+
+            // Update Level Tabs Styling
+            document.getElementById('tabLevel1').className = lvl === 1 
+                ? "flex-1 py-1.5 rounded-lg font-black text-xs sm:text-sm bg-white text-sky-600 shadow-sm border border-slate-200 transition-all"
+                : "flex-1 py-1.5 rounded-lg font-bold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition-all";
+            
+            document.getElementById('tabLevel2').className = lvl === 2 
+                ? "flex-1 py-1.5 rounded-lg font-black text-xs sm:text-sm bg-white text-sky-600 shadow-sm border border-slate-200 transition-all"
+                : "flex-1 py-1.5 rounded-lg font-bold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition-all";
+
+            // Status Legend Updates
+            if (level.isExample) {
+                document.getElementById('userMirrorLegend').style.display = 'none';
+                document.getElementById('guideText').innerHTML = '<i class="fa-solid fa-circle-info text-xs"></i> <span>빛 보내기를 클릭해 관찰하세요</span>';
+            } else {
+                document.getElementById('userMirrorLegend').style.display = 'inline-flex';
+                document.getElementById('guideText').innerHTML = '<i class="fa-solid fa-hand-pointer text-xs"></i> <span>칸을 클릭해 거울 배치</span>';
+            }
+
+            updateUserMirrorCount();
+            render();
+        }
+
+        function updateUserMirrorCount() {
+            const count = Object.keys(userMirrors).length;
+            const level = LEVELS[currentLevel];
+            document.getElementById('userMirrorCount').innerText = `${count}`;
+            document.getElementById('maxUserMirrorCount').innerText = `${level.maxUserMirrors}`;
+        }
+
+        function render() {
+            const canvas = document.getElementById('gameCanvas');
+            const container = document.getElementById('boardContainer');
+            if (!canvas || !container) return;
+
+            const containerWidth = container.clientWidth;
+            const containerHeight = container.clientHeight;
+            const size = Math.min(containerWidth, containerHeight);
+
+            const dpr = window.devicePixelRatio || 1;
+            canvas.style.width = size + 'px';
+            canvas.style.height = size + 'px';
+            canvas.width = size * dpr;
+            canvas.height = size * dpr;
+
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+
+            const level = LEVELS[currentLevel];
+            const N = level.N;
+
+            // Background Fill
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, size, size);
+
+            const margin = size * 0.16;
+            const boardSize = size - (margin * 2);
+            const cellSize = boardSize / N;
+
+            // Render Board Elements
+            drawLabels(ctx, margin, cellSize, N, level);
+            drawFlashlight(ctx, margin, cellSize, N, level);
+            drawExitHighlight(ctx, margin, cellSize, N, level);
+
+            // Grid Lines
+            ctx.strokeStyle = '#cbd5e1';
+            ctx.lineWidth = 2;
+            for (let i = 0; i <= N; i++) {
+                ctx.beginPath();
+                ctx.moveTo(margin + i * cellSize, margin);
+                ctx.lineTo(margin + i * cellSize, margin + boardSize);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(margin, margin + i * cellSize);
+                ctx.lineTo(margin + boardSize, margin + i * cellSize);
+                ctx.stroke();
+            }
+
+            // Outer Frame Border
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(margin, margin, boardSize, boardSize);
+
+            // Render Fixed Mirrors
+            for (let key in level.fixedMirrors) {
+                const [r, c] = key.split('_').map(Number);
+                drawMirror(ctx, margin, cellSize, r, c, level.fixedMirrors[key], '#0284c7', true);
+            }
+
+            // Render User Placed Mirrors
+            for (let key in userMirrors) {
+                const [r, c] = key.split('_').map(Number);
+                drawMirror(ctx, margin, cellSize, r, c, userMirrors[key], '#10b981', false);
+            }
+
+            // Static Laser Render after Animation Completes
+            if (laserPath.length > 0 && !isAnimating) {
+                drawLaserPathStatic(ctx, margin, cellSize, N, level);
+            }
+        }
+
+        function drawLabels(ctx, margin, cellSize, N, level) {
+            ctx.fillStyle = '#1e293b';
+            ctx.font = `900 ${cellSize * 0.3}px 'Noto Sans KR', sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const labels = level.labels;
+
+            for (let i = 0; i < N; i++) {
+                const num = labels.left[i];
+                if (num !== '') ctx.fillText(num, margin * 0.5, margin + i * cellSize + cellSize / 2);
+            }
+            for (let i = 0; i < N; i++) {
+                const num = labels.top[i];
+                if (num !== '') ctx.fillText(num, margin + i * cellSize + cellSize / 2, margin * 0.5);
+            }
+            for (let i = 0; i < N; i++) {
+                const num = labels.right[i];
+                if (num !== '') ctx.fillText(num, margin + N * cellSize + margin * 0.5, margin + i * cellSize + cellSize / 2);
+            }
+            for (let i = 0; i < N; i++) {
+                const num = labels.bottom[i];
+                if (num !== '') ctx.fillText(num, margin + i * cellSize + cellSize / 2, margin + N * cellSize + margin * 0.5);
+            }
+        }
+
+        function drawFlashlight(ctx, margin, cellSize, N, level) {
+            const entry = level.flashlightEntry;
+            let x, y, angle;
+
+            if (entry.side === 'RIGHT') {
+                x = margin + N * cellSize + margin * 0.35;
+                y = margin + entry.row * cellSize + cellSize / 2;
+                angle = Math.PI; // Pointing LEFT into grid
+            } else {
+                x = margin - margin * 0.35;
+                y = margin + entry.row * cellSize + cellSize / 2;
+                angle = 0; // Pointing RIGHT into grid
+            }
+
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+
+            // Light Glow Beam
+            const grad = ctx.createLinearGradient(0, 0, cellSize * 0.8, 0);
+            grad.addColorStop(0, 'rgba(250, 204, 21, 0.85)');
+            grad.addColorStop(1, 'rgba(250, 204, 21, 0.05)');
+            
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(cellSize * 0.8, -cellSize * 0.35);
+            ctx.lineTo(cellSize * 0.8, cellSize * 0.35);
+            ctx.closePath();
+            ctx.fill();
+
+            // Body Graphic
+            ctx.fillStyle = '#334155';
+            ctx.beginPath();
+            ctx.roundRect(-20, -9, 20, 18, 3);
+            ctx.fill();
+
+            ctx.fillStyle = '#64748b';
+            ctx.fillRect(-32, -6, 12, 12);
+
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(-2, -10, 3, 20);
+
+            ctx.restore();
+        }
+
+        function drawExitHighlight(ctx, margin, cellSize, N, level) {
+            let x, y;
+            if (currentLevel === 1) {
+                x = margin + 2 * cellSize + cellSize / 2;
+                y = margin * 0.5;
+            } else {
+                x = margin * 0.5;
+                y = margin + 3 * cellSize + cellSize / 2;
+            }
+
+            ctx.save();
+            const grad = ctx.createRadialGradient(x, y, 2, x, y, cellSize * 0.35);
+            grad.addColorStop(0, 'rgba(250, 204, 21, 0.9)');
+            grad.addColorStop(1, 'rgba(250, 204, 21, 0)');
+
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.arc(x, y, cellSize * 0.35, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawMirror(ctx, margin, cellSize, r, c, type, color, isFixed) {
+            const x1 = margin + c * cellSize;
+            const y1 = margin + r * cellSize;
+            const pad = cellSize * 0.15;
+
+            ctx.save();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = isFixed ? 6 : 7;
+            ctx.lineCap = 'round';
+
+            if (type === '/') {
+                ctx.beginPath();
+                ctx.moveTo(x1 + pad, y1 + cellSize - pad);
+                ctx.lineTo(x1 + cellSize - pad, y1 + pad);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x1 + pad + 5, y1 + cellSize - pad - 5);
+                ctx.lineTo(x1 + cellSize - pad - 5, y1 + pad + 5);
+                ctx.stroke();
+            } else if (type === '\\') {
+                ctx.beginPath();
+                ctx.moveTo(x1 + pad, y1 + pad);
+                ctx.lineTo(x1 + cellSize - pad, y1 + cellSize - pad);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x1 + pad + 5, y1 + pad + 5);
+                ctx.lineTo(x1 + cellSize - pad - 5, y1 + cellSize - pad - 5);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        document.getElementById('gameCanvas').addEventListener('pointerdown', function(e) {
+            if (isAnimating) return;
+
+            const level = LEVELS[currentLevel];
+            if (level.isExample) {
+                playBeep(300, 0.1, 'sine');
+                return;
+            }
+
+            const canvas = e.target;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const size = rect.width;
+            const N = level.N;
+            const margin = size * 0.16;
+            const boardSize = size - (margin * 2);
+            const cellSize = boardSize / N;
+
+            if (x < margin || x > margin + boardSize || y < margin || y > margin + boardSize) {
+                return;
+            }
+
+            const c = Math.floor((x - margin) / cellSize);
+            const r = Math.floor((y - margin) / cellSize);
+            const key = `${r}_${c}`;
+
+            if (level.fixedMirrors[key]) {
+                playBeep(220, 0.1, 'sawtooth');
+                return;
+            }
+
+            // Cycle Mirror States: Empty -> '/' -> '\' -> Empty
+            if (!userMirrors[key]) {
+                if (Object.keys(userMirrors).length >= level.maxUserMirrors) {
+                    showModal('info', '거울 개수 제한', `거울은 최대 ${level.maxUserMirrors}개까지만 배치할 수 있습니다.`);
+                    return;
+                }
+                userMirrors[key] = '/';
+            } else if (userMirrors[key] === '/') {
+                userMirrors[key] = '\\';
+            } else {
+                delete userMirrors[key];
+            }
+
+            playBeep(440, 0.08, 'sine');
+            updateUserMirrorCount();
+            laserPath = [];
+            render();
+        });
+
+        function getExitLabel(r, c, N, level) {
+            if (c < 0 && r >= 0 && r < N) return level.labels.left[r];
+            if (c >= N && r >= 0 && r < N) return level.labels.right[r];
+            if (r < 0 && c >= 0 && c < N) return level.labels.top[c];
+            if (r >= N && c >= 0 && c < N) return level.labels.bottom[c];
+            return null;
+        }
+
+        function computeLaserPath() {
+            const level = LEVELS[currentLevel];
+            const N = level.N;
+            const allMirrors = { ...level.fixedMirrors, ...userMirrors };
+
+            let r, c, dx, dy;
+
+            if (level.flashlightEntry.side === 'RIGHT') {
+                r = level.flashlightEntry.row;
+                c = N - 1;
+                dx = -1; // Moving LEFT
+                dy = 0;
+            } else {
+                r = level.flashlightEntry.row;
+                c = 0;
+                dx = 1; // Moving RIGHT
+                dy = 0;
+            }
+
+            const path = [];
+            let step = 0;
+            const maxSteps = 30;
+
+            while (step < maxSteps) {
+                step++;
+                const key = `${r}_${c}`;
+                const mirror = allMirrors[key];
+
+                if (mirror) {
+                    if (mirror === '/') {
+                        if (dx === 1 && dy === 0) { dx = 0; dy = -1; }       // Right -> Up
+                        else if (dx === -1 && dy === 0) { dx = 0; dy = 1; }  // Left -> Down
+                        else if (dx === 0 && dy === 1) { dx = -1; dy = 0; }  // Down -> Left
+                        else if (dx === 0 && dy === -1) { dx = 1; dy = 0; }  // Up -> Right
+                    } else if (mirror === '\\') {
+                        if (dx === 1 && dy === 0) { dx = 0; dy = 1; }        // Right -> Down
+                        else if (dx === -1 && dy === 0) { dx = 0; dy = -1; } // Left -> Up
+                        else if (dx === 0 && dy === 1) { dx = 1; dy = 0; }   // Down -> Right
+                        else if (dx === 0 && dy === -1) { dx = -1; dy = 0; } // Up -> Left
+                    }
+                }
+
+                path.push({ r, c, dx, dy, mirrorHits: !!mirror });
+
+                const nextR = r + dy;
+                const nextC = c + dx;
+
+                // Check Grid Exit Boundary
+                if (nextR < 0 || nextR >= N || nextC < 0 || nextC >= N) {
+                    const exitLabel = getExitLabel(nextR, nextC, N, level);
+                    path.push({ r: nextR, c: nextC, dx, dy, isExitPoint: true });
+                    return { path, exitLabel };
+                }
+
+                r = nextR;
+                c = nextC;
+            }
+
+            return { path, exitLabel: null };
+        }
+
+        function fireLaser() {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            const { path, exitLabel } = computeLaserPath();
+            laserPath = path;
+
+            const canvas = document.getElementById('gameCanvas');
+            const rect = canvas.getBoundingClientRect();
+            const size = rect.width;
+            const level = LEVELS[currentLevel];
+            const N = level.N;
+            const margin = size * 0.16;
+            const boardSize = size - (margin * 2);
+            const cellSize = boardSize / N;
+
+            animateLaserPath(path, margin, cellSize, N, function() {
+                isAnimating = false;
+                
+                if (level.isExample) {
+                    playSuccessSound();
+                    showModal('success', '💡 탐구 완료!', `빛이 거울에 반사되어 <b>${exitLabel}번 출구</b>로 무사히 빠져나갔습니다!`);
+                } else {
+                    if (exitLabel == level.targetExit) {
+                        playSuccessSound();
+                        showModal('success', '🎉 정답입니다!', `축하합니다! 빛이 성공적으로 목표 출구인 <b>${exitLabel}번</b>으로 연결되었습니다!`);
+                    } else if (exitLabel) {
+                        playBeep(200, 0.3, 'sawtooth');
+                        showModal('error', '아쉬워요!', `빛이 <b>${exitLabel}번 출구</b>로 나갔습니다. ${level.targetExit}번 출구로 가도록 거울을 조정해보세요.`);
+                    } else {
+                        playBeep(200, 0.3, 'sawtooth');
+                        showModal('error', '경로 오류', '빛이 출구를 찾지 못했습니다.');
+                    }
+                }
+            });
+        }
+
+        function animateLaserPath(path, margin, cellSize, N, onComplete) {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+
+            let index = 0;
+
+            function stepAnimation() {
+                render();
+
+                ctx.save();
+                ctx.strokeStyle = '#eab308';
+                ctx.lineWidth = 5;
+                ctx.shadowColor = '#facc15';
+                ctx.shadowBlur = 10;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                ctx.beginPath();
+
+                const entry = LEVELS[currentLevel].flashlightEntry;
+                let startX, startY;
+                if (entry.side === 'RIGHT') {
+                    startX = margin + N * cellSize + margin * 0.3;
+                    startY = margin + entry.row * cellSize + cellSize / 2;
+                } else {
+                    startX = margin - margin * 0.3;
+                    startY = margin + entry.row * cellSize + cellSize / 2;
+                }
+                ctx.moveTo(startX, startY);
+
+                for (let i = 0; i <= index && i < path.length; i++) {
+                    const node = path[i];
+                    let cx, cy;
+
+                    if (node.isExitPoint) {
+                        const prev = path[i - 1];
+                        cx = margin + prev.c * cellSize + cellSize / 2 + node.dx * cellSize * 0.7;
+                        cy = margin + prev.r * cellSize + cellSize / 2 + node.dy * cellSize * 0.7;
+                    } else {
+                        cx = margin + node.c * cellSize + cellSize / 2;
+                        cy = margin + node.r * cellSize + cellSize / 2;
+                    }
+
+                    ctx.lineTo(cx, cy);
+
+                    if (i === index && node.mirrorHits) {
+                        playBeep(600 + i * 40, 0.08, 'sine');
+                    }
+                }
+
+                ctx.stroke();
+                ctx.restore();
+
+                index++;
+
+                if (index < path.length) {
+                    setTimeout(() => {
+                        animationFrameId = requestAnimationFrame(stepAnimation);
+                    }, 100);
+                } else {
+                    setTimeout(onComplete, 180);
+                }
+            }
+
+            stepAnimation();
+        }
+
+        function drawLaserPathStatic(ctx, margin, cellSize, N, level) {
+            if (!laserPath || laserPath.length === 0) return;
+
+            ctx.save();
+            ctx.strokeStyle = '#eab308';
+            ctx.lineWidth = 5;
+            ctx.shadowColor = '#facc15';
+            ctx.shadowBlur = 8;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            ctx.beginPath();
+            const entry = level.flashlightEntry;
+            let startX = (entry.side === 'RIGHT') 
+                ? margin + N * cellSize + margin * 0.3 
+                : margin - margin * 0.3;
+            let startY = margin + entry.row * cellSize + cellSize / 2;
+
+            ctx.moveTo(startX, startY);
+
+            for (let i = 0; i < laserPath.length; i++) {
+                const node = laserPath[i];
+                let cx, cy;
+
+                if (node.isExitPoint) {
+                    const prev = laserPath[i - 1];
+                    cx = margin + prev.c * cellSize + cellSize / 2 + node.dx * cellSize * 0.7;
+                    cy = margin + prev.r * cellSize + cellSize / 2 + node.dy * cellSize * 0.7;
+                } else {
+                    cx = margin + node.c * cellSize + cellSize / 2;
+                    cy = margin + node.r * cellSize + cellSize / 2;
+                }
+                ctx.lineTo(cx, cy);
+            }
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function resetBoard() {
+            userMirrors = {};
+            laserPath = [];
+            if (animationFrameId) cancelAnimationFrame(animationFrameId);
+            isAnimating = false;
+            updateUserMirrorCount();
+            render();
+        }
+
+        function toggleHint() {
+            const level = LEVELS[currentLevel];
+            showModal('hint', '💡 힌트 안내', level.hintText);
+        }
+
+        function showModal(type, title, message) {
+            const modal = document.getElementById('resultModal');
+            const modalIcon = document.getElementById('modalIcon');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+
+            modalMessage.innerHTML = message;
+            modalTitle.innerText = title;
+
+            if (type === 'success') {
+                modalIcon.className = "w-14 h-14 rounded-full flex items-center justify-center mx-auto text-2xl bg-emerald-100 text-emerald-600";
+                modalIcon.innerHTML = '<i class="fa-solid fa-trophy"></i>';
+            } else if (type === 'error') {
+                modalIcon.className = "w-14 h-14 rounded-full flex items-center justify-center mx-auto text-2xl bg-rose-100 text-rose-600";
+                modalIcon.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>';
+            } else if (type === 'hint') {
+                modalIcon.className = "w-14 h-14 rounded-full flex items-center justify-center mx-auto text-2xl bg-amber-100 text-amber-600";
+                modalIcon.innerHTML = '<i class="fa-solid fa-lightbulb"></i>';
+            } else {
+                modalIcon.className = "w-14 h-14 rounded-full flex items-center justify-center mx-auto text-2xl bg-sky-100 text-sky-600";
+                modalIcon.innerHTML = '<i class="fa-solid fa-circle-info"></i>';
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('resultModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
