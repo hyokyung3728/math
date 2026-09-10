@@ -1362,10 +1362,14 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--rayA); outline
 .chip{background:#F6F4EE;border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:600;}
 
 .hint{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:8px;text-align:center;}
+.site-footer{margin-top:22px;text-align:center;font-size:11.5px;color:var(--muted);opacity:0.75;}
 </style>
 </head>
 <body>
-<div class="wrap" id="app"></div>
+<div class="wrap">
+  <div id="app"></div>
+  <footer class="site-footer">© 2026 김효경│수학 수업용 인터랙티브 콘텐츠</footer>
+</div>
 
 <script>
 /* ---------- storage helpers (Firebase Realtime Database) ---------- */
@@ -1993,16 +1997,31 @@ function renderRoundResult(){
 }
 
 /* ---- finish ---- */
-function finishGame(){
+async function finishGame(){
   if(state.game.demo){ setView('demo-done'); return; }
-  saveScore();
+  await saveScore();
+  await loadFinalLeaderboard();
   setView('student-done');
 }
 async function saveScore(){
   const g = state.game;
   const s = state.student;
-  const payload = { nickname: s.nickname, score: g.score, ts: Date.now() };
+  const payload = { id: s.id, nickname: s.nickname, score: g.score, ts: Date.now() };
   await sSet(`score:${s.code}:${s.id}`, payload, true);
+}
+async function loadFinalLeaderboard(){
+  const g = state.game;
+  const s = state.student;
+  const keys = await sList(`score:${s.code}:`, true);
+  const entries = [];
+  for(const k of keys){
+    const v = await sGet(k, true);
+    if(v){ entries.push(v); }
+  }
+  entries.sort((a,b)=> b.score - a.score);
+  g.resultEntries = entries;
+  const idx = entries.findIndex(e => e.id === s.id);
+  g.myRank = idx >= 0 ? idx + 1 : null;
 }
 
 function renderDemoDone(){
@@ -2023,17 +2042,28 @@ function renderDemoDone(){
 
 function renderResult(){
   const g = state.game;
+  const entries = g.resultEntries || [];
+  const rankText = g.myRank ? `${g.myRank}위 / 전체 ${entries.length}명 중` : '';
   app.innerHTML = `
     ${topBar(true)}
     <div class="panel result-panel">
       <div class="label" style="color:var(--muted);font-size:14px;">${escapeHtml(state.student.nickname)}님의 최종 점수</div>
       <div class="total">${g.score}</div>
+      ${rankText ? `<div style="font-weight:700;color:var(--match);margin-bottom:6px;">${rankText}</div>` : ''}
       <div class="rounds">${g.roundScores.map((s,i)=>`<span class="chip">R${i+1} · ${s}점</span>`).join('')}</div>
-      <p class="hint" style="margin-top:0;">선생님 화면의 실시간 순위에 곧 반영됩니다.</p>
-      <button class="btn btn-ghost" data-action="go-home" style="margin-top:6px;">처음으로</button>
+      <div class="lb-title" style="margin-top:18px;"><h3>현재까지 순위</h3><span class="count">${entries.length}명 참여</span></div>
+      <ul class="lb-list">
+        ${entries.length === 0 ? `<li class="lb-empty">아직 기록이 없어요</li>` : entries.slice(0,30).map((e,i)=>`
+          <li class="lb-row" style="${e.id===state.student.id ? 'outline:2px solid var(--rayA);' : ''}">
+            <span class="lb-rank">${i+1}</span><span class="lb-name">${escapeHtml(e.nickname)}</span><span class="lb-score">${e.score}</span>
+          </li>`).join('')}
+      </ul>
+      <button class="btn btn-primary" data-action="restart" style="margin-top:14px;">다시 시작</button>
+      <button class="btn btn-ghost" data-action="go-home" style="margin-top:8px;">처음으로</button>
     </div>
   `;
   bindGlobalNav();
+  app.querySelector('[data-action="restart"]').addEventListener('click', ()=>startGame(false));
 }
 
 render();
