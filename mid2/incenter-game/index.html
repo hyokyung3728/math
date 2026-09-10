@@ -1267,7 +1267,7 @@ body{
 h1,h2,h3,.disp{font-family:'Space Grotesk',sans-serif;}
 button{font-family:inherit;cursor:pointer;border:none;}
 button:focus-visible, input:focus-visible{outline:3px solid var(--rayA); outline-offset:2px;}
-.wrap{max-width:1040px;margin:0 auto;padding:12px 14px 20px;}
+.wrap{max-width:1040px;margin:0 auto;padding:12px 14px 40px;}
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px;}
 .brand{display:flex;align-items:center;gap:10px;}
 .brand .mark{width:34px;height:34px;flex:0 0 auto;}
@@ -1362,7 +1362,7 @@ button:focus-visible, input:focus-visible{outline:3px solid var(--rayA); outline
 .chip{background:#F6F4EE;border-radius:8px;padding:6px 10px;font-size:12.5px;font-weight:600;}
 
 .hint{font-size:12.5px;color:var(--muted);line-height:1.5;margin-top:8px;text-align:center;}
-.site-footer{margin-top:22px;text-align:center;font-size:11.5px;color:var(--muted);opacity:0.75;}
+.site-footer{position:fixed;left:0;right:0;bottom:0;text-align:center;font-size:11px;color:var(--muted);opacity:0.85;background:var(--bg);padding:7px 12px;border-top:1px solid var(--line);z-index:50;}
 </style>
 </head>
 <body>
@@ -1797,7 +1797,7 @@ function renderBisecting(){
         <div class="timer-track"><div class="timer-fill" id="timer-fill" style="width:100%"></div></div>
       </div>
       <div class="svg-wrap">
-        <svg id="game-svg" viewBox="0 0 420 380" width="100%" style="max-width:min(90vw, 58vh, 460px);">
+        <svg id="game-svg" viewBox="0 0 420 380" width="100%" style="max-width:min(90vw, 54vh, 460px);">
           <polygon points="${polyPoints(g.tri)}" fill="#F6F4EE" stroke="#12181F" stroke-width="2"/>
           ${renderLockedLines(g)}
           <path id="wedgeA" fill="rgba(58,111,247,0.18)" d=""></path>
@@ -1928,7 +1928,7 @@ function renderPlacing(){
     <div class="panel game-panel">
       <div class="round-bar"><span class="round-tag">라운드 ${g.round} / ${g.totalRounds} · 내심 찍기</span></div>
       <div class="svg-wrap">
-        <svg id="place-svg" class="svg-click" viewBox="0 0 420 380" width="100%" style="max-width:min(90vw, 58vh, 460px);">
+        <svg id="place-svg" class="svg-click" viewBox="0 0 420 380" width="100%" style="max-width:min(90vw, 54vh, 460px);">
           <polygon points="${polyPoints(g.tri)}" fill="#F6F4EE" stroke="#12181F" stroke-width="2"/>
           ${renderLockedLines(g)}
         </svg>
@@ -1979,7 +1979,7 @@ function renderRoundResult(){
     <div class="panel game-panel">
       <div class="round-bar"><span class="round-tag">라운드 ${g.round} / ${g.totalRounds} · 결과</span></div>
       <div class="svg-wrap">
-        <svg viewBox="0 0 420 380" width="100%" style="max-width:min(90vw, 58vh, 460px);">
+        <svg viewBox="0 0 420 380" width="100%" style="max-width:min(90vw, 54vh, 460px);">
           <polygon points="${polyPoints(g.tri)}" fill="#F6F4EE" stroke="#12181F" stroke-width="2"/>
           ${renderLockedLines(g)}
           <line x1="${guess.x}" y1="${guess.y}" x2="${I.x}" y2="${I.y}" stroke="#B9B2A0" stroke-width="2" stroke-dasharray="3 5"/>
