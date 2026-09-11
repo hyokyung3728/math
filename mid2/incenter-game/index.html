@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -2031,8 +2030,13 @@ async function finishGame(){
 async function saveScore(){
   const g = state.game;
   const s = state.student;
+  const key = `score:${s.code}:${s.id}`;
+  let prevScore = -Infinity;
+  const existing = await sGet(key, true);
+  if(existing && typeof existing.score === 'number'){ prevScore = existing.score; }
+  if(g.score <= prevScore) return;
   const payload = { id: s.id, nickname: s.nickname, score: g.score, ts: Date.now() };
-  await sSet(`score:${s.code}:${s.id}`, payload, true);
+  await sSet(key, payload, true);
 }
 async function loadFinalLeaderboard(){
   const g = state.game;
@@ -2069,11 +2073,14 @@ function renderResult(){
   const g = state.game;
   const entries = g.resultEntries || [];
   const rankText = g.myRank ? `${g.myRank}위 / 전체 ${entries.length}명 중` : '';
+  const myEntry = entries.find(e => e.id === state.student.id);
+  const bestScore = myEntry ? myEntry.score : g.score;
   app.innerHTML = `
     ${topBar(true)}
     <div class="panel result-panel">
-      <div class="label" style="color:var(--muted);font-size:14px;">${escapeHtml(state.student.nickname)}님의 최종 점수</div>
+      <div class="label" style="color:var(--muted);font-size:14px;">${escapeHtml(state.student.nickname)}님의 이번 점수</div>
       <div class="total">${g.score}</div>
+      ${bestScore > g.score ? `<div style="font-size:12.5px;color:var(--muted);margin:-4px 0 6px;">최고 기록 <b style="color:var(--ink)">${bestScore}점</b>은 그대로 유지돼요</div>` : ''}
       ${rankText ? `<div style="font-weight:700;color:var(--match);margin-bottom:6px;">${rankText}</div>` : ''}
       <div class="rounds">${g.roundScores.map((s,i)=>`<span class="chip">R${i+1} · ${s}점</span>`).join('')}</div>
       <div class="lb-title" style="margin-top:18px;"><h3>현재까지 순위</h3><span class="count">${entries.length}명 참여</span></div>
